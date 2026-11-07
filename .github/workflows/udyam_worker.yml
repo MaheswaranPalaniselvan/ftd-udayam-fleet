@@ -8,14 +8,16 @@ on:
   workflow_dispatch:
     inputs:
       workers:
-        description: 'Number of parallel GitHub worker instances (1-3)'
+        description: 'Number of parallel GitHub worker instances (1-10)'
         required: true
-        default: '2'
+        default: '10'
         type: choice
         options:
-          - '1'
           - '2'
           - '3'
+          - '5'
+          - '8'
+          - '10'
       state:
         description: 'Target State prefix filter (e.g. TN, KL - leave blank for any)'
         required: false
@@ -45,14 +47,8 @@ jobs:
     steps:
       - id: set-matrix
         run: |
-          COUNT="${{ inputs.workers || '2' }}"
-          if [ "$COUNT" = "1" ]; then
-            echo 'workers=["1"]' >> "$GITHUB_OUTPUT"
-          elif [ "$COUNT" = "2" ]; then
-            echo 'workers=["1", "2"]' >> "$GITHUB_OUTPUT"
-          else
-            echo 'workers=["1", "2", "3"]' >> "$GITHUB_OUTPUT"
-          fi
+          COUNT="${{ inputs.workers || '10' }}"
+          python3 -c "import json, sys; count=int(sys.argv[1]); print('workers=' + json.dumps([str(i) for i in range(1, count + 1)]))" "$COUNT" >> "$GITHUB_OUTPUT"
 
   run-worker:
     needs: prepare-matrix
