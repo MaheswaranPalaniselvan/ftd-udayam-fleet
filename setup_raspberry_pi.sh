@@ -38,7 +38,7 @@ sudo apt-get install -y \
     build-essential \
     libopenblas-dev \
     libatlas-base-dev \
-    libglib2.0-0 \
+    libgomp1 \
     libnss3 \
     libnspr4 \
     libatk1.0-0 \
@@ -56,8 +56,11 @@ sudo apt-get install -y \
     libxrandr2 \
     libgbm1 \
     libpango-1.0-0 \
-    libcairo2 \
-    libasound2
+    libcairo2 || true
+
+# Dual-support for Debian/Ubuntu (t64 transition in Ubuntu 24.04 noble)
+sudo apt-get install -y libglib2.0-0t64 || sudo apt-get install -y libglib2.0-0 || true
+sudo apt-get install -y libasound2t64 || sudo apt-get install -y libasound2 || true
 
 echo "      [OK] System libraries installed."
 echo ""
