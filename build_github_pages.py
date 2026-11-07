@@ -6,6 +6,7 @@ and places it in public/index.html.
 """
 
 import base64
+import csv
 from datetime import datetime
 import json
 import os
@@ -197,6 +198,25 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
             "districts": [],
         }
 
+    # Load local sync report if available
+    local_sync = {}
+    sync_csv = Path("sync_report.csv")
+    if sync_csv.is_file():
+        try:
+            with open(sync_csv, "r", encoding="utf-8", errors="replace") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    c = row.get("District Code", "").strip().upper()
+                    if c:
+                        local_sync[c] = {
+                            "last_record": row.get("Last Record", "").strip(),
+                            "last_dor": row.get("Last Recorded Date", "").strip(),
+                            "extracted": clean_int(row.get("Total Extracted", 0)),
+                            "failed": clean_int(row.get("Total Failed", 0)),
+                        }
+        except Exception:
+            pass
+
     for r in ws.iter_rows(min_row=2, values_only=True):
         level = str(r[0]).strip() if r[0] else ""
         code = str(r[1]).strip() if r[1] else ""
@@ -306,6 +326,39 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                 "speed": 0.0,
             },
         ])
+
+    # Overlay verified data from local sync_report.csv
+    if local_sync:
+        for s_name, s_data in states_dict.items():
+            for d in s_data["districts"]:
+                d_code = d.get("code", "").upper()
+                if d_code in local_sync:
+                    loc = local_sync[d_code]
+                    if loc["extracted"] > 0:
+                        d["extracted"] = max(d["extracted"], loc["extracted"])
+                        d["status"] = "Completed"
+                    if loc["last_record"] and (not d["last_record"] or d["last_record"] in ("None", "-", "")):
+                        d["last_record"] = loc["last_record"]
+                    if loc["last_dor"]:
+                        d_dor = format_harvest_date(loc["last_dor"])
+                        if d_dor and d_dor != "-":
+                            d["harvest_date"] = d_dor
+                    if loc["failed"] > 0:
+                        d["failed"] = max(d["failed"], loc["failed"])
+
+                    # Re-evaluate freshness
+                    is_live = (
+                        d["status"].lower() == "completed"
+                        and d["extracted"] > 0
+                        and d["harvest_date"] not in (None, "", "-", "None")
+                    )
+                    d["is_live"] = is_live
+                    if is_live:
+                        d["live_status"] = f"Live as of {d['harvest_date']}"
+                    elif d["status"].lower() == "in progress":
+                        d["live_status"] = "Outdated (In Progress)"
+                    else:
+                        d["live_status"] = "Outdated (Not Started)"
 
     states_list = list(states_dict.values())
 

@@ -64,6 +64,24 @@ def extract_csv_from_7z(archive_path: Path, csv_pattern: str, seven_zip_bin: str
         return None
 
 
+def extract_dor_from_html_in_7z(archive_path: Path, last_record: str, seven_zip_bin: str) -> str:
+    """Extracts Date of Registration from the record's HTML file inside .7z when missing from CSV."""
+    if not last_record:
+        return ""
+    cmd = [seven_zip_bin, "e", str(archive_path), "-r", f"{last_record}.html", "-so"]
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, errors="replace", check=True)
+        html = proc.stdout
+        m = re.search(r'lblACKNOWLEDGEMENT">([^<]+)<', html)
+        if not m:
+            m = re.search(r'Date of Udyam Registration.*?(\d{1,2}/\d{1,2}/\d{4})', html, re.DOTALL)
+        if m:
+            return m.group(1).strip()
+    except Exception:
+        pass
+    return ""
+
+
 def parse_results_csv_content(csv_content: str) -> dict:
     """Parses results CSV text to determine highest record number, DOR, and total count."""
     reader = csv.reader(io.StringIO(csv_content))
@@ -153,6 +171,12 @@ def scan_district_data(results_dir: Path, failed_dir: Path, seven_zip_bin: str) 
             else:
                 stats = {"total_extracted": 0, "last_record": "", "last_recorded_date": ""}
 
+            if not stats.get("last_recorded_date") and stats.get("last_record"):
+                html_dor = extract_dor_from_html_in_7z(archive, stats["last_record"], seven_zip_bin)
+                if html_dor:
+                    stats["last_recorded_date"] = html_dor
+                    print(f"    -> Extracted DOR from HTML: {html_dor}")
+
             failed_csv_text = extract_csv_from_7z(archive, f"failed_{prefix}.csv", seven_zip_bin)
             if not failed_csv_text:
                 failed_csv_text = extract_csv_from_7z(archive, "failed_*.csv", seven_zip_bin)
@@ -196,30 +220,42 @@ def scan_district_data(results_dir: Path, failed_dir: Path, seven_zip_bin: str) 
     return district_data
 
 
-def sync_to_google_sheet(web_app_url: str, district_data: dict[str, dict]):
-    """Sends aggregated district status to Google Apps Script Web App."""
+def sync_to_google_sheet(web_app_url: str, district_data: dict[str, dict], chunk_size: int = 25):
+    """Sends aggregated district status to Google Apps Script Web App in safe chunks."""
     if not web_app_url:
         print("[!] No Google Apps Script Web App URL provided. Skipping remote sync.")
         return False
 
-    print(f"\nSending status for {len(district_data)} districts to Google Sheet...")
-    payload = {
-        "action": "bulk_sync_status",
-        "districts": district_data,
-    }
+    items = list(district_data.items())
+    total_districts = len(items)
+    print(f"\nSending status for {total_districts} districts to Google Sheet in batches of {chunk_size}...")
 
-    try:
-        resp = httpx.post(web_app_url, json=payload, timeout=60.0, follow_redirects=True)
-        if resp.status_code == 200:
-            res_json = resp.json()
-            print(f"[SUCCESS] Google Sheet updated: {res_json.get('updated_count', 0)} rows updated.")
-            return True
-        else:
-            print(f"[ERROR] Failed to update Google Sheet ({resp.status_code}): {resp.text}")
-            return False
-    except Exception as e:
-        print(f"[ERROR] Connection error during remote sync: {e}")
-        return False
+    total_updated = 0
+    for i in range(0, total_districts, chunk_size):
+        chunk = dict(items[i:i + chunk_size])
+        batch_num = (i // chunk_size) + 1
+        total_batches = (total_districts + chunk_size - 1) // chunk_size
+        print(f"  Pushing batch {batch_num}/{total_batches} ({len(chunk)} districts)...")
+
+        payload = {
+            "action": "bulk_sync_status",
+            "districts": chunk,
+        }
+
+        try:
+            resp = httpx.post(web_app_url, json=payload, timeout=120.0, follow_redirects=True)
+            if resp.status_code == 200:
+                res_json = resp.json()
+                count = res_json.get("updated_count", 0)
+                total_updated += count
+                print(f"    -> Batch {batch_num} success: {count} rows updated.")
+            else:
+                print(f"    -> [ERROR] Batch {batch_num} failed ({resp.status_code}): {resp.text}")
+        except Exception as e:
+            print(f"    -> [ERROR] Connection error on batch {batch_num}: {e}")
+
+    print(f"[SUCCESS] Google Sheet sync complete: {total_updated} total rows updated.")
+    return total_updated > 0
 
 
 def main():
