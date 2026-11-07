@@ -25,7 +25,7 @@ DEFAULT_GSHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1dwWvxENHxF5Lxz
 CACHE_FILE_PATH = Path("gsheet_cache.json")
 
 
-def clean_number(val: any) -> int:
+def clean_number(val: object = None) -> int:
     """Extracts integer value from string or number, ignoring commas and symbols."""
     if val is None:
         return 0

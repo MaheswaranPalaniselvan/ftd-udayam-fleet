@@ -67,7 +67,11 @@ def compile_modules():
     )
 
     print("\n[2/4] Compiling C source to native shared libraries (.so / .pyd)...")
-    setup(ext_modules=ext_modules)
+    setup(
+        ext_modules=ext_modules,
+        packages=[],
+        py_modules=[],
+    )
 
     print("\n[3/4] Verifying compiled binary output...")
     compiled_count = 0
