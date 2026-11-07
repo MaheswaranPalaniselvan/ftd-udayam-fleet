@@ -7,7 +7,8 @@ and places it in public/index.html.
 
 import base64
 import csv
-from datetime import datetime
+from datetime import datetime, date
+from typing import Optional
 import json
 import os
 from pathlib import Path
@@ -60,26 +61,60 @@ def format_indian_num(num: int) -> str:
     return ",".join(groups) + "," + last_three
 
 
+def parse_date_to_datetime(val) -> Optional[datetime]:
+    """Parses various date and timestamp formats into a datetime object."""
+    if not val or str(val).strip() in ("None", "", "-", "null"):
+        return None
+    if isinstance(val, datetime):
+        return val
+    if isinstance(val, date):
+        return datetime.combine(val, datetime.min.time())
+    
+    s = str(val).strip().replace("Sept", "Sep")
+    
+    # 1. DD/MM/YYYY or DD-MM-YYYY
+    m = re.match(r"^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$", s)
+    if m:
+        try:
+            return datetime(int(m.group(3)), int(m.group(2)), int(m.group(1)))
+        except ValueError:
+            pass
+            
+    # 2. YYYY-MM-DD
+    m2 = re.match(r"^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$", s)
+    if m2:
+        try:
+            return datetime(int(m2.group(1)), int(m2.group(2)), int(m2.group(3)))
+        except ValueError:
+            pass
+
+    # 3. Standard string formats
+    for fmt in ("%d %b %Y", "%d %B %Y", "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(s.split(".")[0].replace("Z", ""), fmt)
+        except ValueError:
+            pass
+
+    return None
+
+
 def format_harvest_date(val) -> str:
     """Formats raw timestamp / ISO string / datetime into human-friendly date (e.g. 03 Nov 2026)."""
-    if not val or str(val).strip() in ("None", "", "-"):
-        return "-"
-    if isinstance(val, datetime):
-        return val.strftime("%d %b %Y")
-    s = str(val).strip()
-    try:
-        if "T" in s:
-            dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
-            return dt.strftime("%d %b %Y")
-        elif "00:00:00" in s:
-            dt = datetime.strptime(s.split()[0], "%Y-%m-%d")
-            return dt.strftime("%d %b %Y")
-        elif len(s) == 10 and s.count("-") == 2:
-            dt = datetime.strptime(s, "%Y-%m-%d")
-            return dt.strftime("%d %b %Y")
-    except Exception:
-        pass
-    return s
+    dt = parse_date_to_datetime(val)
+    if dt:
+        return dt.strftime("%d %b %Y")
+    s = str(val).strip() if val else "-"
+    return s if s not in ("None", "", "null") else "-"
+
+
+def is_registration_live(val, threshold_days: int = 4) -> bool:
+    """Returns True if the registration date is current (within threshold_days of current date)."""
+    dt = parse_date_to_datetime(val)
+    if not dt:
+        return False
+    now = datetime.now()
+    diff = (now.date() - dt.date()).days
+    return -1 <= diff <= threshold_days
 
 
 def fetch_live_portal_facts() -> dict:
@@ -240,17 +275,20 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                 last_dor_raw = r[10] if len(r) > 10 and r[10] else None
                 harvest_date = format_harvest_date(last_dor_raw)
 
-                # Logical evaluation: Data is Live if extraction completed with verified records and valid registration date;
-                # otherwise Outdated (In Progress or Not Started).
+                # Strict freshness evaluation:
+                # District is Live ONLY if verified completed, has extracted records, and latest registration date is current (within 4 days).
+                # All older historical extracts or unstarted/in-progress are classified as Outdated.
                 is_live = (
                     status_raw.lower() == "completed"
                     and extracted > 0
-                    and harvest_date not in (None, "", "-", "None")
+                    and is_registration_live(last_dor_raw or harvest_date)
                 )
                 if is_live:
-                    live_status_label = f"Live as of {harvest_date}"
+                    live_status_label = "Live"
                 elif status_raw.lower() == "in progress":
                     live_status_label = "Outdated (In Progress)"
+                elif status_raw.lower() == "completed":
+                    live_status_label = "Outdated"
                 else:
                     live_status_label = "Outdated (Not Started)"
 
@@ -294,8 +332,8 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                 "harvest_date": "09 Sept 2026",
                 "failed": 0,
                 "status": "Completed",
-                "is_live": True,
-                "live_status": "Live as of 09 Sept 2026",
+                "is_live": False,
+                "live_status": "Outdated",
                 "claimed_by": "Archived / Synced",
                 "speed": 0.0,
             },
@@ -307,8 +345,8 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                 "harvest_date": "09 Sept 2026",
                 "failed": 0,
                 "status": "Completed",
-                "is_live": True,
-                "live_status": "Live as of 09 Sept 2026",
+                "is_live": False,
+                "live_status": "Outdated",
                 "claimed_by": "Archived / Synced",
                 "speed": 0.0,
             },
@@ -320,8 +358,8 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                 "harvest_date": "09 Sept 2026",
                 "failed": 0,
                 "status": "Completed",
-                "is_live": True,
-                "live_status": "Live as of 09 Sept 2026",
+                "is_live": False,
+                "live_status": "Outdated",
                 "claimed_by": "Archived / Synced",
                 "speed": 0.0,
             },
@@ -346,17 +384,19 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                     if loc["failed"] > 0:
                         d["failed"] = max(d["failed"], loc["failed"])
 
-                    # Re-evaluate freshness
+                    # Strict freshness evaluation:
                     is_live = (
                         d["status"].lower() == "completed"
                         and d["extracted"] > 0
-                        and d["harvest_date"] not in (None, "", "-", "None")
+                        and is_registration_live(loc.get("last_dor") or d.get("harvest_date"))
                     )
                     d["is_live"] = is_live
                     if is_live:
-                        d["live_status"] = f"Live as of {d['harvest_date']}"
+                        d["live_status"] = "Live"
                     elif d["status"].lower() == "in progress":
                         d["live_status"] = "Outdated (In Progress)"
+                    elif d["status"].lower() == "completed":
+                        d["live_status"] = "Outdated"
                     else:
                         d["live_status"] = "Outdated (Not Started)"
 
@@ -422,9 +462,9 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
             "live_districts": total_live_districts,
             "outdated_districts": total_outdated_districts,
             "live_pct": overall_live_pct,
-            "completed_districts": total_live_districts,
+            "completed_districts": total_completed_districts,
             "inprogress_districts": total_inprogress_districts,
-            "completion_pct": overall_live_pct,
+            "completion_pct": overall_pct,
             "total_extracted": total_extracted_records,
             "total_failed": total_failed_records,
         },
@@ -1108,12 +1148,12 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       <div class="kpi-card" style="--card-accent: #10b981;">
         <div class="kpi-label">Live Districts</div>
         <div class="kpi-value">{data['kpi']['live_districts']} <span style="font-size: 1rem; color: #34d399;">({data['kpi']['live_pct']}%)</span></div>
-        <div class="kpi-subtext">Live as of Registration Date</div>
+        <div class="kpi-subtext">Current & Actively Fresh</div>
       </div>
       <div class="kpi-card" style="--card-accent: #f43f5e;">
         <div class="kpi-label">Outdated Districts</div>
         <div class="kpi-value">{data['kpi']['outdated_districts']} <span style="font-size: 0.95rem; color: #fb7185;">({round(100 - data['kpi']['live_pct'], 1)}%)</span></div>
-        <div class="kpi-subtext">Unstarted / In-Progress Harvests</div>
+        <div class="kpi-subtext">Stale / Pending Re-harvest</div>
       </div>
       <div class="kpi-card" style="--card-accent: #a855f7;">
         <div class="kpi-label">Total Extracted Records</div>
@@ -1126,7 +1166,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
     <div class="freshness-logic-banner">
       <span style="font-size: 1.25rem;">💡</span>
       <div style="flex: 1;">
-        <strong style="color: #f1f5f9;">Data Freshness Logic:</strong> Districts are classified as <span style="color: #34d399; font-weight: 600;">Live as of [Date]</span> when verified MSME records have been extracted and finalized up to that registration date. Districts that are <span style="color: #fbbf24; font-weight: 600;">In Progress</span> or <span style="color: #fb7185; font-weight: 600;">Not Started</span> (or with 0 records) are classified as <span style="color: #fb7185; font-weight: 600;">Outdated</span> pending harvest completion.
+        <strong style="color: #f1f5f9;">Data Freshness Logic:</strong> Districts are strictly classified as <span style="color: #34d399; font-weight: 600;">🟢 Live</span> only when verified extraction is complete and the latest registration date is current (within 4 calendar days). Districts with older historical extracts, in-progress runs, or pending extraction are classified as <span style="color: #fb7185; font-weight: 600;">🔴 Outdated</span>.
       </div>
     </div>
 
@@ -1138,7 +1178,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       </div>
       <div class="filter-chips">
         <span class="chip active" data-status="all" onclick="filterStatus('all')">All States & UTs ({data['kpi']['total_states']})</span>
-        <span class="chip" data-status="live" onclick="filterStatus('live')">🟢 Live as of Date ({data['kpi']['live_districts']})</span>
+        <span class="chip" data-status="live" onclick="filterStatus('live')">🟢 Live ({data['kpi']['live_districts']})</span>
         <span class="chip" data-status="outdated" onclick="filterStatus('outdated')">🔴 Outdated ({data['kpi']['outdated_districts']})</span>
         <span class="chip" data-status="inprogress" onclick="filterStatus('inprogress')">⚡ In Progress ({data['kpi']['inprogress_districts']})</span>
       </div>
@@ -1238,12 +1278,16 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
 
           if (d.is_live) {{
             dStatusClass = 'status-live';
-            dStatusText = `Live as of ${{d.harvest_date}}`;
-            dTooltip = `Verified complete dataset. Live as of ${{d.harvest_date}}`;
+            dStatusText = 'Live';
+            dTooltip = `Verified live dataset. Latest registration: ${{d.harvest_date}}`;
           }} else if ((d.status || '').toLowerCase() === 'in progress') {{
             dStatusClass = 'status-outdated-progress';
             dStatusText = 'Outdated (In Progress)';
             dTooltip = 'Scraping is actively in progress. Complete snapshot not yet finalized.';
+          }} else if ((d.status || '').toLowerCase() === 'completed') {{
+            dStatusClass = 'status-outdated';
+            dStatusText = 'Outdated';
+            dTooltip = `Harvested up to ${{d.harvest_date}}. Data is outdated pending fresh run.`;
           }}
 
           distRowsHtml += `
@@ -1377,7 +1421,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
             s.name,
             d.code,
             d.name,
-            d.live_status || (d.is_live ? ('Live as of ' + d.harvest_date) : 'Outdated'),
+            d.live_status || (d.is_live ? 'Live' : 'Outdated'),
             d.extracted,
             d.last_record,
             d.harvest_date,
