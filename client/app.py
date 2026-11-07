@@ -7,6 +7,7 @@ import argparse
 import asyncio
 import logging
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -59,6 +60,9 @@ def run_headless_cli(args):
             dist_code = None
             start_num = 1
             limit = 500000
+            prev_extracted = 0
+            last_record = ""
+            last_dor = ""
 
             if not claim_res.get("success"):
                 claim_attempts += 1
@@ -81,8 +85,11 @@ def run_headless_cli(args):
                 dist_code = claim_res.get("district_code")
                 start_num = claim_res.get("start_num", 1)
                 limit = claim_res.get("limit", 500000)
+                prev_extracted = int(claim_res.get("prev_extracted") or 0)
+                last_record = claim_res.get("last_record", "")
+                last_dor = claim_res.get("last_dor", "")
 
-            logging.info(f"Task Claimed: {dist_code} | Start: #{start_num} | Limit: #{limit}")
+            logging.info(f"Task Claimed: {dist_code} | Start: #{start_num} | Limit: #{limit} | Prev Extracted: {prev_extracted}")
 
             async def heartbeat(**kwargs):
                 await coordinator.send_heartbeat(
@@ -99,16 +106,24 @@ def run_headless_cli(args):
                 start_num=start_num,
                 limit=limit,
                 concurrency=args.concurrency,
-                heartbeat_callback=heartbeat
+                heartbeat_callback=heartbeat,
+                initial_success_count=prev_extracted,
+                existing_last_record=last_record,
+                existing_last_dor=last_dor
             )
 
-            logging.info(f"District {dist_code} complete. Finalizing in Google Sheet...")
+            final_record = res.get("last_record") or last_record
+            final_dor = res.get("last_dor") or last_dor
+            total_extracted = res.get("total_extracted") if res.get("total_extracted") is not None else prev_extracted
+            total_failed = res.get("total_failed", 0)
+
+            logging.info(f"District {dist_code} complete. Finalizing in Google Sheet (Total: {total_extracted}, DOR: {final_dor})...")
             await coordinator.complete_task(
                 district_code=dist_code,
-                final_record=res.get("last_record"),
-                final_dor=res.get("last_dor"),
-                total_extracted=res.get("total_extracted"),
-                total_failed=res.get("total_failed")
+                final_record=final_record,
+                final_dor=final_dor,
+                total_extracted=total_extracted,
+                total_failed=total_failed
             )
 
             logging.info(f"Compressing {dist_code} and uploading to Google Drive...")

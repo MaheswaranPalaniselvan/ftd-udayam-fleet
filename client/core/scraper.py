@@ -231,18 +231,23 @@ async def execute_district_extraction(
     failed_dir: Path = Path("failed"),
     heartbeat_callback = None,
     stop_event: asyncio.Event = None,
-    ignore_local_lookup: bool = False
+    ignore_local_lookup: bool = False,
+    initial_success_count: int = 0,
+    existing_last_record: str = "",
+    existing_last_dor: str = ""
 ) -> dict:
     """
     Executes high-throughput extraction for a single district prefix (e.g. 'UDYAM-TN-05').
     Utilizes leapfrog probing and business day DOR threshold for early boundary detection.
+    Supports incremental resume on previously extracted districts to harvest newly registered MSMEs.
     """
     clean_prefix = prefix.replace("UDYAM-", "")
     results_dir.mkdir(parents=True, exist_ok=True)
     failed_dir.mkdir(parents=True, exist_ok=True)
 
     # Load already processed numbers (if local lookup enabled)
-    processed_numbers = set()
+    processed_success = set()
+    processed_failed = set()
     if not ignore_local_lookup:
         res_csv = results_dir / clean_prefix / f"results_{clean_prefix}.csv"
         if res_csv.exists():
@@ -251,7 +256,7 @@ async def execute_district_extraction(
                 next(r, None)
                 for row in r:
                     if row:
-                        processed_numbers.add(row[0].strip())
+                        processed_success.add(row[0].strip())
 
         fail_csv = failed_dir / clean_prefix / f"failed_{clean_prefix}.csv"
         if fail_csv.exists():
@@ -260,15 +265,16 @@ async def execute_district_extraction(
                 next(r, None)
                 for row in r:
                     if row:
-                        processed_numbers.add(row[0].strip())
+                        processed_failed.add(row[0].strip())
 
+    processed_numbers = processed_success | processed_failed
     last_business_day = get_latest_valid_business_day()
     is_at_cutting_edge = False
 
-    total_success = len(processed_numbers)
-    total_failures = 0
-    last_record_id = ""
-    latest_dor_str = ""
+    total_success = max(len(processed_success), int(initial_success_count or 0))
+    total_failures = len(processed_failed)
+    last_record_id = existing_last_record
+    latest_dor_str = existing_last_dor
 
     results_batch = []
     failed_batch = []
@@ -350,7 +356,7 @@ async def execute_district_extraction(
                         p_status, _, _, _, _ = await process_udyam_number(page, probe_id)
                         if p_status.startswith("Success"):
                             logging.info(f"Leapfrog probe found valid record at {probe_id}! Resuming from {probe_id}...")
-                            current_num = probe_num
+                            current_num = probe_num - 1
                             tail_empty = False
                             consecutive_not_found = 0
                             break

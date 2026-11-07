@@ -231,6 +231,45 @@ function getSheetContext() {
   return { ss, sheet, data, headers, colMap };
 }
 
+/**
+ * Determines whether a district's latest registration date (or last audit ping) is current.
+ * Threshold: Within 4 calendar days (96 hours).
+ */
+function isDateLatest(rawDate, rawPing) {
+  const now = new Date();
+  const FOUR_DAYS_MS = 4 * 24 * 60 * 60 * 1000;
+
+  // 1. If worker recently completed/verified this district within 4 days, treat as fresh
+  if (rawPing) {
+    const pingDate = (rawPing instanceof Date) ? rawPing : new Date(rawPing);
+    if (!isNaN(pingDate.getTime())) {
+      if ((now.getTime() - pingDate.getTime()) < FOUR_DAYS_MS) {
+        return true;
+      }
+    }
+  }
+
+  // 2. Parse registration date
+  if (!rawDate) return false;
+  let d = null;
+  if (rawDate instanceof Date) {
+    d = rawDate;
+  } else {
+    const cleaned = rawDate.toString().trim().replace(/Sept/gi, "Sep");
+    const dmyMatch = cleaned.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if (dmyMatch) {
+      d = new Date(Date.UTC(parseInt(dmyMatch[3], 10), parseInt(dmyMatch[2], 10) - 1, parseInt(dmyMatch[1], 10)));
+    } else {
+      d = new Date(cleaned);
+    }
+  }
+
+  if (!d || isNaN(d.getTime())) return false;
+
+  const diffMs = now.getTime() - d.getTime();
+  return diffMs <= FOUR_DAYS_MS;
+}
+
 function handleClaimTask(machine, preferredState, preferredDistrict) {
   if (!machine) machine = "Worker-" + Math.floor(Math.random() * 1000);
 
@@ -244,70 +283,117 @@ function handleClaimTask(machine, preferredState, preferredDistrict) {
   let assignedDistrict = "";
   let stateCode = "";
   let lastRecord = "";
+  let lastDor = "";
+  let prevExtracted = 0;
+  let assignedStatus = "";
 
-  // 1. Check if preferred district requested and available
+  function isRowLeased(claimedBy, status, lastPingStr) {
+    if (claimedBy && claimedBy !== machine && status === "In Progress") {
+      if (lastPingStr) {
+        const lastPing = (lastPingStr instanceof Date) ? lastPingStr : new Date(lastPingStr);
+        if (!isNaN(lastPing.getTime())) {
+          const minutesSince = (now.getTime() - lastPing.getTime()) / (60 * 1000);
+          return (minutesSince < LEASE_TIMEOUT_MINUTES);
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  function rowMatchesFilter(distCode, statePrefix, stateName) {
+    if (preferredDistrict) {
+      return distCode.toUpperCase() === preferredDistrict.toUpperCase();
+    }
+    if (preferredState) {
+      const ps = preferredState.toUpperCase();
+      return (
+        distCode.toUpperCase().startsWith(ps + "-") ||
+        statePrefix.toUpperCase() === ps ||
+        stateName.toUpperCase() === ps ||
+        distCode.toUpperCase() === ps
+      );
+    }
+    return true;
+  }
+
+  // PASS 1: Search for pending / uncompleted districts (Status !== "Completed")
   for (let r = 1; r < data.length; r++) {
     const row = data[r];
     const level = (row[col["Level"]] || "").toString().trim();
+    if (level !== "District") continue;
+
+    const status = (row[col["Status"]] || "").toString().trim();
+    if (status === "Completed") continue;
+
     let distCode = (row[col["State Code"]] || "").toString().trim();
     const stateName = (row[col["State/UT"]] || "").toString().trim();
-    const status = (row[col["Status"]] || "").toString().trim();
     const claimedBy = (row[col["Claimed By"]] || "").toString().trim();
     const lastPingStr = row[col["Last Ping"]];
-
-    if (level !== "District") continue;
-    if (status === "Completed") continue;
 
     const statePrefix = CANONICAL_STATE_CODES[stateName] || (distCode.indexOf("-") !== -1 ? distCode.split("-")[0] : distCode);
 
     // If district code has no hyphen (e.g. only "HP" or blank), check state match and auto-index
     if (!distCode.includes("-")) {
-      let stateMatches = false;
-      if (preferredState) {
-        stateMatches = (statePrefix.toUpperCase() === preferredState.toUpperCase() || stateName.toUpperCase() === preferredState.toUpperCase() || distCode.toUpperCase() === preferredState.toUpperCase());
-      } else if (!preferredDistrict) {
-        stateMatches = true;
-      }
-      if (!stateMatches) continue;
-
-      // Auto-assign district index within state
-      const distName = (row[col["Location Name"]] || row[col["District Name"]] || "").toString().trim();
-      distCode = statePrefix + "-01"; // Fallback identifier
+      if (!rowMatchesFilter(distCode, statePrefix, stateName)) continue;
+      distCode = statePrefix + "-01";
       sheet.getRange(r + 1, col["State Code"] + 1).setValue(distCode);
     }
 
-    // Check if currently leased
-    let isLeased = false;
-    if (claimedBy && claimedBy !== machine && status === "In Progress") {
-      if (lastPingStr) {
-        const lastPing = new Date(lastPingStr);
-        const minutesSince = (now.getTime() - lastPing.getTime()) / (60 * 1000);
-        if (minutesSince < LEASE_TIMEOUT_MINUTES) {
-          isLeased = true;
-        }
-      } else {
-        isLeased = true;
-      }
-    }
+    if (isRowLeased(claimedBy, status, lastPingStr)) continue;
 
-    if (isLeased) continue;
-
-    // Check match criteria
-    let isMatch = false;
-    if (preferredDistrict && distCode.toUpperCase() === preferredDistrict.toUpperCase()) {
-      isMatch = true;
-    } else if (preferredState && (distCode.toUpperCase().startsWith(preferredState.toUpperCase() + "-") || statePrefix.toUpperCase() === preferredState.toUpperCase())) {
-      isMatch = true;
-    } else if (!preferredDistrict && !preferredState) {
-      isMatch = true;
-    }
-
-    if (isMatch) {
-      assignedRow = r + 1; // 1-indexed sheet row
+    if (rowMatchesFilter(distCode, statePrefix, stateName)) {
+      assignedRow = r + 1;
       assignedDistrict = distCode;
-      stateCode = (row[col["State/UT"]] || "").toString().trim();
+      stateCode = stateName;
       lastRecord = (row[col["Last Record"]] || "").toString().trim();
+      lastDor = (row[col["Last Recorded Date"]] || "").toString().trim();
+      const rawExt = (row[col["Total Records Extracted"]] || 0).toString().replace(/,/g, "");
+      prevExtracted = parseInt(rawExt, 10) || 0;
+      assignedStatus = status;
       break;
+    }
+  }
+
+  // PASS 2: If no pending districts found, search for Completed districts whose Date of Registration is STALE (!isDateLatest)
+  if (assignedRow === -1) {
+    for (let r = 1; r < data.length; r++) {
+      const row = data[r];
+      const level = (row[col["Level"]] || "").toString().trim();
+      if (level !== "District") continue;
+
+      const status = (row[col["Status"]] || "").toString().trim();
+      if (status !== "Completed") continue;
+
+      const rawDor = row[col["Last Recorded Date"]];
+      const rawPing = row[col["Last Ping"]];
+
+      if (isDateLatest(rawDor, rawPing)) continue;
+
+      let distCode = (row[col["State Code"]] || "").toString().trim();
+      const stateName = (row[col["State/UT"]] || "").toString().trim();
+      const claimedBy = (row[col["Claimed By"]] || "").toString().trim();
+      const statePrefix = CANONICAL_STATE_CODES[stateName] || (distCode.indexOf("-") !== -1 ? distCode.split("-")[0] : distCode);
+
+      if (!distCode.includes("-")) {
+        if (!rowMatchesFilter(distCode, statePrefix, stateName)) continue;
+        distCode = statePrefix + "-01";
+        sheet.getRange(r + 1, col["State Code"] + 1).setValue(distCode);
+      }
+
+      if (isRowLeased(claimedBy, status, rawPing)) continue;
+
+      if (rowMatchesFilter(distCode, statePrefix, stateName)) {
+        assignedRow = r + 1;
+        assignedDistrict = distCode;
+        stateCode = stateName;
+        lastRecord = (row[col["Last Record"]] || "").toString().trim();
+        lastDor = (row[col["Last Recorded Date"]] || "").toString().trim();
+        const rawExt = (row[col["Total Records Extracted"]] || 0).toString().replace(/,/g, "");
+        prevExtracted = parseInt(rawExt, 10) || 0;
+        assignedStatus = status;
+        break;
+      }
     }
   }
 
@@ -317,17 +403,18 @@ function handleClaimTask(machine, preferredState, preferredDistrict) {
 
   // Calculate resume start number
   let startNum = 1;
+  const isCompletedResume = (assignedStatus === "Completed");
   if (lastRecord) {
     const cleaned = lastRecord.toString().replace(/,/g, "").trim();
     const mHyphen = cleaned.match(/-(\d+)$/);
     if (mHyphen) {
       const parsed = parseInt(mHyphen[1], 10);
-      startNum = Math.max(1, parsed - 10);
+      startNum = isCompletedResume ? (parsed + 1) : Math.max(1, parsed - 10);
     } else {
       const mNum = cleaned.match(/\d+/);
       if (mNum) {
         const parsed = parseInt(mNum[0], 10);
-        startNum = Math.max(1, parsed - 10);
+        startNum = isCompletedResume ? (parsed + 1) : Math.max(1, parsed - 10);
       }
     }
   }
@@ -337,13 +424,19 @@ function handleClaimTask(machine, preferredState, preferredDistrict) {
   sheet.getRange(assignedRow, col["Claimed By"] + 1).setValue(machine);
   sheet.getRange(assignedRow, col["Last Ping"] + 1).setValue(now.toISOString());
 
-  sendTelegramAlert(`🚜 <b>Task Claimed</b>\n💻 <b>Machine:</b> ${machine}\n📍 <b>District:</b> ${assignedDistrict}\n🔢 <b>Resuming at:</b> #${startNum}`);
+  if (isCompletedResume) {
+    sendTelegramAlert(`🔄 <b>Incremental Refresh Claimed</b>\n💻 <b>Machine:</b> ${machine}\n📍 <b>District:</b> ${assignedDistrict}\n📅 <b>Stale DOR:</b> ${lastDor || 'N/A'}\n🔢 <b>Resuming from:</b> #${startNum}\n📊 <b>Prev Extracted:</b> ${prevExtracted.toLocaleString()}`);
+  } else {
+    sendTelegramAlert(`🚜 <b>Task Claimed</b>\n💻 <b>Machine:</b> ${machine}\n📍 <b>District:</b> ${assignedDistrict}\n🔢 <b>Resuming at:</b> #${startNum}`);
+  }
 
   return {
     success: true,
     district_code: assignedDistrict,
     start_num: startNum,
     last_record: lastRecord,
+    last_dor: lastDor,
+    prev_extracted: prevExtracted,
     limit: 500000
   };
 }

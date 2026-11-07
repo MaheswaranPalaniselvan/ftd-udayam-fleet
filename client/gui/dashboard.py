@@ -246,9 +246,12 @@ class UdyamDashboard(tk.Tk):
             dist_code = claim_res.get("district_code")
             start_num = claim_res.get("start_num", 1)
             limit = claim_res.get("limit", 500000)
+            prev_extracted = int(claim_res.get("prev_extracted") or 0)
+            last_record = claim_res.get("last_record", "")
+            last_dor = claim_res.get("last_dor", "")
 
             self.after(0, lambda d=dist_code: self.dist_lbl.config(text=d))
-            self.log(f"[CLAIMED] District {dist_code} | Resuming at #{start_num}")
+            self.log(f"[CLAIMED] District {dist_code} | Resuming at #{start_num} | Prev Extracted: {prev_extracted}")
 
             # Define heartbeat callback
             async def on_heartbeat(**kwargs):
@@ -273,17 +276,25 @@ class UdyamDashboard(tk.Tk):
                 start_num=start_num,
                 limit=limit,
                 heartbeat_callback=on_heartbeat,
-                stop_event=self.stop_event
+                stop_event=self.stop_event,
+                initial_success_count=prev_extracted,
+                existing_last_record=last_record,
+                existing_last_dor=last_dor
             )
 
+            final_record = res.get("last_record") or last_record
+            final_dor = res.get("last_dor") or last_dor
+            total_extracted = res.get("total_extracted") if res.get("total_extracted") is not None else prev_extracted
+            total_failed = res.get("total_failed", 0)
+
             # Complete task
-            self.log(f"District {dist_code} completed. Finalizing in Google Sheet...")
+            self.log(f"District {dist_code} completed. Finalizing in Google Sheet (Total: {total_extracted}, DOR: {final_dor})...")
             await self.coordinator.complete_task(
                 district_code=dist_code,
-                final_record=res.get("last_record"),
-                final_dor=res.get("last_dor"),
-                total_extracted=res.get("total_extracted"),
-                total_failed=res.get("total_failed")
+                final_record=final_record,
+                final_dor=final_dor,
+                total_extracted=total_extracted,
+                total_failed=total_failed
             )
 
             # Auto compress & upload
