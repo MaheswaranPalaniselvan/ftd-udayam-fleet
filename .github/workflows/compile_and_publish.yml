@@ -28,13 +28,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential python3-dev
 
+      - name: Sync Project Dependencies
+        run: uv sync
+
       - name: Install Cython & Setuptools
-        run: |
-          uv pip install cython setuptools
+        run: uv pip install cython setuptools
 
       - name: Compile Python Modules to Native C (.so)
-        run: |
-          uv run python compile_to_cython.py
+        run: uv run python compile_to_cython.py
 
       - name: Verify Compiled Binaries
         run: |
@@ -52,6 +53,9 @@ jobs:
             exit 1
           fi
 
+          # Clean repo name in case full URL was passed
+          CLEAN_REPO=$(echo "$PUBLIC_REPO" | sed -e 's|https://github.com/||' -e 's|\.git||' -e 's|/$||')
+
           # Set up git user
           git config --global user.name "Fleet Publisher Bot"
           git config --global user.email "bot@flawlesstechdata.com"
@@ -63,6 +67,7 @@ jobs:
           # Copy compiled files, workflows, and configs
           rsync -av --progress ./ "$RELEASE_DIR" \
             --exclude '.git' \
+            --exclude '.venv' \
             --exclude '.github/workflows/compile_and_publish.yml' \
             --exclude 'compile_to_cython.py' \
             --exclude '*.c' \
@@ -80,6 +85,6 @@ jobs:
           git commit -m "Automated build: Native C (.so) compiled release $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
 
           # Push to public repository
-          git push --force "https://${PUBLIC_TOKEN}@github.com/${PUBLIC_REPO}.git" main
-          echo "[SUCCESS] Pushed compiled machine-code binaries to https://github.com/${PUBLIC_REPO}"
+          git push --force "https://${PUBLIC_TOKEN}@github.com/${CLEAN_REPO}.git" main
+          echo "[SUCCESS] Pushed compiled machine-code binaries to https://github.com/${CLEAN_REPO}"
 
