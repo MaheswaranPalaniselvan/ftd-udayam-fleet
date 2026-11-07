@@ -1,0 +1,85 @@
+name: Compile & Publish to Public Worker Repo
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Private Source Code
+        uses: actions/checkout@v4
+
+      - name: Install uv package manager
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install GCC and Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential python3-dev
+
+      - name: Install Cython & Setuptools
+        run: |
+          uv pip install cython setuptools
+
+      - name: Compile Python Modules to Native C (.so)
+        run: |
+          uv run python compile_to_cython.py
+
+      - name: Verify Compiled Binaries
+        run: |
+          echo "Listing compiled shared libraries (.so):"
+          find . -name "*.so"
+
+      - name: Publish Compiled Binaries to Public Repository
+        env:
+          PUBLIC_REPO: ${{ secrets.PUBLIC_REPO_NAME }}
+          PUBLIC_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          if [ -z "$PUBLIC_REPO" ] || [ -z "$PUBLIC_TOKEN" ]; then
+            echo "[ERROR] Missing PUBLIC_REPO_NAME or PUBLIC_REPO_TOKEN in repository secrets."
+            echo "Please configure them under: Settings -> Secrets and variables -> Actions"
+            exit 1
+          fi
+
+          # Set up git user
+          git config --global user.name "Fleet Publisher Bot"
+          git config --global user.email "bot@flawlesstechdata.com"
+
+          # Create a clean release directory
+          RELEASE_DIR="$HOME/public_release"
+          mkdir -p "$RELEASE_DIR"
+
+          # Copy compiled files, workflows, and configs
+          rsync -av --progress ./ "$RELEASE_DIR" \
+            --exclude '.git' \
+            --exclude '.github/workflows/compile_and_publish.yml' \
+            --exclude 'compile_to_cython.py' \
+            --exclude '*.c' \
+            --exclude '*.log' \
+            --exclude 'results' \
+            --exclude 'failed' \
+            --exclude 'downloaded_html' \
+            --exclude '.env*' \
+            --exclude 'gsheets_deployed_app.txt'
+
+          cd "$RELEASE_DIR"
+          git init
+          git checkout -b main
+          git add -A
+          git commit -m "Automated build: Native C (.so) compiled release $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+
+          # Push to public repository
+          git push --force "https://${PUBLIC_TOKEN}@github.com/${PUBLIC_REPO}.git" main
+          echo "[SUCCESS] Pushed compiled machine-code binaries to https://github.com/${PUBLIC_REPO}"
+

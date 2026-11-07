@@ -1,0 +1,18 @@
+[Unit]
+Description=FlawlessTech Udayam Extractor Fleet Worker
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/udayam
+Environment="PATH=/home/pi/.local/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/home/pi/.local/bin/uv run python client/app.py --cli --machine "Pi-%H" --concurrency 2
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

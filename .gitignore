@@ -1,0 +1,48 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+venv/
+
+# Environment files and secrets
+.env
+*.key
+*.pem
+gsheets_deployed_app.txt
+
+# Heavy scraping data and logs (kept local, uploaded to Drive/Sheet)
+*.log
+logs/
+downloaded_html/
+results/
+failed/
+old/
+*.7z
+*.sqlite
+*.sqlite-journal
+
+# Local scraping data outputs and scan reports
+results.csv
+results.xlsx
+udyam_extracted_data.csv
+udyam_web_extracted.csv
+sync_report.csv
+numbers.txt
+
+# Generated HTML viewers, demos, and temporary exports
+results.html
+Demo Data.html
+live_dashboard.html
+live_udayam_extract.xlsx
+public/
+
+# Local caches and legacy test directory
+gsheet_cache.json
+gsheet_live_backup.csv
+github-pages/
