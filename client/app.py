@@ -43,6 +43,82 @@ def run_headless_cli(args):
     max_duration_sec = (args.max_duration_minutes * 60) if getattr(args, 'max_duration_minutes', None) else None
     claim_attempts = 0
 
+    rerun_mode = None
+    if getattr(args, "rerun_type", "none") != "none":
+        rerun_mode = args.rerun_type
+    elif getattr(args, "rerun_failed", False):
+        rerun_mode = "failed"
+    elif getattr(args, "rerun_missing", False):
+        rerun_mode = "missing"
+
+    if rerun_mode:
+        from client.core.scraper import execute_district_rerun, get_district_failed_and_missing
+
+        logging.info(f"*** RERUN MODE ACTIVATED: {rerun_mode.upper()} ***")
+
+        # Determine target districts
+        target_districts = []
+        if args.district:
+            target_districts = [args.district.strip().upper()]
+        elif args.state:
+            st = args.state.strip().upper()
+            res_dir = Path("results")
+            fail_dir = Path("failed")
+            found = set()
+            for p in res_dir.glob(f"{st}-*.7z"):
+                found.add(p.stem)
+            for p in res_dir.glob(f"{st}-*"):
+                if p.is_dir():
+                    found.add(p.name)
+            for p in fail_dir.glob(f"{st}-*"):
+                if p.is_dir():
+                    found.add(p.name)
+            target_districts = sorted(list(found))
+        else:
+            res_dir = Path("results")
+            fail_dir = Path("failed")
+            found = set()
+            for p in res_dir.glob("*.7z"):
+                found.add(p.stem)
+            for p in fail_dir.iterdir():
+                if p.is_dir():
+                    found.add(p.name)
+            target_districts = sorted(list(found))
+
+        logging.info(f"Districts queued for rerun ({len(target_districts)}): {target_districts}")
+
+        async def rerun_loop():
+            nonlocal districts_completed_count
+            for dist_code in target_districts:
+                if max_duration_sec and (time.time() - start_time) >= max_duration_sec:
+                    logging.info(f"Reached max duration limit ({args.max_duration_minutes}m). Stopping.")
+                    break
+                if getattr(args, 'max_districts', None) and districts_completed_count >= args.max_districts:
+                    logging.info(f"Target districts ({args.max_districts}) processed. Stopping.")
+                    break
+
+                res = await execute_district_rerun(
+                    prefix=dist_code,
+                    rerun_type=rerun_mode,
+                    concurrency=args.concurrency,
+                    update_archive=True
+                )
+
+                if res.get("recovered", 0) > 0 and url:
+                    audit = get_district_failed_and_missing(dist_code)
+                    await coordinator.complete_task(
+                        district_code=dist_code,
+                        final_record="",
+                        final_dor="",
+                        total_extracted=audit["total_extracted"],
+                        total_failed=audit["failed_count"]
+                    )
+
+                districts_completed_count += 1
+
+        asyncio.run(rerun_loop())
+        return
+
     async def main_loop():
         nonlocal districts_completed_count, claim_attempts
         while True:
@@ -147,6 +223,9 @@ def main():
     parser.add_argument("--max-districts", type=int, default=None, help="Maximum number of districts to process before stopping")
     parser.add_argument("--max-duration-minutes", type=int, default=None, help="Maximum worker runtime in minutes before stopping")
     parser.add_argument("--web-app-url", type=str, default=os.getenv("GOOGLE_APPS_SCRIPT_URL"), help="Google Apps Script Web App URL")
+    parser.add_argument("--rerun-failed", action="store_true", help="Rerun all previously failed records for district(s)")
+    parser.add_argument("--rerun-missing", action="store_true", help="Detect and rerun all sequence gap records for district(s)")
+    parser.add_argument("--rerun-type", type=str, choices=["none", "failed", "missing", "all"], default="none", help="Rerun mode for records")
     args = parser.parse_args()
 
     logging.basicConfig(

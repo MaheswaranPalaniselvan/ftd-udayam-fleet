@@ -14,7 +14,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 
 from client.core.coordinator import CentralCoordinator, get_default_machine_name
-from client.core.scraper import execute_district_extraction
+from client.core.scraper import execute_district_extraction, execute_district_rerun, get_district_failed_and_missing
 from client.core.archiver import compress_and_upload_district
 
 
@@ -167,10 +167,16 @@ class UdyamDashboard(tk.Tk):
         btn_frame.pack(fill="x", pady=(10, 0))
 
         self.start_btn = ttk.Button(btn_frame, text="▶ Start Auto-Extract", style="Accent.TButton", command=self.on_start_clicked)
-        self.start_btn.pack(side="left", padx=(0, 8))
+        self.start_btn.pack(side="left", padx=(0, 6))
+
+        self.rerun_fail_btn = ttk.Button(btn_frame, text="🔄 Rerun Failed", style="Secondary.TButton", command=self.on_rerun_failed_clicked)
+        self.rerun_fail_btn.pack(side="left", padx=6)
+
+        self.rerun_gaps_btn = ttk.Button(btn_frame, text="🔍 Rerun Gaps", style="Secondary.TButton", command=self.on_rerun_gaps_clicked)
+        self.rerun_gaps_btn.pack(side="left", padx=6)
 
         self.stop_btn = ttk.Button(btn_frame, text="⏹ Stop", style="Stop.TButton", state="disabled", command=self.on_stop_clicked)
-        self.stop_btn.pack(side="left", padx=8)
+        self.stop_btn.pack(side="left", padx=6)
 
         ttk.Button(btn_frame, text="📁 Results Folder", style="Secondary.TButton", command=self.open_results_folder).pack(side="right", padx=4)
         ttk.Button(btn_frame, text="📊 Open Sync Report", style="Secondary.TButton", command=self.open_sync_report).pack(side="right", padx=4)
@@ -208,6 +214,8 @@ class UdyamDashboard(tk.Tk):
         self.stop_event.clear()
 
         self.start_btn.config(state="disabled")
+        self.rerun_fail_btn.config(state="disabled")
+        self.rerun_gaps_btn.config(state="disabled")
         self.stop_btn.config(state="normal")
         self.status_badge.config(text="🚜 SCRAPING", bg="#a6e3a1", fg="#11111b")
 
@@ -216,11 +224,103 @@ class UdyamDashboard(tk.Tk):
         self.worker_thread = threading.Thread(target=self._run_async_worker, args=(pref,), daemon=True)
         self.worker_thread.start()
 
+    def on_rerun_failed_clicked(self):
+        self._start_rerun(rerun_type="failed")
+
+    def on_rerun_gaps_clicked(self):
+        self._start_rerun(rerun_type="missing")
+
+    def _start_rerun(self, rerun_type: str):
+        target = self.filter_entry.get().strip().upper().replace("UDYAM-", "")
+        if not target:
+            messagebox.showwarning(
+                "Target District Required",
+                "Please enter a District Code (e.g. 'AR-01' or 'TN-02') or State code (e.g. 'AR') in the 'Preferred State / District' field."
+            )
+            return
+
+        self.is_running = True
+        self.stop_event.clear()
+
+        self.start_btn.config(state="disabled")
+        self.rerun_fail_btn.config(state="disabled")
+        self.rerun_gaps_btn.config(state="disabled")
+        self.stop_btn.config(state="normal")
+        badge_text = "🔄 RERUN FAILED" if rerun_type == "failed" else "🔍 RERUN GAPS"
+        self.status_badge.config(text=badge_text, bg="#89b4fa", fg="#11111b")
+
+        self.log(f"Starting rerun ({rerun_type.upper()}) for target: {target}...")
+
+        self.worker_thread = threading.Thread(target=self._run_async_rerun, args=(target, rerun_type), daemon=True)
+        self.worker_thread.start()
+
+    def _run_async_rerun(self, target: str, rerun_type: str):
+        asyncio.run(self._rerun_worker_main(target, rerun_type))
+
+    async def _rerun_worker_main(self, target: str, rerun_type: str):
+        results_dir = Path("results")
+        districts = []
+        if "-" in target:
+            districts = [target]
+        else:
+            pattern_7z = f"{target}-*.7z"
+            for p in sorted(results_dir.glob(pattern_7z)):
+                stem = p.name.replace(".7z", "").upper()
+                if stem.startswith(target + "-"):
+                    districts.append(stem)
+            if not districts:
+                for p in sorted(results_dir.glob(f"{target}-*")):
+                    if p.is_dir():
+                        districts.append(p.name.upper())
+            districts = sorted(list(set(districts)))
+
+        if not districts:
+            self.log(f"[!] No matching district folders or .7z archives found in results/ for '{target}'.")
+            self.after(0, self._on_worker_stopped)
+            return
+
+        for dist_code in districts:
+            if self.stop_event.is_set():
+                break
+
+            self.after(0, lambda d=dist_code: self.dist_lbl.config(text=d))
+            self.log(f"[{dist_code}] Auditing for {rerun_type} records...")
+
+            audit = get_district_failed_and_missing(dist_code)
+            self.log(
+                f"[{dist_code}] Audit: Extracted={audit['total_extracted']:,} | "
+                f"Failed={len(audit['failed_numbers']):,} | Gaps={len(audit['missing_gaps']):,}"
+            )
+
+            if rerun_type == "failed" and not audit["failed_numbers"]:
+                self.log(f"[{dist_code}] No failed records to rerun. Skipping.")
+                continue
+            if rerun_type == "missing" and not audit["missing_gaps"]:
+                self.log(f"[{dist_code}] No gap records to rerun. Skipping.")
+                continue
+
+            res = await execute_district_rerun(
+                prefix=dist_code,
+                rerun_type=rerun_type,
+                stop_event=self.stop_event,
+                update_archive=True
+            )
+
+            self.log(
+                f"[{dist_code}] Rerun complete: {res['total_targeted']} targeted | {res['recovered']} recovered | "
+                f"{res['still_failed']} unextractable. Reasons: {res.get('reasons', {})}"
+            )
+            self.after(0, lambda ext=res['total_extracted']: self.extracted_lbl.config(text=f"{ext:,}"))
+
+        self.after(0, self._on_worker_stopped)
+
     def on_stop_clicked(self):
         self.log("Stopping extraction at next boundary...")
         self.stop_event.set()
         self.is_running = False
         self.start_btn.config(state="normal")
+        self.rerun_fail_btn.config(state="normal")
+        self.rerun_gaps_btn.config(state="normal")
         self.stop_btn.config(state="disabled")
         self.status_badge.config(text="🟡 STOPPING", bg="#f9e2af", fg="#11111b")
 
@@ -317,6 +417,8 @@ class UdyamDashboard(tk.Tk):
     def _on_worker_stopped(self):
         self.status_badge.config(text="🟢 READY", bg="#313244", fg="#a6e3a1")
         self.start_btn.config(state="normal")
+        self.rerun_fail_btn.config(state="normal")
+        self.rerun_gaps_btn.config(state="normal")
         self.stop_btn.config(state="disabled")
         self.log("Worker idle.")
 

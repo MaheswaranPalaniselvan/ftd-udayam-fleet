@@ -34,6 +34,16 @@ on:
         description: 'Max run time per worker in minutes'
         required: true
         default: '120'
+      rerun_type:
+        description: 'Rerun failed or missing records (none, failed, missing, all)'
+        required: false
+        default: 'none'
+        type: choice
+        options:
+          - 'none'
+          - 'failed'
+          - 'missing'
+          - 'all'
 
 concurrency:
   group: udayam-worker-${{ github.ref }}
@@ -92,6 +102,7 @@ jobs:
           MACHINE_NAME="GitHub-Worker-${{ matrix.worker_id }}-${{ github.run_id }}"
           STATE_FLAG=""
           DIST_FLAG=""
+          RERUN_FLAG=""
 
           if [ -n "${{ inputs.state }}" ]; then
             STATE_FLAG="--state ${{ inputs.state }}"
@@ -99,6 +110,10 @@ jobs:
 
           if [ -n "${{ inputs.district }}" ]; then
             DIST_FLAG="--district ${{ inputs.district }}"
+          fi
+
+          if [ -n "${{ inputs.rerun_type }}" ] && [ "${{ inputs.rerun_type }}" != "none" ]; then
+            RERUN_FLAG="--rerun-type ${{ inputs.rerun_type }}"
           fi
 
           MAX_DIST="${{ inputs.max_districts || '1' }}"
@@ -111,6 +126,6 @@ jobs:
             --concurrency 2 \
             --max-districts "$MAX_DIST" \
             --max-duration-minutes "$MAX_TIME" \
-            $STATE_FLAG $DIST_FLAG
+            $STATE_FLAG $DIST_FLAG $RERUN_FLAG
 
 

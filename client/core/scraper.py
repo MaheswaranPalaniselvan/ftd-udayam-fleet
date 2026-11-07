@@ -10,11 +10,14 @@ Features:
 
 import asyncio
 import csv
+import io
 import logging
 import os
 import re
+import shutil
+import subprocess
 import time
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from playwright.async_api import Page, TimeoutError as PlaywrightTimeoutError
@@ -25,6 +28,24 @@ from client.core.ocr import solve_captcha
 HOME_URL = "https://www.udyamregistration.gov.in/Default.aspx"
 VERIFY_URL = "https://www.udyamregistration.gov.in/Udyam_Verify.aspx"
 MAX_RETRIES = 2
+
+
+def get_7z_binary() -> str | None:
+    """Finds 7-Zip binary across PATH and standard install locations."""
+    for bin_name in ("7z", "7za", "7zr"):
+        found = shutil.which(bin_name)
+        if found:
+            return found
+    common_paths = [
+        Path(r"C:\Program Files\7-Zip\7z.exe"),
+        Path(r"C:\Program Files (x86)\7-Zip\7z.exe"),
+        Path("/usr/bin/7z"),
+        Path("/usr/local/bin/7z"),
+    ]
+    for p in common_paths:
+        if p.is_file():
+            return str(p)
+    return None
 
 
 def get_latest_valid_business_day() -> date:
@@ -92,11 +113,77 @@ async def abort_unnecessary_resources(route):
         await route.continue_()
 
 
+async def detect_failure_reason(page: Page, default_reason: str = "") -> str:
+    """
+    Extracts the exact failure, cancellation, or rejection reason from the current page.
+    Captures:
+    - JavaScript alert dialog messages (e.g. invalid format, cancellation)
+    - ASP.NET validation labels (lblMsg, lblMessage, lblError, lblCancellationMsg)
+    - Semantic keyword detection (Cancelled, Deregistered, Migrated, Not Found, Timeout)
+    """
+    # 1. Dialog alert captured
+    if hasattr(page, "_last_dialog_message") and page._last_dialog_message:
+        msg = page._last_dialog_message.strip()
+        page._last_dialog_message = ""
+        return f"Portal Alert: {msg}"
+
+    # 2. Check for explicit error/status labels in the page DOM
+    error_selectors = [
+        "#ctl00_ContentPlaceHolder1_lblMsg",
+        "#ctl00_ContentPlaceHolder1_lblMessage",
+        "#ctl00_ContentPlaceHolder1_lblError",
+        "#ctl00_ContentPlaceHolder1_lblCancellationMsg",
+        "#ctl00_ContentPlaceHolder1_lblCancel",
+        "#ctl00_ContentPlaceHolder1_ValidationSummary1",
+        ".alert-danger",
+        ".alert-warning",
+        ".text-danger",
+    ]
+    for sel in error_selectors:
+        try:
+            loc = page.locator(sel)
+            if await loc.is_visible(timeout=250):
+                txt = (await loc.inner_text()).strip()
+                if txt and "enter" not in txt.lower() and "captcha" not in txt.lower():
+                    return f"Portal Message: {txt}"
+        except Exception:
+            pass
+
+    # 3. Check full page body content for known status states
+    try:
+        body_text = (await page.locator("body").inner_text()).lower()
+        if "cancelled" in body_text or "canceled" in body_text or "cancellation" in body_text:
+            return "Registration Cancelled / De-registered"
+        if "migrated" in body_text:
+            return "Registration Migrated / Re-classified"
+        if "does not exist" in body_text or "no record found" in body_text or "record not found" in body_text:
+            return "Record Not Found / Does Not Exist in Portal"
+        if "invalid" in body_text and ("udyam" in body_text or "registration" in body_text or "number" in body_text):
+            return "Invalid Registration Number Format"
+        if "suspended" in body_text:
+            return "Registration Suspended"
+        if "server error" in body_text or "runtime error" in body_text:
+            return "Portal Server Error (500/Runtime)"
+    except Exception:
+        pass
+
+    return default_reason or "Record Not Found / Unregistered Number"
+
+
 async def process_udyam_number(page: Page, udyam_number: str) -> tuple[str, str, str, str, str]:
     """
     Submits a single Udyam registration number and extracts details if found.
-    Returns: (status, enterprise_name, html_content, doi_text, dor_text)
+    Returns: (status, enterprise_name, html_content, failure_reason, dor_text)
     """
+    # Ensure dialog listener is attached to capture portal alert messages
+    if not hasattr(page, "_dialog_attached"):
+        def handle_dialog(dialog):
+            page._last_dialog_message = dialog.message
+            asyncio.create_task(dialog.accept())
+        page.on("dialog", handle_dialog)
+        page._dialog_attached = True
+        page._last_dialog_message = ""
+
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             if "Udyam_Verify.aspx" not in page.url:
@@ -159,20 +246,30 @@ async def process_udyam_number(page: Page, udyam_number: str) -> tuple[str, str,
                 except Exception:
                     pass
 
-                return "Success", ent_name, html_content, doi_text, dor_text
+                return "Success", ent_name, html_content, "Extracted", dor_text
             else:
                 error_captcha = page.locator('#ctl00_ContentPlaceHolder1_lblCaptchaMsg')
                 if await error_captcha.is_visible() and (await error_captcha.inner_text()).strip():
                     continue  # Retry captcha
                 else:
-                    return "Failed (Not Found)", "", "", "", ""
+                    reason = await detect_failure_reason(page, "Record Not Found / Unregistered")
+                    try:
+                        async with page.expect_navigation(wait_until="domcontentloaded", timeout=2000):
+                            await page.evaluate("window.location = 'Udyam_Verify.aspx';")
+                    except Exception:
+                        pass
+                    return f"Failed ({reason})", "", "", reason, ""
 
+        except PlaywrightTimeoutError:
+            if attempt == MAX_RETRIES:
+                return "Failed (Timeout)", "", "", "Page Request Timeout / Server Slow", ""
+            await asyncio.sleep(0.5)
         except Exception as e:
             if attempt == MAX_RETRIES:
-                return f"Failed ({type(e).__name__})", "", "", "", ""
+                return f"Failed ({type(e).__name__})", "", "", f"{type(e).__name__}: {str(e)[:60]}", ""
             await asyncio.sleep(0.5)
 
-    return "Failed (Captcha)", "", "", "", ""
+    return "Failed (Captcha)", "", "", "Captcha Verification Failed after Max Retries", ""
 
 
 def flush_results_batch(results_dir: Path, failed_dir: Path, results_batch: list, failed_batch: list, html_batch: dict):
@@ -203,7 +300,7 @@ def flush_results_batch(results_dir: Path, failed_dir: Path, results_batch: list
                 w.writerow(["Number", "Status", "EnterpriseName", "DateOfRegistration", "TimeTaken(s)"])
             w.writerows(rows)
 
-    # Group and append failures
+    # Group and append failures with Reason and Timestamp
     fail_grouped = defaultdict(list)
     for row in failed_batch:
         m = re.match(r"^(UDYAM-[A-Z]{2}-\d{2})-", row[0])
@@ -218,8 +315,17 @@ def flush_results_batch(results_dir: Path, failed_dir: Path, results_batch: list
         with open(csv_path, "a", newline="", encoding="utf-8") as f:
             w = csv.writer(f)
             if write_header:
-                w.writerow(["Number", "Status", "TimeTaken(s)"])
-            w.writerows(rows)
+                w.writerow(["Number", "Status", "Reason", "Timestamp", "TimeTaken(s)"])
+            for r in rows:
+                if len(r) == 5:
+                    w.writerow(r)
+                elif len(r) == 3:
+                    # Backward compatibility for 3-item rows: [num, status, elapsed]
+                    st_str = str(r[1])
+                    reason_extracted = st_str.replace("Failed (", "").rstrip(")")
+                    w.writerow([r[0], r[1], reason_extracted, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), r[2]])
+                else:
+                    w.writerow(r)
 
 
 async def execute_district_extraction(
@@ -313,7 +419,7 @@ async def execute_district_extraction(
                 continue
 
             t0 = time.perf_counter()
-            status, enterprise_name, html_content, _, dor_text = await process_udyam_number(page, udyam_number)
+            status, enterprise_name, html_content, failure_reason, dor_text = await process_udyam_number(page, udyam_number)
             elapsed = round(time.perf_counter() - t0, 2)
             records_processed += 1
 
@@ -335,9 +441,11 @@ async def execute_district_extraction(
 
             else:
                 total_failures += 1
-                failed_batch.append([udyam_number, status, elapsed])
+                reason = failure_reason or status.replace("Failed (", "").rstrip(")")
+                ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                failed_batch.append([udyam_number, status, reason, ts, elapsed])
                 consecutive_not_found += 1
-                logging.info(f"[{udyam_number}] FAIL ({status}) ({elapsed}s)")
+                logging.info(f"[{udyam_number}] FAIL -> Reason: {reason} ({elapsed}s)")
 
                 # BOUNDARY DETECTION 1: Cutting Edge Early Exit
                 if is_at_cutting_edge and consecutive_not_found >= 5:
@@ -396,4 +504,302 @@ async def execute_district_extraction(
         "last_dor": latest_dor_str,
         "total_extracted": total_success,
         "total_failed": total_failures
+    }
+
+
+def get_district_failed_and_missing(
+    prefix: str,
+    results_dir: Path = Path("results"),
+    failed_dir: Path = Path("failed")
+) -> dict:
+    """
+    Scans a district's results and failures to identify:
+    1. All logged failed records from failed_<prefix>.csv (or .7z archive).
+    2. All sequence gap records missing between 1 and max_record_num.
+    3. The complete set of numbers missing from verified results.
+    """
+    clean_prefix = prefix.replace("UDYAM-", "").strip().upper()
+    seven_zip = get_7z_binary()
+
+    success_numbers = set()
+    max_record_num = 0
+
+    # 1. Inspect Results (Folder first, then .7z archive)
+    res_csv = results_dir / clean_prefix / f"results_{clean_prefix}.csv"
+    res_content = None
+
+    if res_csv.is_file():
+        try:
+            with open(res_csv, "r", encoding="utf-8", errors="replace") as f:
+                res_content = f.read()
+        except Exception:
+            pass
+    elif seven_zip:
+        archive_path = results_dir / f"{clean_prefix}.7z"
+        if archive_path.is_file():
+            try:
+                proc = subprocess.run(
+                    [seven_zip, "e", str(archive_path), "-r", f"results_{clean_prefix}.csv", "-so"],
+                    capture_output=True,
+                    text=True,
+                    errors="replace"
+                )
+                if proc.stdout:
+                    res_content = proc.stdout
+            except Exception:
+                pass
+
+    if res_content:
+        reader = csv.reader(io.StringIO(res_content))
+        next(reader, None)
+        for row in reader:
+            if row and row[0].strip():
+                num_id = row[0].strip()
+                m = re.search(r"-(\d+)$", num_id)
+                if m:
+                    val = int(m.group(1))
+                    success_numbers.add(val)
+                    if val > max_record_num:
+                        max_record_num = val
+
+    # 2. Inspect Failed (Folder first, then .7z archive)
+    failed_records = {}  # seq_num -> row data
+    fail_csv = failed_dir / clean_prefix / f"failed_{clean_prefix}.csv"
+    fail_content = None
+
+    if fail_csv.is_file():
+        try:
+            with open(fail_csv, "r", encoding="utf-8", errors="replace") as f:
+                fail_content = f.read()
+        except Exception:
+            pass
+    elif seven_zip:
+        archive_path = results_dir / f"{clean_prefix}.7z"
+        if archive_path.is_file():
+            try:
+                proc = subprocess.run(
+                    [seven_zip, "e", str(archive_path), "-r", f"failed_{clean_prefix}.csv", "-so"],
+                    capture_output=True,
+                    text=True,
+                    errors="replace"
+                )
+                if proc.stdout:
+                    fail_content = proc.stdout
+            except Exception:
+                pass
+
+    if fail_content:
+        reader = csv.reader(io.StringIO(fail_content))
+        next(reader, None)
+        for row in reader:
+            if row and row[0].strip():
+                num_id = row[0].strip()
+                m = re.search(r"-(\d+)$", num_id)
+                if m:
+                    val = int(m.group(1))
+                    failed_records[val] = row
+
+    failed_numbers = sorted(list(failed_records.keys()))
+    failed_set = set(failed_numbers)
+
+    # 3. Calculate sequence gaps in range 1..max_record_num
+    all_sequence = set(range(1, max_record_num + 1)) if max_record_num > 0 else set()
+    missing_gaps = sorted(list(all_sequence - success_numbers - failed_set))
+    all_missing_from_results = sorted(list(all_sequence - success_numbers))
+
+    has_archive = (results_dir / f"{clean_prefix}.7z").is_file()
+
+    return {
+        "district_code": clean_prefix,
+        "total_extracted": len(success_numbers),
+        "max_record_num": max_record_num,
+        "failed_numbers": failed_numbers,
+        "failed_count": len(failed_numbers),
+        "failed_records": failed_records,
+        "missing_gaps": missing_gaps,
+        "missing_gaps_count": len(missing_gaps),
+        "all_missing_from_results": all_missing_from_results,
+        "all_missing_count": len(all_missing_from_results),
+        "has_archive": has_archive
+    }
+
+
+async def execute_district_rerun(
+    prefix: str,
+    rerun_type: str = "failed",
+    concurrency: int = 2,
+    results_dir: Path = Path("results"),
+    failed_dir: Path = Path("failed"),
+    heartbeat_callback = None,
+    stop_event: asyncio.Event = None,
+    update_archive: bool = True
+) -> dict:
+    """
+    Reruns failed or missing records for a district, capturing the exact failure reason
+    if any record remains unextractable.
+
+    Rerun types:
+    - 'failed': Targets records listed in failed_<prefix>.csv. If extracted, moves to results and removes from failed.
+    - 'missing': Targets sequence gap numbers (between 1 and max_record) that were skipped.
+    - 'all': Targets both failed records and sequence gaps.
+    """
+    clean_prefix = prefix.replace("UDYAM-", "").strip().upper()
+    logging.info(f"[{clean_prefix}] Initializing rerun task (Mode: {rerun_type.upper()})...")
+
+    audit = get_district_failed_and_missing(clean_prefix, results_dir, failed_dir)
+
+    if rerun_type == "failed":
+        target_seq_nums = audit["failed_numbers"]
+    elif rerun_type == "missing":
+        target_seq_nums = audit["missing_gaps"]
+    elif rerun_type == "all":
+        target_seq_nums = audit["all_missing_from_results"]
+    else:
+        raise ValueError(f"Unknown rerun_type: {rerun_type}. Must be 'failed', 'missing', or 'all'.")
+
+    total_targets = len(target_seq_nums)
+    if total_targets == 0:
+        logging.info(f"[{clean_prefix}] Zero {rerun_type} records found. District dataset is 100% complete!")
+        return {
+            "district_code": clean_prefix,
+            "rerun_type": rerun_type,
+            "total_targeted": 0,
+            "recovered": 0,
+            "still_failed": 0,
+            "reasons": {}
+        }
+
+    logging.info(f"[{clean_prefix}] Found {total_targets} target {rerun_type} record(s) to rerun.")
+
+    seven_zip = get_7z_binary()
+    archive_file = results_dir / f"{clean_prefix}.7z"
+
+    # If working on an archived district and local CSV is absent, unpack CSVs
+    dist_results_folder = results_dir / clean_prefix
+    dist_results_folder.mkdir(parents=True, exist_ok=True)
+    res_csv_path = dist_results_folder / f"results_{clean_prefix}.csv"
+
+    if not res_csv_path.exists() and archive_file.exists() and seven_zip:
+        subprocess.run([seven_zip, "e", str(archive_file), "-r", f"results_{clean_prefix}.csv", f"-o{dist_results_folder}", "-y"], capture_output=True)
+
+    dist_failed_folder = failed_dir / clean_prefix
+    dist_failed_folder.mkdir(parents=True, exist_ok=True)
+    fail_csv_path = dist_failed_folder / f"failed_{clean_prefix}.csv"
+
+    if not fail_csv_path.exists() and archive_file.exists() and seven_zip:
+        subprocess.run([seven_zip, "e", str(archive_file), "-r", f"failed_{clean_prefix}.csv", f"-o{dist_failed_folder}", "-y"], capture_output=True)
+
+    # Load existing failed map so we can update or remove recovered records
+    failed_map = {}
+    if fail_csv_path.exists():
+        with open(fail_csv_path, "r", encoding="utf-8", errors="replace") as f:
+            r = csv.reader(f)
+            next(r, None)
+            for row in r:
+                if row and row[0].strip():
+                    failed_map[row[0].strip()] = row
+
+    recovered_success = 0
+    still_failed = 0
+    failure_reasons = []
+
+    results_batch = []
+    html_batch = {}
+
+    start_time = time.perf_counter()
+
+    async with AsyncStealthySession(headless=True) as session:
+        page = await session.context.new_page()
+        await page.route("**/*", abort_unnecessary_resources)
+        records_processed = 0
+
+        for idx, seq_num in enumerate(target_seq_nums, start=1):
+            if stop_event and stop_event.is_set():
+                logging.info(f"[{clean_prefix}] Rerun stopped by user request.")
+                break
+
+            if records_processed >= 50:
+                try:
+                    await page.close()
+                except Exception:
+                    pass
+                page = await session.context.new_page()
+                await page.route("**/*", abort_unnecessary_resources)
+                records_processed = 0
+
+            udyam_number = f"UDYAM-{clean_prefix}-{seq_num:07d}"
+            t0 = time.perf_counter()
+            status, enterprise_name, html_content, failure_reason, dor_text = await process_udyam_number(page, udyam_number)
+            elapsed = round(time.perf_counter() - t0, 2)
+            records_processed += 1
+
+            if status.startswith("Success"):
+                recovered_success += 1
+                results_batch.append([udyam_number, status, enterprise_name, dor_text, elapsed])
+                html_batch[udyam_number] = html_content
+                # If was previously logged as failed, remove from failed map
+                if udyam_number in failed_map:
+                    del failed_map[udyam_number]
+
+                logging.info(f"[{clean_prefix}] [{idx}/{total_targets}] RECOVERED: {udyam_number} -> {enterprise_name} ({elapsed}s)")
+            else:
+                still_failed += 1
+                reason = failure_reason or status.replace("Failed (", "").rstrip(")")
+                ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                failed_map[udyam_number] = [udyam_number, status, reason, ts, elapsed]
+                failure_reasons.append(reason)
+
+                logging.info(f"[{clean_prefix}] [{idx}/{total_targets}] UNEXTRACTABLE: {udyam_number} -> Reason: {reason} ({elapsed}s)")
+
+            # Periodic batch flush every 25 records
+            if len(results_batch) >= 25:
+                flush_results_batch(results_dir, failed_dir, results_batch, [], html_batch)
+                results_batch.clear()
+                html_batch.clear()
+
+        # Final batch flush
+        if results_batch:
+            flush_results_batch(results_dir, failed_dir, results_batch, [], html_batch)
+            results_batch.clear()
+            html_batch.clear()
+
+    # Rewrite failed CSV with updated statuses and reasons
+    with open(fail_csv_path, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["Number", "Status", "Reason", "Timestamp", "TimeTaken(s)"])
+        for udyam_id, row in sorted(failed_map.items()):
+            if len(row) == 5:
+                w.writerow(row)
+            elif len(row) == 3:
+                w.writerow([row[0], row[1], row[1].replace("Failed (", "").replace(")", ""), datetime.now().strftime("%Y-%m-%d %H:%M:%S"), row[2]])
+            else:
+                w.writerow(row)
+
+    # Ingest new HTMLs and updated CSVs into the .7z archive if present
+    if update_archive and archive_file.exists() and seven_zip:
+        logging.info(f"[{clean_prefix}] Updating .7z archive with rerun results...")
+        try:
+            # 1. Update results CSV and new HTML files
+            subprocess.run([seven_zip, "u", str(archive_file), str(dist_results_folder)], capture_output=True, check=True)
+            # 2. Update failed CSV inside archive
+            subprocess.run([seven_zip, "u", str(archive_file), str(fail_csv_path)], capture_output=True, check=True)
+            logging.info(f"[{clean_prefix}] Archive {archive_file.name} successfully updated!")
+        except Exception as e:
+            logging.warning(f"[{clean_prefix}] Could not update archive: {e}")
+
+    reasons_summary = dict(Counter(failure_reasons))
+    logging.info(
+        f"[{clean_prefix}] Rerun complete: {total_targets} targeted | {recovered_success} recovered | "
+        f"{still_failed} remaining unextractable. Reasons: {reasons_summary}"
+    )
+
+    return {
+        "district_code": clean_prefix,
+        "rerun_type": rerun_type,
+        "total_targeted": total_targets,
+        "recovered": recovered_success,
+        "still_failed": still_failed,
+        "reasons": reasons_summary,
+        "total_extracted": audit["total_extracted"] + recovered_success,
+        "total_failed": len(failed_map)
     }
