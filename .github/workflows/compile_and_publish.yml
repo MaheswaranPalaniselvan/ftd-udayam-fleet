@@ -21,7 +21,7 @@ jobs:
           enable-cache: true
 
       - name: Set up Python
-        run: uv python install 3.12
+        run: uv python install 3.13
 
       - name: Install GCC and Build Dependencies
         run: |
@@ -31,11 +31,8 @@ jobs:
       - name: Sync Project Dependencies
         run: uv sync
 
-      - name: Install Cython & Setuptools
-        run: uv pip install cython setuptools
-
       - name: Compile Python Modules to Native C (.so)
-        run: uv run python compile_to_cython.py
+        run: uv run --with cython --with setuptools python compile_to_cython.py
 
       - name: Verify Compiled Binaries
         run: |
