@@ -220,6 +220,20 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                 last_dor_raw = r[10] if len(r) > 10 and r[10] else None
                 harvest_date = format_harvest_date(last_dor_raw)
 
+                # Logical evaluation: Data is Live if extraction completed with verified records and valid registration date;
+                # otherwise Outdated (In Progress or Not Started).
+                is_live = (
+                    status_raw.lower() == "completed"
+                    and extracted > 0
+                    and harvest_date not in (None, "", "-", "None")
+                )
+                if is_live:
+                    live_status_label = f"Live as of {harvest_date}"
+                elif status_raw.lower() == "in progress":
+                    live_status_label = "Outdated (In Progress)"
+                else:
+                    live_status_label = "Outdated (Not Started)"
+
                 states_dict[state_name]["districts"].append({
                     "code": code,
                     "name": loc_name,
@@ -228,6 +242,8 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                     "harvest_date": harvest_date,
                     "failed": clean_int(r[12]),
                     "status": status_raw,
+                    "is_live": is_live,
+                    "live_status": live_status_label,
                     "claimed_by": str(r[14] or "").strip(),
                     "speed": float(r[16]) if len(r) > 16 and r[16] not in (None, "", "None") else 0.0,
                 })
@@ -258,6 +274,8 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                 "harvest_date": "09 Sept 2026",
                 "failed": 0,
                 "status": "Completed",
+                "is_live": True,
+                "live_status": "Live as of 09 Sept 2026",
                 "claimed_by": "Archived / Synced",
                 "speed": 0.0,
             },
@@ -269,6 +287,8 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                 "harvest_date": "09 Sept 2026",
                 "failed": 0,
                 "status": "Completed",
+                "is_live": True,
+                "live_status": "Live as of 09 Sept 2026",
                 "claimed_by": "Archived / Synced",
                 "speed": 0.0,
             },
@@ -280,6 +300,8 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                 "harvest_date": "09 Sept 2026",
                 "failed": 0,
                 "status": "Completed",
+                "is_live": True,
+                "live_status": "Live as of 09 Sept 2026",
                 "claimed_by": "Archived / Synced",
                 "speed": 0.0,
             },
@@ -291,27 +313,35 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
     total_extracted_records = 0
     total_failed_records = 0
     total_districts_count = 0
+    total_live_districts = 0
+    total_outdated_districts = 0
     total_completed_districts = 0
     total_inprogress_districts = 0
 
     for s in states_list:
         dists = s["districts"]
         s["district_count"] = len(dists)
+        s["live_count"] = sum(1 for d in dists if d.get("is_live", False))
+        s["outdated_count"] = s["district_count"] - s["live_count"]
         s["completed_count"] = sum(1 for d in dists if d["status"].lower() == "completed")
         s["in_progress_count"] = sum(1 for d in dists if d["status"].lower() == "in progress")
         s["extracted_total"] = sum(d["extracted"] for d in dists)
         s["failed_total"] = sum(d["failed"] for d in dists)
+        s["live_pct"] = round((s["live_count"] / len(dists) * 100), 1) if dists else 0.0
         s["completion_pct"] = round((s["completed_count"] / len(dists) * 100), 1) if dists else 0.0
 
         active_harvest_dates = [d["harvest_date"] for d in dists if d["harvest_date"] != "-"]
         s["latest_harvest"] = active_harvest_dates[0] if active_harvest_dates else "-"
 
         total_districts_count += len(dists)
+        total_live_districts += s["live_count"]
+        total_outdated_districts += s["outdated_count"]
         total_completed_districts += s["completed_count"]
         total_inprogress_districts += s["in_progress_count"]
         total_extracted_records += s["extracted_total"]
         total_failed_records += s["failed_total"]
 
+    overall_live_pct = round((total_live_districts / total_districts_count * 100), 1) if total_districts_count else 0.0
     overall_pct = round((total_completed_districts / total_districts_count * 100), 1) if total_districts_count else 0.0
 
     live_facts = fetch_live_portal_facts()
@@ -336,9 +366,12 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
         "kpi": {
             "total_states": len(states_list),
             "total_districts": total_districts_count,
-            "completed_districts": total_completed_districts,
+            "live_districts": total_live_districts,
+            "outdated_districts": total_outdated_districts,
+            "live_pct": overall_live_pct,
+            "completed_districts": total_live_districts,
             "inprogress_districts": total_inprogress_districts,
-            "completion_pct": overall_pct,
+            "completion_pct": overall_live_pct,
             "total_extracted": total_extracted_records,
             "total_failed": total_failed_records,
         },
@@ -848,16 +881,39 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       color: #34d399;
     }}
 
-    .status-inprogress {{
+    .status-live {{
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      color: #34d399;
+      font-weight: 600;
+    }}
+
+    .status-inprogress, .status-outdated-progress {{
       background: rgba(245, 158, 11, 0.15);
       border: 1px solid rgba(245, 158, 11, 0.4);
       color: #fbbf24;
+      font-weight: 500;
     }}
 
-    .status-pending {{
-      background: rgba(100, 116, 139, 0.15);
-      border: 1px solid rgba(100, 116, 139, 0.3);
-      color: #94a3b8;
+    .status-pending, .status-outdated {{
+      background: rgba(244, 63, 94, 0.12);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      color: #fb7185;
+      font-weight: 500;
+    }}
+
+    .freshness-logic-banner {{
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 0.8rem 1.25rem;
+      font-size: 0.83rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
     }}
 
     /* Nested Districts Sub-Table */
@@ -997,19 +1053,27 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
         <div class="kpi-subtext">Active Fleet Universe</div>
       </div>
       <div class="kpi-card" style="--card-accent: #10b981;">
-        <div class="kpi-label">Districts Completed</div>
-        <div class="kpi-value">{data['kpi']['completed_districts']} <span style="font-size: 1rem; color: #34d399;">({data['kpi']['completion_pct']}%)</span></div>
-        <div class="kpi-subtext">{data['kpi']['total_districts'] - data['kpi']['completed_districts']} Districts Pending</div>
+        <div class="kpi-label">Live Districts</div>
+        <div class="kpi-value">{data['kpi']['live_districts']} <span style="font-size: 1rem; color: #34d399;">({data['kpi']['live_pct']}%)</span></div>
+        <div class="kpi-subtext">Live as of Registration Date</div>
+      </div>
+      <div class="kpi-card" style="--card-accent: #f43f5e;">
+        <div class="kpi-label">Outdated Districts</div>
+        <div class="kpi-value">{data['kpi']['outdated_districts']} <span style="font-size: 0.95rem; color: #fb7185;">({round(100 - data['kpi']['live_pct'], 1)}%)</span></div>
+        <div class="kpi-subtext">Unstarted / In-Progress Harvests</div>
       </div>
       <div class="kpi-card" style="--card-accent: #a855f7;">
         <div class="kpi-label">Total Extracted Records</div>
         <div class="kpi-value">{format_indian_num(data['kpi']['total_extracted'])}</div>
         <div class="kpi-subtext">Verified Harvested MSMEs</div>
       </div>
-      <div class="kpi-card" style="--card-accent: #f59e0b;">
-        <div class="kpi-label">In-Progress Operations</div>
-        <div class="kpi-value">{data['kpi']['inprogress_districts']} <span style="font-size: 0.95rem; color: #fbbf24;">Active</span></div>
-        <div class="kpi-subtext">Failed records: {format_indian_num(data['kpi']['total_failed'])}</div>
+    </div>
+
+    <!-- Freshness Classification Logic Explanation Banner -->
+    <div class="freshness-logic-banner">
+      <span style="font-size: 1.25rem;">💡</span>
+      <div style="flex: 1;">
+        <strong style="color: #f1f5f9;">Data Freshness Logic:</strong> Districts are classified as <span style="color: #34d399; font-weight: 600;">Live as of [Date]</span> when verified MSME records have been extracted and finalized up to that registration date. Districts that are <span style="color: #fbbf24; font-weight: 600;">In Progress</span> or <span style="color: #fb7185; font-weight: 600;">Not Started</span> (or with 0 records) are classified as <span style="color: #fb7185; font-weight: 600;">Outdated</span> pending harvest completion.
       </div>
     </div>
 
@@ -1021,9 +1085,9 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       </div>
       <div class="filter-chips">
         <span class="chip active" data-status="all" onclick="filterStatus('all')">All States & UTs ({data['kpi']['total_states']})</span>
-        <span class="chip" data-status="completed" onclick="filterStatus('completed')">Completed Districts Only</span>
-        <span class="chip" data-status="inprogress" onclick="filterStatus('inprogress')">In Progress</span>
-        <span class="chip" data-status="pending" onclick="filterStatus('pending')">Pending</span>
+        <span class="chip" data-status="live" onclick="filterStatus('live')">🟢 Live as of Date ({data['kpi']['live_districts']})</span>
+        <span class="chip" data-status="outdated" onclick="filterStatus('outdated')">🔴 Outdated ({data['kpi']['outdated_districts']})</span>
+        <span class="chip" data-status="inprogress" onclick="filterStatus('inprogress')">⚡ In Progress ({data['kpi']['inprogress_districts']})</span>
       </div>
       <div class="action-buttons">
         <button class="btn" onclick="toggleAllStates(true)">⬇️ Expand All</button>
@@ -1060,9 +1124,9 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
         // Filter districts
         let filteredDists = state.districts.filter(d => {{
           // Status filter
-          if (currentFilter === 'completed' && d.status.toLowerCase() !== 'completed') return false;
-          if (currentFilter === 'inprogress' && d.status.toLowerCase() !== 'in progress') return false;
-          if (currentFilter === 'pending' && d.status.toLowerCase() !== 'pending') return false;
+          if (currentFilter === 'live' && !d.is_live) return false;
+          if (currentFilter === 'outdated' && d.is_live) return false;
+          if (currentFilter === 'inprogress' && (d.status || '').toLowerCase() !== 'in progress') return false;
 
           // Search query
           if (q) {{
@@ -1094,29 +1158,46 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
         stateCard.className = `state-card ${{isAutoOpen ? 'open' : ''}}`;
         stateCard.id = `state-${{safeId}}`;
 
-        const compPct = state.district_count ? Math.round((state.completed_count / state.district_count) * 100) : 0;
+        const livePct = state.district_count ? Math.round((state.live_count / state.district_count) * 100) : 0;
 
-        let statusClass = 'status-pending';
-        let statusText = `${{state.completed_count}} / ${{state.district_count}} Done`;
-        if (state.completed_count === state.district_count && state.district_count > 0) {{
-          statusClass = 'status-completed';
-          statusText = '100% Completed';
-        }} else if (state.completed_count > 0 || state.in_progress_count > 0) {{
-          statusClass = 'status-inprogress';
+        let statusClass = 'status-outdated';
+        let statusText = `${{state.live_count}} / ${{state.district_count}} Live`;
+        if (state.live_count === state.district_count && state.district_count > 0) {{
+          statusClass = 'status-live';
+          statusText = `100% Live (as of ${{state.latest_harvest}})`;
+        }} else if (state.live_count > 0) {{
+          statusClass = 'status-live';
+          statusText = `${{state.live_count}} Live • ${{state.outdated_count}} Outdated`;
+        }} else if (state.in_progress_count > 0) {{
+          statusClass = 'status-outdated-progress';
+          statusText = 'In Progress';
+        }} else {{
+          statusClass = 'status-outdated';
+          statusText = 'Outdated';
         }}
 
         // District rows HTML
         let distRowsHtml = '';
         filteredDists.forEach(d => {{
-          let dStatusClass = 'status-pending';
-          if (d.status.toLowerCase() === 'completed') dStatusClass = 'status-completed';
-          if (d.status.toLowerCase() === 'in progress') dStatusClass = 'status-inprogress';
+          let dStatusClass = 'status-outdated';
+          let dStatusText = 'Outdated (Not Started)';
+          let dTooltip = 'District has not been harvested yet. Data is outdated.';
+
+          if (d.is_live) {{
+            dStatusClass = 'status-live';
+            dStatusText = `Live as of ${{d.harvest_date}}`;
+            dTooltip = `Verified complete dataset. Live as of ${{d.harvest_date}}`;
+          }} else if ((d.status || '').toLowerCase() === 'in progress') {{
+            dStatusClass = 'status-outdated-progress';
+            dStatusText = 'Outdated (In Progress)';
+            dTooltip = 'Scraping is actively in progress. Complete snapshot not yet finalized.';
+          }}
 
           distRowsHtml += `
             <tr>
               <td class="dist-code">${{d.code}}</td>
               <td style="font-weight: 500;">${{d.name}}</td>
-              <td><span class="status-badge ${{dStatusClass}}">${{d.status}}</span></td>
+              <td><span class="status-badge ${{dStatusClass}}" title="${{dTooltip}}">${{dStatusText}}</span></td>
               <td class="mono-num" style="color: #34d399; font-weight: 600; font-size: 0.92rem;">
                 ${{d.extracted ? d.extracted.toLocaleString('en-IN') : '0'}}
               </td>
@@ -1138,11 +1219,11 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
 
             <div class="progress-bar-wrapper">
               <div class="progress-track">
-                <div class="progress-fill" style="width: ${{compPct}}%;"></div>
+                <div class="progress-fill" style="width: ${{livePct}}%;"></div>
               </div>
               <div class="progress-text">
-                <span>${{compPct}}%</span>
-                <span>${{state.completed_count}} / ${{state.district_count}} dists</span>
+                <span>${{livePct}}% Live</span>
+                <span>${{state.live_count}} / ${{state.district_count}} Live</span>
               </div>
             </div>
 
@@ -1157,7 +1238,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
               </div>
               <div class="stat-col">
                 <div class="stat-val" style="color: #fbbf24; font-size: 0.92rem;">${{state.latest_harvest || '-'}}</div>
-                <div class="stat-sub">Last Date Harvested</div>
+                <div class="stat-sub">Latest Live Date</div>
               </div>
             </div>
 
@@ -1179,7 +1260,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
                 <tr>
                   <th>Code</th>
                   <th>District Name</th>
-                  <th>Status</th>
+                  <th>Data Freshness</th>
                   <th>Extracted Records</th>
                   <th>Last Record Extracted</th>
                   <th>Last Date Harvested</th>
@@ -1234,7 +1315,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
 
     function exportFilteredExcel() {{
       const rows = [];
-      rows.push(['State Code', 'State Name', 'District Code', 'District Name', 'Status', 'Harvested Records', 'Last Record Extracted', 'Last Date Harvested', 'Ministry MSME Total', 'Ministry Udyam Formal', 'Ministry UAP Informal', 'Failed Records', 'Worker Machine', 'Speed']);
+      rows.push(['State Code', 'State Name', 'District Code', 'District Name', 'Data Freshness', 'Harvested Records', 'Last Record Extracted', 'Last Date Harvested', 'Raw Status', 'Ministry MSME Total', 'Ministry Udyam Formal', 'Ministry UAP Informal', 'Failed Records', 'Worker Machine', 'Speed']);
 
       RAW_DATA.states.forEach(s => {{
         s.districts.forEach(d => {{
@@ -1243,10 +1324,11 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
             s.name,
             d.code,
             d.name,
-            d.status,
+            d.live_status || (d.is_live ? ('Live as of ' + d.harvest_date) : 'Outdated'),
             d.extracted,
             d.last_record,
             d.harvest_date,
+            d.status,
             s.msme_total,
             s.msme_udyam,
             s.msme_uap,
