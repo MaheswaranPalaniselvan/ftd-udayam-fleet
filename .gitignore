@@ -40,6 +40,8 @@ results.html
 Demo Data.html
 live_dashboard.html
 live_udayam_extract.xlsx
+sample_drilldown_viewer.html
+generate_drilldown_sample.py
 public/
 
 # Local caches and legacy test directory

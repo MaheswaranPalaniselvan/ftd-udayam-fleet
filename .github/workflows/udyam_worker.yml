@@ -114,3 +114,16 @@ jobs:
             --max-duration-minutes "$MAX_TIME" \
             $STATE_FLAG $DIST_FLAG
 
+      - name: Upload Harvested HTML & Archive Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: udayam-harvest-worker-${{ matrix.worker_id }}-${{ github.run_id }}
+          path: |
+            results/
+            failed/
+            downloaded_html/
+            *.7z
+          if-no-files-found: ignore
+
+
