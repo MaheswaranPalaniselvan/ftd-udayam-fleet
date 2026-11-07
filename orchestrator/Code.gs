@@ -17,6 +17,45 @@ const LOGO_URL = "https://flawlesstechdata.com/wp-content/uploads/2024/10/FLawle
 const ARCHIVE_FOLDER_NAME = "Udyam_Archives";
 const LEASE_TIMEOUT_MINUTES = 15;
 
+const CANONICAL_STATE_CODES = {
+  "Andaman and Nicobar Islands": "AN",
+  "Andhra Pradesh": "AP",
+  "Arunachal Pradesh": "AR",
+  "Assam": "AS",
+  "Bihar": "BR",
+  "Chandigarh": "CH",
+  "Chhattisgarh": "CG",
+  "Dadra and Nagar Haveli and Daman and Diu": "DD",
+  "Delhi": "DL",
+  "Goa": "GA",
+  "Gujarat": "GJ",
+  "Haryana": "HR",
+  "Himachal Pradesh": "HP",
+  "Jammu and Kashmir": "JK",
+  "Jharkhand": "JH",
+  "Karnataka": "KA",
+  "Kerala": "KL",
+  "Ladakh": "LA",
+  "Lakshadweep": "LD",
+  "Madhya Pradesh": "MP",
+  "Maharashtra": "MH",
+  "Manipur": "MN",
+  "Meghalaya": "ML",
+  "Mizoram": "MZ",
+  "Nagaland": "NL",
+  "Odisha": "OR",
+  "Puducherry": "PY",
+  "Punjab": "PB",
+  "Rajasthan": "RJ",
+  "Sikkim": "SK",
+  "Tamil Nadu": "TN",
+  "Telangana": "TS",
+  "Tripura": "TR",
+  "Uttar Pradesh": "UP",
+  "Uttarakhand": "UK",
+  "West Bengal": "WB"
+};
+
 /**
  * Adds the FlawlessTech Data organization logo to the top of the Google Sheet.
  * Can be run manually from Apps Script editor menu or during setup.
@@ -209,16 +248,33 @@ function handleClaimTask(machine, preferredState, preferredDistrict) {
   // 1. Check if preferred district requested and available
   for (let r = 1; r < data.length; r++) {
     const row = data[r];
-    const level = row[col["Level"]];
-    const distCode = (row[col["State Code"]] || "").toString().trim();
+    const level = (row[col["Level"]] || "").toString().trim();
+    let distCode = (row[col["State Code"]] || "").toString().trim();
+    const stateName = (row[col["State/UT"]] || "").toString().trim();
     const status = (row[col["Status"]] || "").toString().trim();
     const claimedBy = (row[col["Claimed By"]] || "").toString().trim();
     const lastPingStr = row[col["Last Ping"]];
 
     if (level !== "District") continue;
     if (status === "Completed") continue;
-    // Ensure district code has valid index (e.g. 'TN-02', 'KL-05')
-    if (!distCode.includes("-")) continue;
+
+    const statePrefix = CANONICAL_STATE_CODES[stateName] || (distCode.indexOf("-") !== -1 ? distCode.split("-")[0] : distCode);
+
+    // If district code has no hyphen (e.g. only "HP" or blank), check state match and auto-index
+    if (!distCode.includes("-")) {
+      let stateMatches = false;
+      if (preferredState) {
+        stateMatches = (statePrefix.toUpperCase() === preferredState.toUpperCase() || stateName.toUpperCase() === preferredState.toUpperCase() || distCode.toUpperCase() === preferredState.toUpperCase());
+      } else if (!preferredDistrict) {
+        stateMatches = true;
+      }
+      if (!stateMatches) continue;
+
+      // Auto-assign district index within state
+      const distName = (row[col["Location Name"]] || row[col["District Name"]] || "").toString().trim();
+      distCode = statePrefix + "-01"; // Fallback identifier
+      sheet.getRange(r + 1, col["State Code"] + 1).setValue(distCode);
+    }
 
     // Check if currently leased
     let isLeased = false;
@@ -240,7 +296,7 @@ function handleClaimTask(machine, preferredState, preferredDistrict) {
     let isMatch = false;
     if (preferredDistrict && distCode.toUpperCase() === preferredDistrict.toUpperCase()) {
       isMatch = true;
-    } else if (preferredState && distCode.toUpperCase().startsWith(preferredState.toUpperCase() + "-")) {
+    } else if (preferredState && (distCode.toUpperCase().startsWith(preferredState.toUpperCase() + "-") || statePrefix.toUpperCase() === preferredState.toUpperCase())) {
       isMatch = true;
     } else if (!preferredDistrict && !preferredState) {
       isMatch = true;
@@ -507,3 +563,52 @@ function jsonResponse(obj, statusCode = 200) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
 }
+
+/**
+ * One-click utility function:
+ * Automatically populates Column B ("State Code") for ALL 785 districts across all 36 States/UTs.
+ * Run directly from Google Sheets Apps Script editor menu:
+ * Select "autoIndexAllDistricts" and click "Run".
+ */
+function autoIndexAllDistricts() {
+  const ctx = getSheetContext();
+  const sheet = ctx.sheet;
+  const data = ctx.data;
+  const col = ctx.colMap;
+
+  // Group district rows by state
+  const byState = {};
+  for (let r = 1; r < data.length; r++) {
+    const row = data[r];
+    const level = (row[col["Level"]] || "").toString().trim();
+    const stateName = (row[col["State/UT"]] || "").toString().trim();
+    const code = (row[col["State Code"]] || "").toString().trim();
+    const distName = (row[col["Location Name"]] || row[col["District Name"]] || "").toString().trim();
+
+    if (level === "District" && stateName) {
+      if (!byState[stateName]) byState[stateName] = [];
+      byState[stateName].push({ rowIdx: r + 1, code: code, name: distName });
+    }
+  }
+
+  let totalUpdated = 0;
+  for (const [stateName, distList] of Object.entries(byState)) {
+    const prefix = CANONICAL_STATE_CODES[stateName] || "XX";
+    const hasHyphens = distList.some(d => d.code && d.code.indexOf("-") !== -1);
+
+    if (!hasHyphens) {
+      // Sort alphabetically by district name
+      distList.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+      distList.forEach((d, idx) => {
+        const numStr = idx + 1 < 10 ? "0" + (idx + 1) : "" + (idx + 1);
+        const newCode = prefix + "-" + numStr;
+        sheet.getRange(d.rowIdx, col["State Code"] + 1).setValue(newCode);
+        totalUpdated++;
+      });
+    }
+  }
+
+  Logger.log("Successfully auto-indexed " + totalUpdated + " districts across Google Sheet.");
+  return { success: true, updated_districts: totalUpdated };
+}
+

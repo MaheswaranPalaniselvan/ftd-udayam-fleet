@@ -40,9 +40,10 @@ def run_headless_cli(args):
     districts_completed_count = 0
     start_time = time.time()
     max_duration_sec = (args.max_duration_minutes * 60) if getattr(args, 'max_duration_minutes', None) else None
+    claim_attempts = 0
 
     async def main_loop():
-        nonlocal districts_completed_count
+        nonlocal districts_completed_count, claim_attempts
         while True:
             if max_duration_sec and (time.time() - start_time) >= max_duration_sec:
                 logging.info(f"Reached max duration limit ({args.max_duration_minutes}m). Worker stopping gracefully.")
@@ -55,18 +56,31 @@ def run_headless_cli(args):
             logging.info("Claiming next task from central coordinator...")
             claim_res = await coordinator.claim_task(preferred_state=args.state, preferred_district=args.district)
 
-            if not claim_res.get("success"):
-                logging.warning(f"Could not claim task: {claim_res.get('message')}. Waiting 15s...")
-                await asyncio.sleep(15)
-                # If a specific district or state was requested and not found, avoid infinite loop
-                if args.district:
-                    logging.info("Requested district could not be claimed. Exiting.")
-                    break
-                continue
+            dist_code = None
+            start_num = 1
+            limit = 500000
 
-            dist_code = claim_res.get("district_code")
-            start_num = claim_res.get("start_num", 1)
-            limit = claim_res.get("limit", 500000)
+            if not claim_res.get("success"):
+                claim_attempts += 1
+                logging.warning(f"Could not claim task: {claim_res.get('message')}. (Attempt {claim_attempts}/3)")
+                if args.state and claim_attempts >= 3:
+                    st_prefix = args.state.upper().strip()
+                    worker_offset = 1
+                    m_num = re.search(r"Worker-(\d+)", machine, re.IGNORECASE)
+                    if m_num:
+                        worker_offset = int(m_num.group(1))
+                    dist_code = f"{st_prefix}-{worker_offset:02d}"
+                    logging.info(f"Autonomous fallback: Coordinator unindexed for state {st_prefix}. Claiming district {dist_code} directly.")
+                else:
+                    await asyncio.sleep(15)
+                    if args.district:
+                        logging.info("Requested district could not be claimed. Exiting.")
+                        break
+                    continue
+            else:
+                dist_code = claim_res.get("district_code")
+                start_num = claim_res.get("start_num", 1)
+                limit = claim_res.get("limit", 500000)
 
             logging.info(f"Task Claimed: {dist_code} | Start: #{start_num} | Limit: #{limit}")
 

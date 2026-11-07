@@ -232,6 +232,20 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                     "speed": float(r[16]) if len(r) > 16 and r[16] not in (None, "", "None") else 0.0,
                 })
 
+    # Ensure all districts have proper canonical codes (e.g. HP-01, KL-01) even if raw sheet is un-indexed
+    for s_name, s_data in states_dict.items():
+        st_prefix = s_data["code"]
+        dists = s_data["districts"]
+        if not dists:
+            continue
+        unindexed = [d for d in dists if not d["code"] or "-" not in d["code"]]
+        if unindexed:
+            alpha_sorted = sorted(dists, key=lambda x: x["name"].lower())
+            name_to_code = {d["name"]: f"{st_prefix}-{i+1:02d}" for i, d in enumerate(alpha_sorted)}
+            for d in dists:
+                if not d["code"] or "-" not in d["code"]:
+                    d["code"] = name_to_code.get(d["name"], f"{st_prefix}-01")
+
     # Populate Dadra and Nagar Haveli and Daman and Diu districts if missing from raw sheet
     dh_dd_dists = states_dict["Dadra and Nagar Haveli and Daman and Diu"]["districts"]
     if not dh_dd_dists:
