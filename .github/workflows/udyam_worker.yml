@@ -1,9 +1,9 @@
 name: Udayam Fleet Worker
 
 on:
-  schedule:
-    # Run every 6 hours automatically (UTC)
-    - cron: '0 */6 * * *'
+  # Automated schedule disabled to preserve GitHub Actions minute quota
+  # schedule:
+  #   - cron: '0 */6 * * *'
 
   workflow_dispatch:
     inputs:

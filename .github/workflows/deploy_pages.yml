@@ -13,9 +13,9 @@ on:
     types:
       - completed
 
-  # Deploy periodically every 6 hours (UTC)
-  schedule:
-    - cron: '30 */6 * * *'
+  # Deploy periodically every 6 hours (UTC) - disabled to preserve Actions quota
+  # schedule:
+  #   - cron: '30 */6 * * *'
 
   # Allow manual trigger from the GitHub Actions tab
   workflow_dispatch:
