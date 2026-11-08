@@ -12,6 +12,7 @@ import time
 from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
+import httpx
 
 from client.core.coordinator import CentralCoordinator, get_default_machine_name
 from client.core.scraper import execute_district_extraction, execute_district_rerun, get_district_failed_and_missing
@@ -23,8 +24,8 @@ class UdyamDashboard(tk.Tk):
         super().__init__()
 
         self.title("⚡ FlawlessTech Data | Udyam Fleet Worker")
-        self.geometry("860x680")
-        self.minsize(780, 600)
+        self.geometry("980x720")
+        self.minsize(880, 640)
         self.configure(bg="#181825")
 
         self.web_app_url = web_app_url or os.getenv("GOOGLE_APPS_SCRIPT_URL", "")
@@ -43,6 +44,7 @@ class UdyamDashboard(tk.Tk):
 
         self._setup_styles()
         self._build_ui()
+        self.after(1500, self._auto_refresh_fleet_loop)
 
     def _setup_styles(self):
         self.style = ttk.Style()
@@ -72,6 +74,17 @@ class UdyamDashboard(tk.Tk):
         # Progress bar
         self.style.configure("TProgressbar", troughcolor="#313244", background="#89b4fa", thickness=12)
 
+        # Tabs (Notebook)
+        self.style.configure("TNotebook", background="#181825", borderwidth=0)
+        self.style.configure("TNotebook.Tab", background="#1e1e2e", foreground="#a6adc8", font=("Segoe UI", 10, "bold"), padding=[18, 7])
+        self.style.map("TNotebook.Tab", background=[("selected", "#313244")], foreground=[("selected", "#89b4fa")])
+
+        # Treeview (for Fleet Status Table)
+        self.style.configure("Treeview", background="#1e1e2e", foreground="#cdd6f4", fieldbackground="#1e1e2e", rowheight=28, font=("Segoe UI", 9), borderwidth=0)
+        self.style.configure("Treeview.Heading", background="#313244", foreground="#89b4fa", font=("Segoe UI", 9, "bold"), relief="flat", padding=4)
+        self.style.map("Treeview", background=[("selected", "#45475a")], foreground=[("selected", "#ffffff")])
+        self.style.map("Treeview.Heading", background=[("active", "#45475a")])
+
     def _build_ui(self):
         # 1. Header Frame
         header = ttk.Frame(self, padding=(20, 16, 20, 10))
@@ -92,9 +105,22 @@ class UdyamDashboard(tk.Tk):
         )
         self.status_badge.pack(side="right")
 
+        # 2. Tabs: Local Worker & Fleet Status Monitor
+        self.notebook = ttk.Notebook(self)
+        self.notebook.pack(fill="both", expand=True, padx=20, pady=(0, 16))
+
+        self.tab_worker = ttk.Frame(self.notebook, style="TFrame", padding=(0, 12, 0, 0))
+        self.tab_fleet = ttk.Frame(self.notebook, style="TFrame", padding=(0, 12, 0, 0))
+
+        self.notebook.add(self.tab_worker, text="  🚜 Local Machine Worker  ")
+        self.notebook.add(self.tab_fleet, text="  🌐 Central Fleet Status  ")
+
+        # ==========================================
+        # TAB 1: LOCAL WORKER
+        # ==========================================
         # 2. Machine & Server Config Card
-        config_frame = ttk.Frame(self, style="Card.TFrame", padding=14)
-        config_frame.pack(fill="x", padx=20, pady=(0, 12))
+        config_frame = ttk.Frame(self.tab_worker, style="Card.TFrame", padding=14)
+        config_frame.pack(fill="x", pady=(0, 12))
 
         # Row 1: Machine Name & Preferred State
         r1 = ttk.Frame(config_frame, style="Card.TFrame")
@@ -121,7 +147,7 @@ class UdyamDashboard(tk.Tk):
         self.url_entry.pack(side="left", padx=(8, 10), ipady=2)
 
         # 3. Telemetry Metrics Cards
-        metrics_container = ttk.Frame(self, padding=(20, 0, 20, 12))
+        metrics_container = ttk.Frame(self.tab_worker, padding=(0, 0, 0, 12))
         metrics_container.pack(fill="x")
 
         # Card 1: Active District
@@ -153,8 +179,8 @@ class UdyamDashboard(tk.Tk):
         self.dor_lbl.pack(anchor="w", pady=(2, 0))
 
         # 4. Action & Progress Section
-        progress_card = ttk.Frame(self, style="Card.TFrame", padding=14)
-        progress_card.pack(fill="x", padx=20, pady=(0, 12))
+        progress_card = ttk.Frame(self.tab_worker, style="Card.TFrame", padding=14)
+        progress_card.pack(fill="x", pady=(0, 12))
 
         p_row = ttk.Frame(progress_card, style="Card.TFrame")
         p_row.pack(fill="x")
@@ -182,7 +208,7 @@ class UdyamDashboard(tk.Tk):
         ttk.Button(btn_frame, text="📊 Open Sync Report", style="Secondary.TButton", command=self.open_sync_report).pack(side="right", padx=4)
 
         # 5. Live Activity Log View
-        log_frame = ttk.Frame(self, padding=(20, 0, 20, 16))
+        log_frame = ttk.Frame(self.tab_worker, padding=(0, 0, 0, 0))
         log_frame.pack(fill="both", expand=True)
 
         ttk.Label(log_frame, text="ACTIVITY LOG", font=("Segoe UI", 9, "bold"), foreground="#6c7086").pack(anchor="w", pady=(0, 4))
@@ -198,6 +224,174 @@ class UdyamDashboard(tk.Tk):
             height=12
         )
         self.log_text.pack(fill="both", expand=True)
+
+        # ==========================================
+        # TAB 2: CENTRAL FLEET STATUS
+        # ==========================================
+        self._build_fleet_tab(self.tab_fleet)
+
+    def _build_fleet_tab(self, parent):
+        # 1. Fleet Metrics Cards Container
+        f_metrics = ttk.Frame(parent, padding=(0, 0, 0, 12))
+        f_metrics.pack(fill="x")
+
+        # Card 1: Active Daemons
+        c1 = ttk.Frame(f_metrics, style="Card.TFrame", padding=12)
+        c1.pack(side="left", fill="both", expand=True, padx=(0, 6))
+        ttk.Label(c1, text="ACTIVE FLEET DAEMONS", style="MetricLbl.TLabel").pack(anchor="w")
+        self.fleet_active_lbl = ttk.Label(c1, text="-- Active", style="MetricVal.TLabel")
+        self.fleet_active_lbl.pack(anchor="w", pady=(2, 0))
+
+        # Card 2: Districts Completed
+        c2 = ttk.Frame(f_metrics, style="Card.TFrame", padding=12)
+        c2.pack(side="left", fill="both", expand=True, padx=6)
+        ttk.Label(c2, text="DISTRICTS COMPLETED", style="MetricLbl.TLabel").pack(anchor="w")
+        self.fleet_completed_lbl = ttk.Label(c2, text="-- / 785", style="MetricVal.TLabel")
+        self.fleet_completed_lbl.pack(anchor="w", pady=(2, 0))
+
+        # Card 3: Aggregate Speed
+        c3 = ttk.Frame(f_metrics, style="Card.TFrame", padding=12)
+        c3.pack(side="left", fill="both", expand=True, padx=6)
+        ttk.Label(c3, text="AGGREGATE SPEED (RPM)", style="MetricLbl.TLabel").pack(anchor="w")
+        self.fleet_speed_lbl = ttk.Label(c3, text="0.0", style="MetricVal.TLabel")
+        self.fleet_speed_lbl.pack(anchor="w", pady=(2, 0))
+
+        # Card 4: Last Sync
+        c4 = ttk.Frame(f_metrics, style="Card.TFrame", padding=12)
+        c4.pack(side="left", fill="both", expand=True, padx=(6, 0))
+        ttk.Label(c4, text="LAST COORDINATOR PING", style="MetricLbl.TLabel").pack(anchor="w")
+        self.fleet_sync_lbl = ttk.Label(c4, text="Connecting...", style="MetricVal.TLabel")
+        self.fleet_sync_lbl.pack(anchor="w", pady=(2, 0))
+
+        # 2. Control & Status Bar
+        ctrl_card = ttk.Frame(parent, style="Card.TFrame", padding=10)
+        ctrl_card.pack(fill="x", pady=(0, 10))
+
+        ttk.Button(ctrl_card, text="🔄 Refresh Fleet Status", style="Accent.TButton", command=self.refresh_fleet_status_manual).pack(side="left", padx=(0, 12))
+
+        self.fleet_auto_refresh_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(ctrl_card, text="Auto-refresh (15s)", variable=self.fleet_auto_refresh_var).pack(side="left", padx=6)
+
+        self.fleet_info_lbl = ttk.Label(ctrl_card, text="Connecting to Central Coordinator...", font=("Segoe UI", 9), style="Card.TLabel", foreground="#a6adc8")
+        self.fleet_info_lbl.pack(side="right", padx=6)
+
+        # 3. Live Daemon Table (Treeview)
+        table_frame = ttk.Frame(parent, style="Card.TFrame", padding=8)
+        table_frame.pack(fill="both", expand=True)
+
+        cols = ("machine", "status", "district", "record", "speed", "last_ping")
+        self.fleet_tree = ttk.Treeview(table_frame, columns=cols, show="headings", selectmode="browse")
+
+        self.fleet_tree.heading("machine", text="Machine / Daemon Name", anchor="w")
+        self.fleet_tree.heading("status", text="Live Health", anchor="center")
+        self.fleet_tree.heading("district", text="Active District", anchor="center")
+        self.fleet_tree.heading("record", text="Current Progress Record", anchor="w")
+        self.fleet_tree.heading("speed", text="Speed (rpm)", anchor="center")
+        self.fleet_tree.heading("last_ping", text="Last Heartbeat", anchor="center")
+
+        self.fleet_tree.column("machine", width=220, anchor="w")
+        self.fleet_tree.column("status", width=120, anchor="center")
+        self.fleet_tree.column("district", width=110, anchor="center")
+        self.fleet_tree.column("record", width=200, anchor="w")
+        self.fleet_tree.column("speed", width=110, anchor="center")
+        self.fleet_tree.column("last_ping", width=130, anchor="center")
+
+        scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.fleet_tree.yview)
+        self.fleet_tree.configure(yscrollcommand=scrollbar.set)
+
+        self.fleet_tree.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        self.fleet_tree.tag_configure("tag_active", foreground="#a6e3a1")
+        self.fleet_tree.tag_configure("tag_stalled", foreground="#f9e2af")
+        self.fleet_tree.tag_configure("tag_offline", foreground="#f38ba8")
+
+    def refresh_fleet_status_manual(self):
+        self.fleet_info_lbl.config(text="Refreshing fleet status...")
+        threading.Thread(target=self._fetch_fleet_status_worker, daemon=True).start()
+
+    def _auto_refresh_fleet_loop(self):
+        if getattr(self, "fleet_auto_refresh_var", None) and self.fleet_auto_refresh_var.get():
+            threading.Thread(target=self._fetch_fleet_status_worker, daemon=True).start()
+        self.after(15000, self._auto_refresh_fleet_loop)
+
+    def _fetch_fleet_status_worker(self):
+        url = self.url_entry.get().strip() if hasattr(self, "url_entry") and self.url_entry.get().strip() else self.web_app_url
+        if not url:
+            return
+
+        try:
+            resp = httpx.get(url, params={"action": "fleet_status"}, timeout=15.0, follow_redirects=True)
+            if resp.status_code == 200:
+                data = resp.json()
+                self.after(0, lambda d=data: self._update_fleet_ui(d))
+            else:
+                self.after(0, lambda: self.fleet_info_lbl.config(text=f"Coordinator error: HTTP {resp.status_code}"))
+        except Exception as e:
+            self.after(0, lambda err=str(e): self.fleet_info_lbl.config(text=f"Sync error: {err[:45]}"))
+
+    def _update_fleet_ui(self, data: dict):
+        if not data or data.get("status") != "ok":
+            return
+
+        active_workers = data.get("active_workers", [])
+        completed = data.get("districts_completed", 0)
+        total_dist = data.get("total_districts", 785)
+
+        for item in self.fleet_tree.get_children():
+            self.fleet_tree.delete(item)
+
+        total_speed = 0.0
+        active_count = 0
+
+        sorted_workers = sorted(active_workers, key=lambda x: int(x.get("minutesAgo") or 0))
+
+        for w in sorted_workers:
+            mach = w.get("machine", "Unknown")
+            dist = w.get("district", "N/A")
+            rec = w.get("lastRecord", "N/A")
+            spd = float(w.get("speed") or 0.0)
+            mins_ago = int(w.get("minutesAgo") or 0)
+
+            if mins_ago <= 5:
+                status_str = "🟢 ACTIVE"
+                tag = "tag_active"
+                active_count += 1
+                total_speed += spd
+            elif mins_ago <= 15:
+                status_str = "🟡 LAGGING"
+                tag = "tag_stalled"
+                active_count += 1
+                total_speed += spd
+            elif mins_ago <= 60:
+                status_str = "🟠 STALLED"
+                tag = "tag_stalled"
+            else:
+                status_str = "🔴 OFFLINE"
+                tag = "tag_offline"
+
+            if mins_ago == 0:
+                last_ping_str = "Just now"
+            elif mins_ago == 1:
+                last_ping_str = "1 min ago"
+            elif mins_ago < 60:
+                last_ping_str = f"{mins_ago} mins ago"
+            else:
+                last_ping_str = f"{round(mins_ago / 60, 1)} hrs ago"
+
+            self.fleet_tree.insert(
+                "",
+                "end",
+                values=(mach, status_str, dist, rec, f"{spd:.1f}", last_ping_str),
+                tags=(tag,)
+            )
+
+        self.fleet_active_lbl.config(text=f"{active_count} Active")
+        self.fleet_completed_lbl.config(text=f"{completed} / {total_dist}")
+        self.fleet_speed_lbl.config(text=f"{total_speed:.1f}")
+        now_time = time.strftime("%H:%M:%S")
+        self.fleet_sync_lbl.config(text=now_time)
+        self.fleet_info_lbl.config(text=f"Last updated: {now_time} | {len(active_workers)} daemons tracked")
 
     def log(self, message: str):
         now = time.strftime("%H:%M:%S")

@@ -1081,6 +1081,39 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       .progress-bar-wrapper {{ width: 110px; }}
       .portal-stats-pills {{ display: none; }}
     }}
+
+    /* Fleet Health Modal */
+    .fleet-modal-overlay {{
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(5px);
+      z-index: 9999; display: flex; align-items: center; justify-content: center;
+    }}
+    .fleet-modal-content {{
+      background: #181825; border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px; width: 92%; max-width: 860px; max-height: 85vh;
+      overflow-y: auto; padding: 22px; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    }}
+    .fleet-modal-header {{
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px; margin-bottom: 16px;
+    }}
+    .fleet-close-btn {{
+      background: none; border: none; color: #a6adc8; font-size: 1.6rem;
+      cursor: pointer; line-height: 1; padding: 0 6px;
+    }}
+    .fleet-close-btn:hover {{ color: #fff; }}
+    .fleet-modal-summary {{
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;
+    }}
+    .fleet-card {{
+      background: #1e1e2e; border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px; padding: 12px;
+    }}
+    .fleet-lbl {{ font-size: 0.68rem; font-weight: 700; color: #6c7086; display: block; margin-bottom: 4px; }}
+    .fleet-val {{ font-size: 1.3rem; font-weight: 800; color: #cdd6f4; }}
+    .fleet-table-wrapper {{
+      max-height: 380px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; margin-top: 8px;
+    }}
   </style>
 </head>
 <body>
@@ -1095,7 +1128,8 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
           <p>State & District Hierarchical Coverage & Extraction Dashboard</p>
         </div>
       </div>
-      <div class="brand-right">
+      <div class="brand-right" style="display: flex; gap: 8px; align-items: center;">
+        <button class="btn" onclick="openFleetModal()" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; cursor: pointer; font-weight: 600;">🌐 Live Fleet Status</button>
         <button class="btn btn-primary" onclick="exportFilteredExcel()">📊 Export Excel (.xlsx)</button>
       </div>
     </header>
@@ -1442,9 +1476,172 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       XLSX.writeFile(wb, "FlawlessTech_Udayam_Coverage_DrillDown.xlsx");
     }}
 
+    // Fleet Status Live Modal Logic
+    const FLEET_API_URL = "https://script.google.com/macros/s/AKfycby3tmgH9PtjUhl6XfGrBfgRNZFQZaSLR0N4Dnff9tt9K5qjatyarJy_nnE0ulCtMNm2xA/exec";
+    let fleetTimer = null;
+
+    function openFleetModal() {{
+      const m = document.getElementById('fleetModal');
+      if (m) m.style.display = 'flex';
+      fetchFleetStatus();
+      if (!fleetTimer) {{
+        fleetTimer = setInterval(fetchFleetStatus, 15000);
+      }}
+    }}
+
+    function closeFleetModal(e) {{
+      if (!e || e.target.id === 'fleetModal' || (e.target.classList && e.target.classList.contains('fleet-close-btn'))) {{
+        const m = document.getElementById('fleetModal');
+        if (m) m.style.display = 'none';
+        if (fleetTimer) {{
+          clearInterval(fleetTimer);
+          fleetTimer = null;
+        }}
+      }}
+    }}
+
+    async function fetchFleetStatus() {{
+      const msg = document.getElementById('fleetStatusMsg');
+      try {{
+        const res = await fetch(`${{FLEET_API_URL}}?action=fleet_status`);
+        const data = await res.json();
+        if (data && data.status === 'ok') {{
+          renderFleetData(data);
+          if (msg) msg.textContent = `Last synced: ${{new Date().toLocaleTimeString()}} (Auto-refreshes every 15s)`;
+        }}
+      }} catch (err) {{
+        if (msg) msg.textContent = `Sync notice: ${{err.message}}`;
+      }}
+    }}
+
+    function renderFleetData(data) {{
+      const activeWorkers = data.active_workers || [];
+      const tbody = document.getElementById('fleetTableBody');
+      const actCountEl = document.getElementById('fleetActiveCount');
+      const compCountEl = document.getElementById('fleetCompletedCount');
+      const spdEl = document.getElementById('fleetTotalSpeed');
+      const syncEl = document.getElementById('fleetLastSync');
+
+      if (compCountEl) compCountEl.textContent = `${{data.districts_completed || 0}} / ${{data.total_districts || 785}}`;
+      if (syncEl) syncEl.textContent = new Date().toLocaleTimeString();
+
+      let activeCount = 0;
+      let totalSpeed = 0.0;
+
+      if (!activeWorkers.length) {{
+        if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-dim); padding: 24px;">No active workers reporting at this moment.</td></tr>';
+        if (actCountEl) actCountEl.textContent = '0 Active';
+        if (spdEl) spdEl.textContent = '0.0 rpm';
+        return;
+      }}
+
+      activeWorkers.sort((a, b) => (a.minutesAgo || 0) - (b.minutesAgo || 0));
+
+      let rows = '';
+      activeWorkers.forEach(w => {{
+        const mins = w.minutesAgo || 0;
+        const spd = parseFloat(w.speed) || 0.0;
+        let badgeClass = 'status-live';
+        let badgeText = '🟢 Active';
+
+        if (mins <= 5) {{
+          badgeClass = 'status-live';
+          badgeText = '🟢 Active';
+          activeCount++;
+          totalSpeed += spd;
+        }} else if (mins <= 15) {{
+          badgeClass = 'status-outdated-progress';
+          badgeText = '🟡 Lagging';
+          activeCount++;
+          totalSpeed += spd;
+        }} else if (mins <= 60) {{
+          badgeClass = 'status-outdated-progress';
+          badgeText = '🟠 Stalled';
+        }} else {{
+          badgeClass = 'status-outdated';
+          badgeText = '🔴 Offline';
+        }}
+
+        const lastPingText = mins === 0 ? 'Just now' : (mins === 1 ? '1 min ago' : (mins < 60 ? `${{mins}} mins ago` : `${{(mins/60).toFixed(1)}} hrs ago`));
+
+        rows += `
+          <tr>
+            <td style="font-weight: 600; color: #fff;">${{w.machine || 'Unknown'}}</td>
+            <td><span class="status-badge ${{badgeClass}}">${{badgeText}}</span></td>
+            <td class="dist-code">${{w.district || '-'}}</td>
+            <td class="mono-num" style="color: #93c5fd;">${{w.lastRecord || '-'}}</td>
+            <td class="mono-num" style="color: #34d399;">${{spd.toFixed(1)}} rpm</td>
+            <td style="color: var(--text-muted); font-size: 0.8rem;">${{lastPingText}}</td>
+          </tr>
+        `;
+      }});
+
+      if (tbody) tbody.innerHTML = rows;
+      if (actCountEl) actCountEl.textContent = `${{activeCount}} Active`;
+      if (spdEl) spdEl.textContent = `${{totalSpeed.toFixed(1)}} rpm`;
+    }}
+
     // Initial render
     renderView();
   </script>
+
+  <!-- Central Fleet Health Modal -->
+  <div id="fleetModal" class="fleet-modal-overlay" style="display: none;" onclick="closeFleetModal(event)">
+    <div class="fleet-modal-content" onclick="event.stopPropagation()">
+      <div class="fleet-modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.4rem;">🌐</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">Central Fleet Live Health</h3>
+            <span style="font-size: 0.76rem; color: var(--text-dim);">Live Raspberry Pi, Jetson & PC Daemons</span>
+          </div>
+        </div>
+        <button class="fleet-close-btn" onclick="closeFleetModal()">&times;</button>
+      </div>
+
+      <div class="fleet-modal-summary" id="fleetSummary">
+        <div class="fleet-card">
+          <span class="fleet-lbl">ACTIVE DAEMONS</span>
+          <span class="fleet-val" id="fleetActiveCount" style="color: #34d399;">-- Active</span>
+        </div>
+        <div class="fleet-card">
+          <span class="fleet-lbl">DISTRICTS COMPLETED</span>
+          <span class="fleet-val" id="fleetCompletedCount">-- / 785</span>
+        </div>
+        <div class="fleet-card">
+          <span class="fleet-lbl">AGGREGATE SPEED</span>
+          <span class="fleet-val" id="fleetTotalSpeed" style="color: #38bdf8;">-- rpm</span>
+        </div>
+        <div class="fleet-card">
+          <span class="fleet-lbl">LAST SYNC TIME</span>
+          <span class="fleet-val" id="fleetLastSync" style="font-size: 1rem; color: #fbbf24;">--</span>
+        </div>
+      </div>
+
+      <div style="margin: 14px 0 6px 0; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.8rem; color: var(--text-dim);" id="fleetStatusMsg">Auto-refreshes every 15s</span>
+        <button onclick="fetchFleetStatus()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 4px 12px; border-radius: 6px; font-size: 0.78rem; cursor: pointer;">🔄 Refresh Now</button>
+      </div>
+
+      <div class="fleet-table-wrapper">
+        <table class="sub-table" id="fleetTable">
+          <thead>
+            <tr>
+              <th>Machine / Board</th>
+              <th>Status</th>
+              <th>District</th>
+              <th>Current Record</th>
+              <th>Speed</th>
+              <th>Last Heartbeat</th>
+            </tr>
+          </thead>
+          <tbody id="fleetTableBody">
+            <tr><td colspan="6" style="text-align: center; color: var(--text-dim); padding: 24px;">Loading fleet telemetry from coordinator...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
 """

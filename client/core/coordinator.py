@@ -55,6 +55,19 @@ class CentralCoordinator:
         except Exception as e:
             return {"success": False, "message": str(e)}
 
+    async def get_fleet_status(self) -> dict:
+        """Retrieves real-time status of all fleet machines and daemons from coordinator."""
+        if not self.web_app_url:
+            return {"status": "error", "message": "No central Web App URL configured."}
+
+        try:
+            resp = await self.client.get(self.web_app_url, params={"action": "fleet_status"})
+            if resp.status_code == 200:
+                return resp.json()
+            return {"status": "error", "message": f"Server returned {resp.status_code}"}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+
     async def send_heartbeat(
         self,
         district_code: str,
