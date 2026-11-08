@@ -15,8 +15,9 @@ echo "  [1] Headless District Incremental (e.g. TN-02)"
 echo "  [2] Fleet Worker (Connects to Google Sheet Coordinator)"
 echo "  [3] Re-check Failed Records (results.xlsx)"
 echo "  [4] Desktop GUI Mode (Requires monitor or VNC desktop)"
+echo "  [5] Run Hardware Concurrency Benchmark & Active Cooler Test"
 echo ""
-read -p "Enter choice [1-4] (default 1): " CHOICE
+read -p "Enter choice [1-5] (default 1): " CHOICE
 CHOICE=${CHOICE:-1}
 
 case $CHOICE in
@@ -40,6 +41,10 @@ case $CHOICE in
     4)
         echo "Launching Desktop GUI..."
         uv run python client/gui/extractor_gui.py
+        ;;
+    5)
+        echo "Running Hardware Concurrency Benchmark & Thermal Health Check..."
+        uv run python scripts/benchmark_concurrency.py --apply
         ;;
     *)
         echo "Invalid selection. Exiting."

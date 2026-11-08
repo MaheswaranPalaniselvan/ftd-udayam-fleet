@@ -44,6 +44,7 @@ sample_drilldown_viewer.html
 generate_drilldown_sample.py
 sample_integrated_dashboard.html
 # Generated public temp files (track production index.html, assets, logo for Cloudflare Pages)
+optimal_config.json
 public/*.xlsx
 public/*.csv
 public/*.txt

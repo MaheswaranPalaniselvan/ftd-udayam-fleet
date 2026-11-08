@@ -1382,6 +1382,146 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
     .fleet-status-table tr:hover td {{
       background: rgba(255, 255, 255, 0.02);
     }}
+
+    /* ========================================== */
+    /* ONBOARDING & SETUP TAB STYLES              */
+    /* ========================================== */
+    .onboarding-view-container {{
+      margin-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }}
+    .onboarding-hero {{
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 12px;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }}
+    .device-tab-bar {{
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 0.4rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+    }}
+    .device-tab-btn {{
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.55rem 1.1rem;
+      border-radius: 7px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }}
+    .device-tab-btn:hover {{
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }}
+    .device-tab-btn.active {{
+      background: #38bdf8;
+      color: #0b1120;
+    }}
+    .code-card {{
+      background: #090e17;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 0.75rem;
+      margin-bottom: 1rem;
+    }}
+    .code-card-header {{
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.6rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-dim);
+    }}
+    .code-card-body {{
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: #38bdf8;
+      white-space: pre-wrap;
+      word-break: break-all;
+      background: rgba(0, 0, 0, 0.3);
+      user-select: all;
+      line-height: 1.5;
+    }}
+    .copy-btn {{
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-main);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+    }}
+    .copy-btn:hover {{
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }}
+    .step-box {{
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }}
+    .step-title {{
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.5rem;
+    }}
+    .matrix-table {{
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.84rem;
+    }}
+    .matrix-table th {{
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text-dim);
+      text-align: left;
+      padding: 0.75rem 1rem;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-subtle);
+    }}
+    .matrix-table td {{
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+    }}
+    .matrix-table tr:hover td {{
+      background: rgba(255, 255, 255, 0.02);
+    }}
   </style>
 </head>
 <body>
@@ -1404,6 +1544,9 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
           </button>
           <button id="nav-btn-fleet" class="view-tab-btn" onclick="switchMainView('fleet')">
             <span class="pulse-dot"></span> 🌐 Fleet Status View <span id="header-fleet-badge" class="header-count-pill">-- Active</span>
+          </button>
+          <button id="nav-btn-onboarding" class="view-tab-btn" onclick="switchMainView('onboarding')">
+            🚀 1-Click Fleet Setup
           </button>
         </div>
         <button class="btn btn-primary" onclick="exportFilteredExcel()">📊 Export Excel (.xlsx)</button>
@@ -1614,6 +1757,266 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       </div>
     </div>
   </div> <!-- end of #view-fleet -->
+
+  <!-- ========================================== -->
+  <!-- VIEW 3: UNIVERSAL FLEET ONBOARDING & SETUP -->
+  <!-- ========================================== -->
+  <div id="view-onboarding" class="onboarding-view-container" style="display: none;">
+    <!-- Onboarding Hero Banner -->
+    <div class="onboarding-hero">
+      <div style="display: flex; gap: 15px; align-items: center;">
+        <span style="font-size: 2.5rem;">🚀</span>
+        <div>
+          <h2 style="font-size: 1.45rem; font-weight: 700; color: #fff;">Universal Fleet Worker Onboarding & 1-Click Bootstrap</h2>
+          <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 4px;">
+            Turn any Raspberry Pi 5, Pi 4, Jetson Nano, or Windows PC into an autonomous 24/7 scraping node with automated dependency resolution & hardware auto-tuning.
+          </p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <span class="pill-badge" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; padding: 0.4rem 0.8rem; font-size: 0.78rem;">
+          ⚡ Concurrency Auto-Tuning Included
+        </span>
+      </div>
+    </div>
+
+    <!-- Device Switcher Tab Bar -->
+    <div class="device-tab-bar">
+      <button class="device-tab-btn active" data-device="pi" onclick="switchDeviceTab('pi')">
+        🍓 Raspberry Pi 5 / 4 (ARM64)
+      </button>
+      <button class="device-tab-btn" data-device="jetson" onclick="switchDeviceTab('jetson')">
+        ⚡ NVIDIA Jetson Nano
+      </button>
+      <button class="device-tab-btn" data-device="windows" onclick="switchDeviceTab('windows')">
+        🪟 Windows 10/11 (PC / Server)
+      </button>
+      <button class="device-tab-btn" data-device="cloud" onclick="switchDeviceTab('cloud')">
+        ☁️ Linux Cloud / Colab / VPS
+      </button>
+    </div>
+
+    <!-- PANEL 1: Raspberry Pi 5 / 4 (ARM64) -->
+    <div id="device-panel-pi" class="device-content-panel" style="display: block;">
+      <div class="step-box">
+        <div class="step-title">
+          <span>⚡ Step 1: 1-Click Universal Bootstrap Command (Fresh or New Pi)</span>
+          <span class="pill-badge" style="background: rgba(52, 211, 153, 0.15); color: #34d399; font-size: 0.72rem;">Automates Everything</span>
+        </div>
+        <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+          Open terminal on your Raspberry Pi and paste this single command. It clones the repo, installs all system/apt packages, sets up <code>uv</code>, downloads Playwright Chromium for ARM64, runs the thermal & concurrency benchmark, and launches the 24/7 background <code>systemd</code> daemon:
+        </p>
+        <div class="code-card">
+          <div class="code-card-header">
+            <span>BASH TERMINAL (ONE-CLICK DEPLOY)</span>
+            <button class="copy-btn" onclick="copyCode('code-pi-bootstrap', this)">📋 Copy Command</button>
+          </div>
+          <div id="code-pi-bootstrap" class="code-card-body">git clone https://github.com/MaheswaranPalaniselvan/udayam-source.git ~/udayam &amp;&amp; cd ~/udayam &amp;&amp; bash scripts/bootstrap_worker.sh</div>
+        </div>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">
+          <span>🔄 Already Have the Code Cloned on your Pi? (Quick Update &amp; Launch)</span>
+        </div>
+        <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+          If you already have <code>~/udayam</code> on your Pi 5, pull the latest repo updates and run the bootstrap installer directly:
+        </p>
+        <div class="code-card">
+          <div class="code-card-header">
+            <span>BASH TERMINAL (EXISTING WORKSPACE)</span>
+            <button class="copy-btn" onclick="copyCode('code-pi-update', this)">📋 Copy Command</button>
+          </div>
+          <div id="code-pi-update" class="code-card-body">cd ~/udayam &amp;&amp; git pull origin main &amp;&amp; bash scripts/bootstrap_worker.sh</div>
+        </div>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">
+          <span>🎯 Step 2: Optimal Concurrency Benchmark &amp; Active Cooler Test</span>
+        </div>
+        <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+          Run the built-in benchmark script to test your Pi 5 with the Active Cooler. It stress-tests ONNX OCR inference across concurrency levels 1, 2, and 3, monitors temperature and fan RPM, and saves the optimal setting:
+        </p>
+        <div class="code-card">
+          <div class="code-card-header">
+            <span>RUN HARDWARE AUTO-TUNER</span>
+            <button class="copy-btn" onclick="copyCode('code-pi-bench', this)">📋 Copy Command</button>
+          </div>
+          <div id="code-pi-bench" class="code-card-body">cd ~/udayam &amp;&amp; uv run python scripts/benchmark_concurrency.py --apply</div>
+        </div>
+        <div style="margin-top: 0.75rem;">
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.35rem;">Real-time Active Cooler thermal &amp; fan speed monitor command:</p>
+          <div class="code-card" style="margin-top: 0.2rem;">
+            <div class="code-card-header">
+              <span>WATCH TEMPERATURE &amp; FAN RPM</span>
+              <button class="copy-btn" onclick="copyCode('code-pi-watch', this)">📋 Copy Command</button>
+            </div>
+            <div id="code-pi-watch" class="code-card-body">watch -n 1 "vcgencmd measure_temp; vcgencmd get_throttled; cat /sys/devices/platform/cooling_fan/hwmon/*/fan1_input 2>/dev/null | awk '{{print \"Fan RPM: \" \\$1}}'"</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">
+          <span>🛠️ Step 3: Managing the 24/7 Background Daemon</span>
+        </div>
+        <p style="font-size: 0.84rem; color: var(--text-muted);">
+          The worker runs continuously as a managed <code>systemd</code> service, automatically restarting after reboots or WiFi hiccups:
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-top: 0.75rem;">
+          <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); padding: 0.75rem; border-radius: 8px;">
+            <div style="font-size: 0.76rem; color: var(--text-dim); font-weight: 700;">VIEW LIVE SCRAPING LOGS</div>
+            <code style="color: #38bdf8; font-size: 0.8rem;">journalctl -u udyam-worker -f</code>
+          </div>
+          <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); padding: 0.75rem; border-radius: 8px;">
+            <div style="font-size: 0.76rem; color: var(--text-dim); font-weight: 700;">CHECK SERVICE HEALTH</div>
+            <code style="color: #38bdf8; font-size: 0.8rem;">sudo systemctl status udyam-worker</code>
+          </div>
+          <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); padding: 0.75rem; border-radius: 8px;">
+            <div style="font-size: 0.76rem; color: var(--text-dim); font-weight: 700;">RESTART WORKER</div>
+            <code style="color: #38bdf8; font-size: 0.8rem;">sudo systemctl restart udyam-worker</code>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 2: NVIDIA Jetson Nano -->
+    <div id="device-panel-jetson" class="device-content-panel" style="display: none;">
+      <div class="step-box">
+        <div class="step-title">
+          <span>⚡ NVIDIA Jetson Nano 1-Click Bootstrap</span>
+          <span class="pill-badge" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; font-size: 0.72rem;">Concurrency 1 Tuned</span>
+        </div>
+        <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+          Jetson Nano shares 4GB total RAM between the CPU and Maxwell GPU. Concurrency is automatically constrained to <strong>1</strong> to guarantee zero swap-thrashing and steady 10-12 rpm extraction:
+        </p>
+        <div class="code-card">
+          <div class="code-card-header">
+            <span>BASH TERMINAL (JETSON NANO)</span>
+            <button class="copy-btn" onclick="copyCode('code-jetson-bootstrap', this)">📋 Copy Command</button>
+          </div>
+          <div id="code-jetson-bootstrap" class="code-card-body">git clone https://github.com/MaheswaranPalaniselvan/udayam-source.git ~/udayam &amp;&amp; cd ~/udayam &amp;&amp; bash scripts/bootstrap_worker.sh</div>
+        </div>
+        <div style="margin-top: 0.75rem;">
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.35rem;">Enable 5V PWM fan on Jetson heatsink:</p>
+          <div class="code-card" style="margin-top: 0.2rem;">
+            <div class="code-card-header">
+              <span>ACTIVATE 5V PWM FAN</span>
+              <button class="copy-btn" onclick="copyCode('code-jetson-fan', this)">📋 Copy Command</button>
+            </div>
+            <div id="code-jetson-fan" class="code-card-body">sudo sh -c 'echo 200 > /sys/devices/pwm-fan/target_pwm'</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 3: Windows 10/11 -->
+    <div id="device-panel-windows" class="device-content-panel" style="display: none;">
+      <div class="step-box">
+        <div class="step-title">
+          <span>🪟 Windows 1-Click Quick Deploy</span>
+        </div>
+        <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+          Run in PowerShell on any Windows 10/11 workstation or laptop. Sets up dependencies, Playwright Chromium, and desktop launcher shortcut:
+        </p>
+        <div class="code-card">
+          <div class="code-card-header">
+            <span>POWERSHELL SETUP</span>
+            <button class="copy-btn" onclick="copyCode('code-win-setup', this)">📋 Copy Command</button>
+          </div>
+          <div id="code-win-setup" class="code-card-body">git clone https://github.com/MaheswaranPalaniselvan/udayam-source.git; cd udayam; .\\setup_machine.bat</div>
+        </div>
+        <div style="margin-top: 0.75rem;">
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.35rem;">Start Headless Fleet Worker with Auto-Concurrency (4 workers):</p>
+          <div class="code-card" style="margin-top: 0.2rem;">
+            <div class="code-card-header">
+              <span>LAUNCH WINDOWS FLEET WORKER</span>
+              <button class="copy-btn" onclick="copyCode('code-win-run', this)">📋 Copy Command</button>
+            </div>
+            <div id="code-win-run" class="code-card-body">uv run python client/app.py --cli --machine "Win-$env:COMPUTERNAME" --concurrency 4</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 4: Linux Cloud / Server -->
+    <div id="device-panel-cloud" class="device-content-panel" style="display: none;">
+      <div class="step-box">
+        <div class="step-title">
+          <span>☁️ Linux VPS / Google Colab / Dedicated Cloud Worker</span>
+        </div>
+        <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+          Deploy on any Debian/Ubuntu cloud server, Docker container, or virtual machine:
+        </p>
+        <div class="code-card">
+          <div class="code-card-header">
+            <span>BASH TERMINAL (CLOUD WORKER)</span>
+            <button class="copy-btn" onclick="copyCode('code-cloud-setup', this)">📋 Copy Command</button>
+          </div>
+          <div id="code-cloud-setup" class="code-card-body">git clone https://github.com/MaheswaranPalaniselvan/udayam-source.git ~/udayam &amp;&amp; cd ~/udayam &amp;&amp; bash scripts/bootstrap_worker.sh</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hardware & Concurrency Guide Matrix Card -->
+    <div class="step-box" style="margin-top: 0.5rem;">
+      <div class="step-title">
+        <span>📊 Fleet Hardware &amp; Optimal Concurrency Reference Guide</span>
+      </div>
+      <p style="font-size: 0.84rem; color: var(--text-muted);">
+        Comparison of tested hardware boards, recommended concurrency targets, memory consumption, and cooling recommendations:
+      </p>
+      <div style="overflow-x: auto;">
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th>Hardware Device</th>
+              <th>Cores / RAM</th>
+              <th>Recommended Concurrency</th>
+              <th>Expected Speed</th>
+              <th>Thermal &amp; Cooling Requirements</th>
+              <th>Fleet Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight: 600; color: #fff;">🍓 Raspberry Pi 5</td>
+              <td>4 Cores / 4-8 GB</td>
+              <td><span class="pill-badge" style="background: rgba(52, 211, 153, 0.15); color: #34d399; font-weight: 700;">2 - 3 Workers</span></td>
+              <td style="color: #38bdf8; font-weight: 600;">24 - 34 rpm</td>
+              <td style="color: #34d399;">Active Cooler (hovers 48°C - 55°C, 0% throttling)</td>
+              <td>High-throughput 24/7 edge daemon</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 600; color: #fff;">🍓 Raspberry Pi 4</td>
+              <td>4 Cores / 4-8 GB</td>
+              <td><span class="pill-badge" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; font-weight: 700;">1 - 2 Workers</span></td>
+              <td style="color: #38bdf8; font-weight: 600;">14 - 22 rpm</td>
+              <td style="color: #fbbf24;">Heatsink + 5V Fan recommended (&lt; 68°C)</td>
+              <td>Standard low-power worker node</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 600; color: #fff;">⚡ NVIDIA Jetson Nano</td>
+              <td>4 Cores / 4 GB (Shared)</td>
+              <td><span class="pill-badge" style="background: rgba(192, 132, 252, 0.15); color: #c084fc; font-weight: 700;">1 Worker</span></td>
+              <td style="color: #38bdf8; font-weight: 600;">8 - 12 rpm</td>
+              <td style="color: #c084fc;">5V PWM Fan required; concurrency 1 prevents OOM</td>
+              <td>Low-power secondary worker</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 600; color: #fff;">🪟 Windows PC (i5/i7/Ryzen)</td>
+              <td>8-16 Cores / 16+ GB</td>
+              <td><span class="pill-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 700;">4 - 8 Workers</span></td>
+              <td style="color: #38bdf8; font-weight: 600;">45 - 75 rpm</td>
+              <td style="color: #38bdf8;">Standard workstation cooling</td>
+              <td>Burst batch harvesting workstation</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div> <!-- end of #view-onboarding -->
 
 </div> <!-- end of .container -->
 
@@ -2034,21 +2437,54 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       currentMainView = viewName;
       const coverageView = document.getElementById('view-coverage');
       const fleetView = document.getElementById('view-fleet');
+      const onboardingView = document.getElementById('view-onboarding');
       const btnCoverage = document.getElementById('nav-btn-coverage');
       const btnFleet = document.getElementById('nav-btn-fleet');
+      const btnOnboarding = document.getElementById('nav-btn-onboarding');
 
-      if (viewName === 'coverage') {{
-        if (coverageView) coverageView.style.display = 'block';
-        if (fleetView) fleetView.style.display = 'none';
-        if (btnCoverage) btnCoverage.classList.add('active');
-        if (btnFleet) btnFleet.classList.remove('active');
-      }} else {{
-        if (coverageView) coverageView.style.display = 'none';
-        if (fleetView) fleetView.style.display = 'block';
-        if (btnCoverage) btnCoverage.classList.remove('active');
-        if (btnFleet) btnFleet.classList.add('active');
+      if (coverageView) coverageView.style.display = viewName === 'coverage' ? 'block' : 'none';
+      if (fleetView) fleetView.style.display = viewName === 'fleet' ? 'block' : 'none';
+      if (onboardingView) onboardingView.style.display = viewName === 'onboarding' ? 'block' : 'none';
+
+      if (btnCoverage) btnCoverage.classList.toggle('active', viewName === 'coverage');
+      if (btnFleet) btnFleet.classList.toggle('active', viewName === 'fleet');
+      if (btnOnboarding) btnOnboarding.classList.toggle('active', viewName === 'onboarding');
+
+      if (viewName === 'fleet') {{
         fetchFleetStatus();
       }}
+    }}
+
+    function switchDeviceTab(device) {{
+      document.querySelectorAll('.device-tab-btn').forEach(btn => {{
+        btn.classList.toggle('active', btn.getAttribute('data-device') === device);
+      }});
+      document.querySelectorAll('.device-content-panel').forEach(panel => {{
+        panel.style.display = panel.id === `device-panel-${{device}}` ? 'block' : 'none';
+      }});
+    }}
+
+    function copyCode(elementId, btn) {{
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const text = el.innerText.trim();
+      navigator.clipboard.writeText(text).then(() => {{
+        const orig = btn.innerHTML;
+        btn.innerHTML = '✅ Copied!';
+        btn.style.color = '#34d399';
+        btn.style.borderColor = '#34d399';
+        setTimeout(() => {{
+          btn.innerHTML = orig;
+          btn.style.color = '';
+          btn.style.borderColor = '';
+        }}, 2000);
+      }}).catch(() => {{
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }});
     }}
 
     async function fetchFleetStatus() {{
