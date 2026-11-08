@@ -168,8 +168,8 @@ async def run_stage1_web_scraping(
                 except asyncio.QueueEmpty:
                     break
 
-                # Recycle page every 40 records to clear memory
-                if page_uses >= 40:
+                # Recycle page every 60 records to clear memory
+                if page_uses >= 60:
                     try:
                         await page.close()
                     except Exception:

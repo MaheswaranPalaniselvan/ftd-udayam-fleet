@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import base64
 import csv
 import logging
 import os
@@ -156,18 +157,10 @@ async def abort_unnecessary_resources(route):
         await route.abort()
         return
 
-    if route.request.resource_type in ["font", "media", "websocket"]:
+    if route.request.resource_type in ["font", "media", "websocket", "stylesheet"]:
         await route.abort()
     elif route.request.resource_type == "image":
-        # Block the header logos and banners, but allow the captcha image
         if "captcha" not in url:
-            await route.abort()
-        else:
-            await route.continue_()
-    elif route.request.resource_type == "stylesheet":
-        # Block all CSS if the request originates from the Print Application page
-        referer = route.request.headers.get("referer", "").lower()
-        if "printudyam" in referer.replace("_", ""):
             await route.abort()
         else:
             await route.continue_()
@@ -226,21 +219,39 @@ async def process_udyam_number(page: Page, udyam_number: str) -> tuple[str, str,
             udyam_input = page.locator('#ctl00_ContentPlaceHolder1_txtUdyamNo')
             await udyam_input.fill(udyam_number, timeout=2500)
 
-            captcha_img = page.locator('#ctl00_ContentPlaceHolder1_imgCaptcha')
+            # High-speed in-memory canvas capture (2-5ms) vs heavy CDP screenshot (150-300ms)
+            image_bytes = None
+            try:
+                b64_str = await page.evaluate('''() => {
+                    const img = document.getElementById('ctl00_ContentPlaceHolder1_imgCaptcha');
+                    if (!img || !img.complete) return null;
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth || img.width || 150;
+                    canvas.height = img.naturalHeight || img.height || 50;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    const dataUrl = canvas.toDataURL('image/png');
+                    return dataUrl.indexOf(',') !== -1 ? dataUrl.split(',')[1] : null;
+                }''')
+                if b64_str:
+                    image_bytes = base64.b64decode(b64_str)
+            except Exception:
+                pass
 
-            # Wait for the image to be fully loaded in the browser
-            await page.wait_for_function("document.getElementById('ctl00_ContentPlaceHolder1_imgCaptcha').complete")
-            image_bytes = await captcha_img.screenshot()
+            if not image_bytes:
+                captcha_img = page.locator('#ctl00_ContentPlaceHolder1_imgCaptcha')
+                await page.wait_for_function("document.getElementById('ctl00_ContentPlaceHolder1_imgCaptcha').complete", timeout=2000)
+                image_bytes = await captcha_img.screenshot()
 
             raw_text = await solve_captcha(image_bytes)
             captcha_text = raw_text.upper().strip()
 
             await page.locator('#ctl00_ContentPlaceHolder1_txtCaptcha').fill(captcha_text)
             
-            # Click verify and wait for page load
+            # Click verify and wait for domcontentloaded
             try:
-                async with page.expect_navigation(wait_until="load", timeout=2500):
-                    await page.locator('#ctl00_ContentPlaceHolder1_btnVerify').click()
+                async with page.expect_navigation(wait_until="domcontentloaded", timeout=2500):
+                    await page.locator('#ctl00_ContentPlaceHolder1_btnVerify').click(force=True)
             except PlaywrightTimeoutError:
                 pass
 

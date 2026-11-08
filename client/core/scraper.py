@@ -9,6 +9,7 @@ Features:
 """
 
 import asyncio
+import base64
 import csv
 import io
 import logging
@@ -96,16 +97,10 @@ async def abort_unnecessary_resources(route):
         return
 
     res_type = route.request.resource_type
-    if res_type in ["font", "media", "websocket"]:
+    if res_type in ["font", "media", "websocket", "stylesheet"]:
         await route.abort()
     elif res_type == "image":
         if "captcha" not in url:
-            await route.abort()
-        else:
-            await route.continue_()
-    elif res_type == "stylesheet":
-        referer = route.request.headers.get("referer", "").lower()
-        if "printudyam" in referer.replace("_", ""):
             await route.abort()
         else:
             await route.continue_()
@@ -203,26 +198,37 @@ async def process_udyam_number(page: Page, udyam_number: str) -> tuple[str, str,
             except Exception:
                 pass
 
-            udyam_input = page.locator('#ctl00_ContentPlaceHolder1_txtUdyamNo')
-            await udyam_input.fill(udyam_number, timeout=2500)
-
-            captcha_img = page.locator('#ctl00_ContentPlaceHolder1_imgCaptcha')
-            await page.wait_for_function("document.getElementById('ctl00_ContentPlaceHolder1_imgCaptcha')?.complete")
-
-            # Obtain captcha bytes
-            image_bytes = await captcha_img.screenshot()
-            captcha_text = await solve_captcha(image_bytes)
-
-            await page.locator('#ctl00_ContentPlaceHolder1_txtCaptcha').fill(captcha_text)
-
-            # Remove header to prevent pointer event interception
+            # High-speed in-memory canvas capture (2-5ms) vs heavy CDP screenshot (150-300ms)
+            image_bytes = None
             try:
-                await page.evaluate("document.querySelectorAll('header, #header, .navbar, #navmenu, .navmenu').forEach(el => el.remove());")
+                b64_str = await page.evaluate('''() => {
+                    const img = document.getElementById('ctl00_ContentPlaceHolder1_imgCaptcha');
+                    if (!img || !img.complete) return null;
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth || img.width || 150;
+                    canvas.height = img.naturalHeight || img.height || 50;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    const dataUrl = canvas.toDataURL('image/png');
+                    return dataUrl.indexOf(',') !== -1 ? dataUrl.split(',')[1] : null;
+                }''')
+                if b64_str:
+                    image_bytes = base64.b64decode(b64_str)
             except Exception:
                 pass
 
+            if not image_bytes:
+                captcha_img = page.locator('#ctl00_ContentPlaceHolder1_imgCaptcha')
+                await page.wait_for_function("document.getElementById('ctl00_ContentPlaceHolder1_imgCaptcha')?.complete", timeout=2000)
+                image_bytes = await captcha_img.screenshot()
+
+            captcha_text = await solve_captcha(image_bytes)
+
+            await page.locator('#ctl00_ContentPlaceHolder1_txtUdyamNo').fill(udyam_number, timeout=2500)
+            await page.locator('#ctl00_ContentPlaceHolder1_txtCaptcha').fill(captcha_text)
+
             try:
-                async with page.expect_navigation(wait_until="load", timeout=3500):
+                async with page.expect_navigation(wait_until="domcontentloaded", timeout=3500):
                     await page.locator('#ctl00_ContentPlaceHolder1_btnVerify').click(force=True, timeout=2500)
             except PlaywrightTimeoutError:
                 pass
@@ -239,7 +245,7 @@ async def process_udyam_number(page: Page, udyam_number: str) -> tuple[str, str,
                 dor_locator = page.locator('#ctl00_ContentPlaceHolder1_lblACKNOWLEDGEMENT')
                 dor_text = (await dor_locator.inner_text()).strip() if await dor_locator.is_visible() else ""
 
-                # Fast return to Udyam_Verify.aspx via window.location (0.3s)
+                # Fast return to Udyam_Verify.aspx via window.location (0.2s)
                 try:
                     async with page.expect_navigation(wait_until="domcontentloaded", timeout=2500):
                         await page.evaluate("window.location = 'Udyam_Verify.aspx';")
@@ -253,11 +259,14 @@ async def process_udyam_number(page: Page, udyam_number: str) -> tuple[str, str,
                     continue  # Retry captcha
                 else:
                     reason = await detect_failure_reason(page, "Record Not Found / Unregistered")
-                    try:
-                        async with page.expect_navigation(wait_until="domcontentloaded", timeout=2000):
-                            await page.evaluate("window.location = 'Udyam_Verify.aspx';")
-                    except Exception:
-                        pass
+                    # High-speed optimization: on failure, the portal response is already on Udyam_Verify.aspx with a new captcha ready!
+                    # Do NOT reload window.location if already on Udyam_Verify.aspx
+                    if "Udyam_Verify.aspx" not in page.url:
+                        try:
+                            async with page.expect_navigation(wait_until="domcontentloaded", timeout=2000):
+                                await page.evaluate("window.location = 'Udyam_Verify.aspx';")
+                        except Exception:
+                            pass
                     return f"Failed ({reason})", "", "", reason, ""
 
         except PlaywrightTimeoutError:
@@ -390,98 +399,129 @@ async def execute_district_extraction(
     start_time = time.perf_counter()
     consecutive_not_found = 0
 
-    async with AsyncStealthySession(headless=True) as session:
-        page = await session.context.new_page()
-        await page.route("**/*", abort_unnecessary_resources)
+    num_workers = max(1, int(concurrency or 2))
+    next_num = start_num
+    num_lock = asyncio.Lock()
+    batch_lock = asyncio.Lock()
+    probe_lock = asyncio.Lock()
+    stop_event_local = asyncio.Event()
+
+    async def get_next_job():
+        nonlocal next_num
+        async with num_lock:
+            while next_num <= limit:
+                if stop_event and stop_event.is_set():
+                    return None, None
+                if stop_event_local.is_set():
+                    return None, None
+                num = next_num
+                next_num += 1
+                udyam_id = f"UDYAM-{clean_prefix}-{num:07d}"
+                if udyam_id not in processed_numbers:
+                    return num, udyam_id
+            return None, None
+
+    async def worker_loop(worker_id: int, page: Page):
+        nonlocal total_success, total_failures, last_record_id, latest_dor_str
+        nonlocal consecutive_not_found, is_at_cutting_edge
         records_processed = 0
 
-        current_num = start_num
-
-        while current_num <= limit:
+        while True:
             if stop_event and stop_event.is_set():
-                logging.info("Extraction stopped by user or coordinator.")
+                break
+            if stop_event_local.is_set():
                 break
 
-            # Refresh page every 50 records to clear memory leaks
-            if records_processed >= 50:
+            current_n, udyam_number = await get_next_job()
+            if current_n is None:
+                break
+
+            # Refresh page every 60 records to prevent memory leaks on SBCs
+            if records_processed >= 60:
                 try:
                     await page.close()
                 except Exception:
                     pass
                 page = await session.context.new_page()
                 await page.route("**/*", abort_unnecessary_resources)
+                try:
+                    await page.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=4000)
+                except Exception:
+                    pass
                 records_processed = 0
-
-            udyam_number = f"UDYAM-{clean_prefix}-{current_num:07d}"
-
-            if udyam_number in processed_numbers:
-                current_num += 1
-                continue
 
             t0 = time.perf_counter()
             status, enterprise_name, html_content, failure_reason, dor_text = await process_udyam_number(page, udyam_number)
             elapsed = round(time.perf_counter() - t0, 2)
             records_processed += 1
 
-            if status.startswith("Success"):
-                total_success += 1
-                last_record_id = udyam_number
-                consecutive_not_found = 0
-                results_batch.append([udyam_number, status, enterprise_name, dor_text, elapsed])
-                html_batch[udyam_number] = html_content
+            should_flush = False
+            async with batch_lock:
+                if status.startswith("Success"):
+                    total_success += 1
+                    last_record_id = udyam_number
+                    consecutive_not_found = 0
+                    results_batch.append([udyam_number, status, enterprise_name, dor_text, elapsed])
+                    html_batch[udyam_number] = html_content
 
-                if dor_text:
-                    latest_dor_str = dor_text
-                    dor_date = parse_dor(dor_text)
-                    if dor_date and dor_date >= last_business_day:
-                        is_at_cutting_edge = True
+                    if dor_text:
+                        latest_dor_str = dor_text
+                        dor_date = parse_dor(dor_text)
+                        if dor_date and dor_date >= last_business_day:
+                            is_at_cutting_edge = True
 
-                logging.info(f"[{udyam_number}] OK ({elapsed}s) -> {enterprise_name} | DOR: {dor_text}")
-                current_num += 1
+                    logging.info(f"[W-{worker_id}] [{udyam_number}] OK ({elapsed}s) -> {enterprise_name} | DOR: {dor_text}")
 
-            else:
-                total_failures += 1
-                reason = failure_reason or status.replace("Failed (", "").rstrip(")")
-                ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                failed_batch.append([udyam_number, status, reason, ts, elapsed])
-                consecutive_not_found += 1
-                logging.info(f"[{udyam_number}] FAIL -> Reason: {reason} ({elapsed}s)")
+                else:
+                    total_failures += 1
+                    reason = failure_reason or status.replace("Failed (", "").rstrip(")")
+                    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    failed_batch.append([udyam_number, status, reason, ts, elapsed])
+                    consecutive_not_found += 1
+                    logging.info(f"[W-{worker_id}] [{udyam_number}] FAIL -> Reason: {reason} ({elapsed}s)")
 
-                # BOUNDARY DETECTION 1: Cutting Edge Early Exit
-                if is_at_cutting_edge and consecutive_not_found >= 5:
-                    logging.info(f"*** District {clean_prefix} completed: Reached today/Friday DOR ({latest_dor_str}) and hit 5 consecutive Not Founds. ***")
-                    break
+                    # BOUNDARY DETECTION 1: Cutting Edge Early Exit
+                    if is_at_cutting_edge and consecutive_not_found >= 5:
+                        logging.info(f"*** District {clean_prefix} completed: Reached today/Friday DOR ({latest_dor_str}) and hit 5 consecutive Not Founds. ***")
+                        stop_event_local.set()
 
-                # BOUNDARY DETECTION 2: Leapfrog Lookahead Probing
-                if consecutive_not_found >= 5:
-                    logging.info(f"Checking leapfrog probes (+10, +25, +50, +100) for {clean_prefix}...")
-                    tail_empty = True
-                    for probe_offset in (10, 25, 50, 100):
-                        probe_num = current_num + probe_offset
-                        if probe_num > limit:
-                            break
-                        probe_id = f"UDYAM-{clean_prefix}-{probe_num:07d}"
-                        p_status, _, _, _, _ = await process_udyam_number(page, probe_id)
-                        if p_status.startswith("Success"):
-                            logging.info(f"Leapfrog probe found valid record at {probe_id}! Resuming from {probe_id}...")
-                            current_num = probe_num - 1
-                            tail_empty = False
-                            consecutive_not_found = 0
-                            break
+                    # BOUNDARY DETECTION 2: Leapfrog Lookahead Probing
+                    elif consecutive_not_found >= 5 and not stop_event_local.is_set():
+                        async with probe_lock:
+                            if consecutive_not_found >= 5 and not stop_event_local.is_set():
+                                logging.info(f"[W-{worker_id}] Checking leapfrog probes (+10, +25, +50, +100) for {clean_prefix}...")
+                                tail_empty = True
+                                for probe_offset in (10, 25, 50, 100):
+                                    probe_num = current_n + probe_offset
+                                    if probe_num > limit:
+                                        break
+                                    probe_id = f"UDYAM-{clean_prefix}-{probe_num:07d}"
+                                    p_status, _, _, _, _ = await process_udyam_number(page, probe_id)
+                                    if p_status.startswith("Success"):
+                                        logging.info(f"Leapfrog probe found valid record at {probe_id}! Resuming from {probe_id}...")
+                                        async with num_lock:
+                                            nonlocal next_num
+                                            if next_num < probe_num:
+                                                next_num = probe_num
+                                        tail_empty = False
+                                        consecutive_not_found = 0
+                                        break
 
-                    if tail_empty:
-                        logging.info(f"*** District {clean_prefix} completed: All leapfrog probes empty up to +100. Finishing district. ***")
-                        break
+                                if tail_empty:
+                                    logging.info(f"*** District {clean_prefix} completed: All leapfrog probes empty up to +100. Finishing district. ***")
+                                    stop_event_local.set()
 
-                current_num += 1
+                if len(results_batch) + len(failed_batch) >= BATCH_SIZE:
+                    should_flush = True
+                    flush_res = list(results_batch)
+                    flush_fail = list(failed_batch)
+                    flush_html = dict(html_batch)
+                    results_batch.clear()
+                    failed_batch.clear()
+                    html_batch.clear()
 
-            # Flush batch and invoke heartbeat
-            if len(results_batch) + len(failed_batch) >= BATCH_SIZE:
-                flush_results_batch(results_dir, failed_dir, results_batch, failed_batch, html_batch)
-                results_batch.clear()
-                failed_batch.clear()
-                html_batch.clear()
-
+            if should_flush:
+                flush_results_batch(results_dir, failed_dir, flush_res, flush_fail, flush_html)
                 if heartbeat_callback:
                     total_time = max(1.0, time.perf_counter() - start_time)
                     speed_rpm = round((total_success / total_time) * 60, 1)
@@ -494,9 +534,31 @@ async def execute_district_extraction(
                         speed_rpm=speed_rpm
                     )
 
-        # Final flush
+    async with AsyncStealthySession(headless=True) as session:
+        pages = []
+        for _ in range(num_workers):
+            p = await session.context.new_page()
+            await p.route("**/*", abort_unnecessary_resources)
+            try:
+                await p.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=4000)
+            except Exception:
+                pass
+            pages.append(p)
+
+        logging.info(f"🚀 Initialized {num_workers} parallel extraction workers for district {clean_prefix}...")
+        worker_tasks = [
+            asyncio.create_task(worker_loop(w_idx + 1, pages[w_idx]))
+            for w_idx in range(num_workers)
+        ]
+        await asyncio.gather(*worker_tasks)
+
+    # Final flush
+    async with batch_lock:
         if results_batch or failed_batch:
             flush_results_batch(results_dir, failed_dir, results_batch, failed_batch, html_batch)
+            results_batch.clear()
+            failed_batch.clear()
+            html_batch.clear()
 
     return {
         "district_code": clean_prefix,
