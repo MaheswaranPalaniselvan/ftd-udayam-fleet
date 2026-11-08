@@ -1095,6 +1095,59 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       letter-spacing: 0.5px;
     }}
 
+    /* Interactive Sortable Headers */
+    .sortable-th {{
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }}
+    .sortable-th:hover {{
+      background: rgba(56, 189, 248, 0.12) !important;
+      color: #fff !important;
+    }}
+    .sortable-th.active {{
+      color: #38bdf8 !important;
+      background: rgba(56, 189, 248, 0.08) !important;
+    }}
+    .sort-icon {{
+      display: inline-block;
+      margin-left: 4px;
+      font-size: 0.72rem;
+      opacity: 0.6;
+      transition: opacity 0.15s;
+    }}
+    .sortable-th:hover .sort-icon,
+    .sortable-th.active .sort-icon {{
+      opacity: 1;
+    }}
+
+    /* Sort Control Dropdown in Toolbar */
+    .sort-control-wrapper {{
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 2px 8px;
+    }}
+    .sort-dropdown {{
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      padding: 0.45rem 0.6rem;
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      font-weight: 500;
+      outline: none;
+      cursor: pointer;
+    }}
+    .sort-dropdown option {{
+      background: #0f1624;
+      color: #fff;
+    }}
+
     .sub-table td {{
       padding: 0.7rem 0.85rem;
       border-bottom: 1px solid rgba(255, 255, 255, 0.04);
@@ -1443,6 +1496,25 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
         <span class="chip" data-status="outdated" onclick="filterStatus('outdated')">🔴 Outdated ({data['kpi']['outdated_districts']})</span>
         <span class="chip" data-status="inprogress" onclick="filterStatus('inprogress')">⚡ In Progress ({data['kpi']['inprogress_districts']})</span>
       </div>
+      <!-- Sort Selector Dropdown -->
+      <div class="sort-control-wrapper" title="Change district and state sorting order">
+        <span style="font-size: 0.76rem; color: var(--text-dim); font-weight: 700; letter-spacing: 0.5px;">SORT:</span>
+        <select id="sortSelect" class="sort-dropdown" onchange="handleSortDropdownChange(this.value)">
+          <option value="code_asc">District Code (Ascending)</option>
+          <option value="code_desc">District Code (Descending)</option>
+          <option value="name_asc">District Name (A → Z)</option>
+          <option value="name_desc">District Name (Z → A)</option>
+          <option value="harvest_date_desc">Last Date Harvested (Newest First)</option>
+          <option value="harvest_date_asc">Last Date Harvested (Oldest First)</option>
+          <option value="extracted_desc">Extracted Records (Highest First)</option>
+          <option value="extracted_asc">Extracted Records (Lowest First)</option>
+          <option value="status_desc">Status (Live → In Progress → Outdated)</option>
+          <option value="failed_desc">Failed Records (Highest First)</option>
+          <option value="speed_desc">Speed (Highest rpm First)</option>
+          <option value="last_record_asc">Last Record Extracted (A → Z)</option>
+          <option value="claimed_by_asc">Worker / Node (A → Z)</option>
+        </select>
+      </div>
       <div class="action-buttons">
         <button class="btn" onclick="toggleAllStates(true)">⬇️ Expand All</button>
         <button class="btn" onclick="toggleAllStates(false)">⬆️ Collapse All</button>
@@ -1549,6 +1621,137 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
     const RAW_DATA = {json_payload};
     let currentFilter = 'all';
     let searchQuery = '';
+    let currentSortField = 'code';
+    let currentSortDir = 'asc';
+    const openStateSet = new Set();
+
+    function parseHarvestDate(dStr) {{
+      if (!dStr || dStr === '-' || dStr === 'None') return 0;
+      const parsed = Date.parse(dStr);
+      return isNaN(parsed) ? 0 : parsed;
+    }}
+
+    function getSortIcon(field) {{
+      if (currentSortField !== field) return '↕';
+      return currentSortDir === 'asc' ? '▲' : '▼';
+    }}
+
+    function setDistrictSort(field) {{
+      if (currentSortField === field) {{
+        currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+      }} else {{
+        currentSortField = field;
+        if (['extracted', 'harvest_date', 'failed', 'speed', 'status'].includes(field)) {{
+          currentSortDir = 'desc';
+        }} else {{
+          currentSortDir = 'asc';
+        }}
+      }}
+      syncSortDropdownUI();
+      renderView();
+    }}
+
+    function handleSortDropdownChange(val) {{
+      if (!val) return;
+      const lastUnderscore = val.lastIndexOf('_');
+      if (lastUnderscore !== -1) {{
+        currentSortField = val.substring(0, lastUnderscore);
+        currentSortDir = val.substring(lastUnderscore + 1);
+      }}
+      renderView();
+    }}
+
+    function syncSortDropdownUI() {{
+      const select = document.getElementById('sortSelect');
+      if (!select) return;
+      const targetVal = `${{currentSortField}}_${{currentSortDir}}`;
+      let found = false;
+      for (let i = 0; i < select.options.length; i++) {{
+        if (select.options[i].value === targetVal) {{
+          select.selectedIndex = i;
+          found = true;
+          break;
+        }}
+      }}
+      if (!found) {{
+        for (let i = 0; i < select.options.length; i++) {{
+          if (select.options[i].value.startsWith(currentSortField + '_')) {{
+            select.selectedIndex = i;
+            break;
+          }}
+        }}
+      }}
+    }}
+
+    function sortDistrictsList(dists) {{
+      const sorted = [...dists];
+      sorted.sort((a, b) => {{
+        let diff = 0;
+        if (currentSortField === 'code') {{
+          diff = (a.code || '').localeCompare(b.code || '', undefined, {{ numeric: true, sensitivity: 'base' }});
+        }} else if (currentSortField === 'name') {{
+          diff = (a.name || '').localeCompare(b.name || '', undefined, {{ sensitivity: 'base' }});
+        }} else if (currentSortField === 'extracted') {{
+          diff = (Number(a.extracted) || 0) - (Number(b.extracted) || 0);
+        }} else if (currentSortField === 'failed') {{
+          diff = (Number(a.failed) || 0) - (Number(b.failed) || 0);
+        }} else if (currentSortField === 'speed') {{
+          diff = (parseFloat(a.speed) || 0) - (parseFloat(b.speed) || 0);
+        }} else if (currentSortField === 'last_record') {{
+          diff = (a.last_record || '').localeCompare(b.last_record || '', undefined, {{ numeric: true, sensitivity: 'base' }});
+        }} else if (currentSortField === 'claimed_by') {{
+          diff = (a.claimed_by || '').localeCompare(b.claimed_by || '', undefined, {{ sensitivity: 'base' }});
+        }} else if (currentSortField === 'status') {{
+          const rank = (d) => {{
+            if (d.is_live) return 3;
+            const st = (d.status || '').toLowerCase();
+            if (st === 'in progress') return 2;
+            if (st === 'completed') return 1;
+            return 0;
+          }};
+          diff = rank(a) - rank(b);
+        }} else if (currentSortField === 'harvest_date') {{
+          const timeA = parseHarvestDate(a.harvest_date);
+          const timeB = parseHarvestDate(b.harvest_date);
+          if (timeA === 0 && timeB === 0) diff = 0;
+          else if (timeA === 0) return 1;
+          else if (timeB === 0) return -1;
+          else diff = timeA - timeB;
+        }}
+        return currentSortDir === 'desc' ? -diff : diff;
+      }});
+      return sorted;
+    }}
+
+    function sortStatesList(states) {{
+      const sorted = [...states];
+      sorted.sort((a, b) => {{
+        let diff = 0;
+        if (currentSortField === 'code') {{
+          diff = (a.code || '').localeCompare(b.code || '', undefined, {{ numeric: true, sensitivity: 'base' }});
+        }} else if (currentSortField === 'name') {{
+          diff = (a.name || '').localeCompare(b.name || '', undefined, {{ sensitivity: 'base' }});
+        }} else if (currentSortField === 'extracted') {{
+          diff = (Number(a.extracted_total) || 0) - (Number(b.extracted_total) || 0);
+        }} else if (currentSortField === 'status') {{
+          const rateA = a.district_count ? (a.live_count / a.district_count) : 0;
+          const rateB = b.district_count ? (b.live_count / b.district_count) : 0;
+          diff = rateA - rateB;
+        }} else if (currentSortField === 'harvest_date') {{
+          const timeA = parseHarvestDate(a.latest_harvest);
+          const timeB = parseHarvestDate(b.latest_harvest);
+          if (timeA === 0 && timeB === 0) diff = 0;
+          else if (timeA === 0) return 1;
+          else if (timeB === 0) return -1;
+          else diff = timeA - timeB;
+        }} else {{
+          diff = (a.code || '').localeCompare(b.code || '', undefined, {{ numeric: true, sensitivity: 'base' }});
+          return diff;
+        }}
+        return currentSortDir === 'desc' ? -diff : diff;
+      }});
+      return sorted;
+    }}
 
     function renderView() {{
       const listEl = document.getElementById('drilldownList');
@@ -1558,7 +1761,9 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       let visibleStates = 0;
       const q = searchQuery.toLowerCase().trim();
 
-      RAW_DATA.states.forEach(state => {{
+      const sortedStates = sortStatesList(RAW_DATA.states);
+
+      sortedStates.forEach(state => {{
         // Filter districts
         let filteredDists = state.districts.filter(d => {{
           // Status filter
@@ -1589,7 +1794,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
         }}
 
         visibleStates++;
-        const isAutoOpen = Boolean(q); // Auto-expand when searching
+        const isAutoOpen = Boolean(q) || openStateSet.has(state.code);
 
         const safeId = state.code.replace(/[^a-zA-Z0-9]/g, '_');
         const stateCard = document.createElement('div');
@@ -1615,8 +1820,9 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
         }}
 
         // District rows HTML
+        const sortedDists = sortDistrictsList(filteredDists);
         let distRowsHtml = '';
-        filteredDists.forEach(d => {{
+        sortedDists.forEach(d => {{
           let dStatusClass = 'status-outdated';
           let dStatusText = 'Outdated (Not Started)';
           let dTooltip = 'District has not been harvested yet. Data is outdated.';
@@ -1700,15 +1906,33 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
             <table class="sub-table">
               <thead>
                 <tr>
-                  <th>Code</th>
-                  <th>District Name</th>
-                  <th>Data Freshness</th>
-                  <th>Extracted Records</th>
-                  <th>Last Record Extracted</th>
-                  <th>Last Date Harvested</th>
-                  <th>Failed</th>
-                  <th>Node / Worker</th>
-                  <th>Speed</th>
+                  <th class="sortable-th ${{currentSortField === 'code' ? 'active' : ''}}" onclick="setDistrictSort('code')" title="Click to sort by District Code">
+                    Code <span class="sort-icon">${{getSortIcon('code')}}</span>
+                  </th>
+                  <th class="sortable-th ${{currentSortField === 'name' ? 'active' : ''}}" onclick="setDistrictSort('name')" title="Click to sort by District Name">
+                    District Name <span class="sort-icon">${{getSortIcon('name')}}</span>
+                  </th>
+                  <th class="sortable-th ${{currentSortField === 'status' ? 'active' : ''}}" onclick="setDistrictSort('status')" title="Click to sort by Data Freshness">
+                    Data Freshness <span class="sort-icon">${{getSortIcon('status')}}</span>
+                  </th>
+                  <th class="sortable-th ${{currentSortField === 'extracted' ? 'active' : ''}}" onclick="setDistrictSort('extracted')" title="Click to sort by Extracted Records">
+                    Extracted Records <span class="sort-icon">${{getSortIcon('extracted')}}</span>
+                  </th>
+                  <th class="sortable-th ${{currentSortField === 'last_record' ? 'active' : ''}}" onclick="setDistrictSort('last_record')" title="Click to sort by Last Record Extracted">
+                    Last Record Extracted <span class="sort-icon">${{getSortIcon('last_record')}}</span>
+                  </th>
+                  <th class="sortable-th ${{currentSortField === 'harvest_date' ? 'active' : ''}}" onclick="setDistrictSort('harvest_date')" title="Click to sort by Last Date Harvested">
+                    Last Date Harvested <span class="sort-icon">${{getSortIcon('harvest_date')}}</span>
+                  </th>
+                  <th class="sortable-th ${{currentSortField === 'failed' ? 'active' : ''}}" onclick="setDistrictSort('failed')" title="Click to sort by Failed Records">
+                    Failed <span class="sort-icon">${{getSortIcon('failed')}}</span>
+                  </th>
+                  <th class="sortable-th ${{currentSortField === 'claimed_by' ? 'active' : ''}}" onclick="setDistrictSort('claimed_by')" title="Click to sort by Worker / Node">
+                    Node / Worker <span class="sort-icon">${{getSortIcon('claimed_by')}}</span>
+                  </th>
+                  <th class="sortable-th ${{currentSortField === 'speed' ? 'active' : ''}}" onclick="setDistrictSort('speed')" title="Click to sort by Speed">
+                    Speed <span class="sort-icon">${{getSortIcon('speed')}}</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -1729,6 +1953,11 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       const card = document.getElementById(`state-${{safeId}}`);
       if (card) {{
         card.classList.toggle('open');
+        if (card.classList.contains('open')) {{
+          openStateSet.add(code);
+        }} else {{
+          openStateSet.delete(code);
+        }}
       }}
     }}
 
@@ -1740,6 +1969,11 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
           card.classList.remove('open');
         }}
       }});
+      if (open) {{
+        RAW_DATA.states.forEach(s => openStateSet.add(s.code));
+      }} else {{
+        openStateSet.clear();
+      }}
     }}
 
     function handleSearch() {{
