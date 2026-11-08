@@ -61,6 +61,50 @@ def format_indian_num(num: int) -> str:
     return ",".join(groups) + "," + last_three
 
 
+def normalize_udyam_number(val, district_code: str = "") -> str:
+    """
+    Normalizes a last_record value into canonical UDYAM-{CODE}-{SEQ:07d} format.
+    Handles:
+    - Already canonical format: 'UDYAM-TN-01-0037524' -> unchanged (ensures 7 digits)
+    - Prefixed without 'UDYAM-': 'TN-01-0037524' -> 'UDYAM-TN-01-0037524'
+    - Raw numbers or numbers with commas/floats: '1,32,800', 76818.0, '11392' -> 'UDYAM-TN-11-0132800'
+    - Blank / None / '-' / '0' -> '-'
+    """
+    if val is None:
+        return "-"
+    s = str(val).strip()
+    if not s or s in ("None", "-", "", "null", "0", "0.0"):
+        return "-"
+
+    # 1. Already in canonical UDYAM-{CODE}-{SEQ} format
+    if s.upper().startswith("UDYAM-"):
+        m = re.match(r"^(UDYAM-[A-Z]{2}-\d{2}-)(\d+)$", s, re.IGNORECASE)
+        if m:
+            prefix_part = m.group(1).upper()
+            seq_part = int(m.group(2))
+            return f"{prefix_part}{seq_part:07d}"
+        return s.upper()
+
+    # 2. Format like TN-01-0012345
+    m_code = re.match(r"^([A-Z]{2}-\d{2}-)(\d+)$", s, re.IGNORECASE)
+    if m_code:
+        seq_part = int(m_code.group(2))
+        return f"UDYAM-{m_code.group(1).upper()}{seq_part:07d}"
+
+    # 3. Numeric string (with commas or decimal point, e.g. '1,32,800', 76818.0, 11392)
+    cleaned = s.replace(",", "").split(".")[0].strip()
+    digits = re.sub(r"[^\d]", "", cleaned)
+    if digits and int(digits) > 0:
+        seq = int(digits)
+        code = district_code.strip().upper()
+        if code and "-" in code:
+            return f"UDYAM-{code}-{seq:07d}"
+        elif code:
+            return f"UDYAM-{code}-01-{seq:07d}"
+
+    return s
+
+
 def parse_date_to_datetime(val) -> Optional[datetime]:
     """Parses various date and timestamp formats into a datetime object."""
     if not val or str(val).strip() in ("None", "", "-", "null"):
@@ -296,7 +340,7 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                     "code": code,
                     "name": loc_name,
                     "extracted": extracted,
-                    "last_record": str(r[9] or "").strip(),
+                    "last_record": normalize_udyam_number(r[9], code),
                     "harvest_date": harvest_date,
                     "failed": clean_int(r[12]),
                     "status": status_raw,
@@ -399,6 +443,11 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                         d["live_status"] = "Outdated"
                     else:
                         d["live_status"] = "Outdated (Not Started)"
+
+    # Normalize and canonicalize all last_record fields across all districts
+    for s_name, s_data in states_dict.items():
+        for d in s_data["districts"]:
+            d["last_record"] = normalize_udyam_number(d.get("last_record"), d.get("code", ""))
 
     states_list = list(states_dict.values())
 
@@ -1082,37 +1131,203 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       .portal-stats-pills {{ display: none; }}
     }}
 
-    /* Fleet Health Modal */
-    .fleet-modal-overlay {{
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(5px);
-      z-index: 9999; display: flex; align-items: center; justify-content: center;
+    /* View Switcher Controls */
+    .view-switch-group {{
+      display: inline-flex;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      padding: 4px;
+      gap: 4px;
     }}
-    .fleet-modal-content {{
-      background: #181825; border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 14px; width: 92%; max-width: 860px; max-height: 85vh;
-      overflow-y: auto; padding: 22px; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    .view-tab-btn {{
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      padding: 0.55rem 1.15rem;
+      border-radius: 7px;
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }}
-    .fleet-modal-header {{
-      display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px; margin-bottom: 16px;
+    .view-tab-btn:hover {{
+      color: #fff;
+      background: rgba(255, 255, 255, 0.06);
     }}
-    .fleet-close-btn {{
-      background: none; border: none; color: #a6adc8; font-size: 1.6rem;
-      cursor: pointer; line-height: 1; padding: 0 6px;
+    .view-tab-btn.active {{
+      background: #38bdf8;
+      color: #090d16;
+      font-weight: 700;
+      box-shadow: 0 2px 10px rgba(56, 189, 248, 0.4);
     }}
-    .fleet-close-btn:hover {{ color: #fff; }}
-    .fleet-modal-summary {{
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;
+    .view-tab-btn.active .header-count-pill {{
+      background: #090d16;
+      color: #38bdf8;
     }}
-    .fleet-card {{
-      background: #1e1e2e; border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 10px; padding: 12px;
+    .header-count-pill {{
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #34d399;
+      transition: all 0.2s;
     }}
-    .fleet-lbl {{ font-size: 0.68rem; font-weight: 700; color: #6c7086; display: block; margin-bottom: 4px; }}
-    .fleet-val {{ font-size: 1.3rem; font-weight: 800; color: #cdd6f4; }}
-    .fleet-table-wrapper {{
-      max-height: 380px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; margin-top: 8px;
+
+    /* Fleet View Styles */
+    .fleet-view-container {{
+      margin-top: 0.5rem;
+      animation: fadeIn 0.2s ease-in-out;
+    }}
+    .fleet-hero-banner {{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      background: linear-gradient(135deg, rgba(24, 24, 37, 0.95), rgba(17, 17, 27, 0.98));
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 14px;
+      padding: 1.25rem 1.75rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      gap: 1rem;
+    }}
+    .fleet-hero-left {{
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }}
+    .fleet-hero-title h2 {{
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }}
+    .fleet-hero-title p {{
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }}
+    .fleet-kpi-grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }}
+    .fleet-kpi-card {{
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 1.15rem 1.35rem;
+      transition: transform 0.2s, border-color 0.2s;
+    }}
+    .fleet-kpi-card:hover {{
+      transform: translateY(-2px);
+      border-color: rgba(56, 189, 248, 0.4);
+    }}
+    .fleet-kpi-label {{
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 0.35rem;
+    }}
+    .fleet-kpi-value {{
+      font-family: var(--font-mono);
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: #fff;
+    }}
+    .fleet-kpi-sub {{
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }}
+    .fleet-table-card {{
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 1.25rem;
+      overflow: hidden;
+    }}
+    .fleet-table-toolbar {{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }}
+    .fleet-search-box {{
+      background: var(--bg-base);
+      border: 1px solid var(--border-card);
+      border-radius: 8px;
+      padding: 0.55rem 0.95rem;
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      width: 280px;
+      outline: none;
+    }}
+    .fleet-search-box:focus {{
+      border-color: #38bdf8;
+    }}
+    .fleet-filter-chips {{
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }}
+    .fleet-filter-chip {{
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 0.35rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }}
+    .fleet-filter-chip:hover {{
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }}
+    .fleet-filter-chip.active {{
+      background: rgba(56, 189, 248, 0.2);
+      border-color: rgba(56, 189, 248, 0.5);
+      color: #38bdf8;
+    }}
+    .fleet-status-table {{
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }}
+    .fleet-status-table th {{
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-muted);
+      font-weight: 600;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-subtle);
+    }}
+    .fleet-status-table td {{
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+    }}
+    .fleet-status-table tr:hover td {{
+      background: rgba(255, 255, 255, 0.02);
     }}
   </style>
 </head>
@@ -1128,14 +1343,26 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
           <p>State & District Hierarchical Coverage & Extraction Dashboard</p>
         </div>
       </div>
-      <div class="brand-right" style="display: flex; gap: 8px; align-items: center;">
-        <button class="btn" onclick="openFleetModal()" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; cursor: pointer; font-weight: 600;">🌐 Live Fleet Status</button>
+      <div class="brand-right" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <!-- Integrated View Switcher -->
+        <div class="view-switch-group">
+          <button id="nav-btn-coverage" class="view-tab-btn active" onclick="switchMainView('coverage')">
+            📊 State Coverage View
+          </button>
+          <button id="nav-btn-fleet" class="view-tab-btn" onclick="switchMainView('fleet')">
+            <span class="pulse-dot"></span> 🌐 Fleet Status View <span id="header-fleet-badge" class="header-count-pill">-- Active</span>
+          </button>
+        </div>
         <button class="btn btn-primary" onclick="exportFilteredExcel()">📊 Export Excel (.xlsx)</button>
       </div>
     </header>
 
-    <!-- Official Live Government Portal Facts Banner -->
-    <div class="portal-banner">
+    <!-- ========================================== -->
+    <!-- VIEW 1: STATE COVERAGE DASHBOARD VIEW     -->
+    <!-- ========================================== -->
+    <div id="view-coverage" class="coverage-view-container" style="display: block;">
+      <!-- Official Live Government Portal Facts Banner -->
+      <div class="portal-banner">
       <div class="portal-banner-left">
         <span class="portal-emblem">🏛️</span>
         <div class="portal-text">
@@ -1231,8 +1458,92 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       <h3>No matching states or districts found</h3>
       <p style="margin-top: 0.5rem; font-size: 0.85rem;">Try adjusting your search terms or filter selection.</p>
     </div>
+  </div> <!-- end of #view-coverage -->
 
-  </div>
+  <!-- ========================================== -->
+  <!-- VIEW 2: CENTRAL FLEET STATUS MONITOR VIEW  -->
+  <!-- ========================================== -->
+  <div id="view-fleet" class="fleet-view-container" style="display: none;">
+    <!-- Fleet Hero Banner -->
+    <div class="fleet-hero-banner">
+      <div class="fleet-hero-left">
+        <span style="font-size: 2.2rem;">🌐</span>
+        <div class="fleet-hero-title">
+          <h2>Central Fleet Live Health & Daemon Monitor <span class="pill-badge"><span class="pulse-dot"></span> Live Telemetry</span></h2>
+          <p>Real-time autonomous tracking across Raspberry Pi 5, Pi 4, Jetson Nano & Cloud Workers</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <span id="fleetSyncTimerMsg" style="font-size: 0.8rem; color: var(--text-dim);">Auto-refreshing every 15s</span>
+        <button onclick="fetchFleetStatus()" class="btn" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: #fff; font-size: 0.82rem; padding: 0.5rem 0.9rem; cursor: pointer; border-radius: 8px;">
+          🔄 Refresh Telemetry
+        </button>
+      </div>
+    </div>
+
+    <!-- Fleet KPI Grid -->
+    <div class="fleet-kpi-grid">
+      <div class="fleet-kpi-card">
+        <div class="fleet-kpi-label">Active Daemons</div>
+        <div class="fleet-kpi-value" id="kpiActiveDaemons" style="color: #34d399;">--</div>
+        <div class="fleet-kpi-sub">SBCs & Workers Scraping Now</div>
+      </div>
+      <div class="fleet-kpi-card">
+        <div class="fleet-kpi-label">Districts Harvested</div>
+        <div class="fleet-kpi-value" id="kpiDistrictsCompleted" style="color: #38bdf8;">--</div>
+        <div class="fleet-kpi-sub">Total Leased & Completed (788 All India)</div>
+      </div>
+      <div class="fleet-kpi-card">
+        <div class="fleet-kpi-label">Fleet Aggregate Speed</div>
+        <div class="fleet-kpi-value" id="kpiAggregateSpeed" style="color: #fbbf24;">--</div>
+        <div class="fleet-kpi-sub">Combined Records / Minute</div>
+      </div>
+      <div class="fleet-kpi-card">
+        <div class="fleet-kpi-label">Last Coordinator Ping</div>
+        <div class="fleet-kpi-value" id="kpiLastSync" style="font-size: 1.4rem; color: #c084fc;">--</div>
+        <div class="fleet-kpi-sub">Google Apps Script Live Sync</div>
+      </div>
+    </div>
+
+    <!-- Live Daemon Status Table Card -->
+    <div class="fleet-table-card">
+      <div class="fleet-table-toolbar">
+        <input type="text" id="fleetSearchInput" class="fleet-search-box" placeholder="Search Machine / Daemon or District..." oninput="filterFleetTable()">
+        <div class="fleet-filter-chips">
+          <button class="fleet-filter-chip active" data-filter="all" onclick="setFleetFilter('all')">All Daemons</button>
+          <button class="fleet-filter-chip" data-filter="active" onclick="setFleetFilter('active')">🟢 Active</button>
+          <button class="fleet-filter-chip" data-filter="lagging" onclick="setFleetFilter('lagging')">🟡 Lagging</button>
+          <button class="fleet-filter-chip" data-filter="stalled" onclick="setFleetFilter('stalled')">🟠 Stalled</button>
+          <button class="fleet-filter-chip" data-filter="offline" onclick="setFleetFilter('offline')">🔴 Offline</button>
+        </div>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table class="fleet-status-table">
+          <thead>
+            <tr>
+              <th>Machine / Daemon Name</th>
+              <th>Hardware / Role</th>
+              <th>Live Status</th>
+              <th>Assigned District</th>
+              <th>Current Progress Record</th>
+              <th>Speed (rpm)</th>
+              <th>Last Heartbeat</th>
+            </tr>
+          </thead>
+          <tbody id="fleetTableBody">
+            <tr>
+              <td colspan="7" style="text-align: center; color: var(--text-dim); padding: 2.5rem;">
+                Connecting to Central Coordinator & fetching live fleet telemetry...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div> <!-- end of #view-fleet -->
+
+</div> <!-- end of .container -->
 
   <script>
     const RAW_DATA = {json_payload};
@@ -1476,69 +1787,128 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       XLSX.writeFile(wb, "FlawlessTech_Udayam_Coverage_DrillDown.xlsx");
     }}
 
-    // Fleet Status Live Modal Logic
+    // ==========================================
+    // DUAL-VIEW INTEGRATION & REAL-TIME FLEET TELEMETRY
+    // ==========================================
     const FLEET_API_URL = "https://script.google.com/macros/s/AKfycby3tmgH9PtjUhl6XfGrBfgRNZFQZaSLR0N4Dnff9tt9K5qjatyarJy_nnE0ulCtMNm2xA/exec";
-    let fleetTimer = null;
+    let currentMainView = 'coverage';
+    let fleetRawData = [];
+    let currentFleetFilter = 'all';
+    let fleetPollingTimer = null;
 
-    function openFleetModal() {{
-      const m = document.getElementById('fleetModal');
-      if (m) m.style.display = 'flex';
-      fetchFleetStatus();
-      if (!fleetTimer) {{
-        fleetTimer = setInterval(fetchFleetStatus, 15000);
-      }}
-    }}
+    function switchMainView(viewName) {{
+      currentMainView = viewName;
+      const coverageView = document.getElementById('view-coverage');
+      const fleetView = document.getElementById('view-fleet');
+      const btnCoverage = document.getElementById('nav-btn-coverage');
+      const btnFleet = document.getElementById('nav-btn-fleet');
 
-    function closeFleetModal(e) {{
-      if (!e || e.target.id === 'fleetModal' || (e.target.classList && e.target.classList.contains('fleet-close-btn'))) {{
-        const m = document.getElementById('fleetModal');
-        if (m) m.style.display = 'none';
-        if (fleetTimer) {{
-          clearInterval(fleetTimer);
-          fleetTimer = null;
-        }}
+      if (viewName === 'coverage') {{
+        if (coverageView) coverageView.style.display = 'block';
+        if (fleetView) fleetView.style.display = 'none';
+        if (btnCoverage) btnCoverage.classList.add('active');
+        if (btnFleet) btnFleet.classList.remove('active');
+      }} else {{
+        if (coverageView) coverageView.style.display = 'none';
+        if (fleetView) fleetView.style.display = 'block';
+        if (btnCoverage) btnCoverage.classList.remove('active');
+        if (btnFleet) btnFleet.classList.add('active');
+        fetchFleetStatus();
       }}
     }}
 
     async function fetchFleetStatus() {{
-      const msg = document.getElementById('fleetStatusMsg');
+      const msg = document.getElementById('fleetSyncTimerMsg');
       try {{
-        const res = await fetch(`${{FLEET_API_URL}}?action=fleet_status`);
-        const data = await res.json();
+        const resp = await fetch(`${{FLEET_API_URL}}?action=fleet_status`);
+        const data = await resp.json();
         if (data && data.status === 'ok') {{
-          renderFleetData(data);
-          if (msg) msg.textContent = `Last synced: ${{new Date().toLocaleTimeString()}} (Auto-refreshes every 15s)`;
+          fleetRawData = data.active_workers || [];
+          updateFleetUI(data);
+          if (msg) msg.textContent = `Last synced: ${{new Date().toLocaleTimeString()}} (auto-refresh 15s)`;
         }}
       }} catch (err) {{
-        if (msg) msg.textContent = `Sync notice: ${{err.message}}`;
+        if (msg) msg.textContent = `Sync note: ${{err.message}}`;
       }}
     }}
 
-    function renderFleetData(data) {{
+    function updateFleetUI(data) {{
       const activeWorkers = data.active_workers || [];
-      const tbody = document.getElementById('fleetTableBody');
-      const actCountEl = document.getElementById('fleetActiveCount');
-      const compCountEl = document.getElementById('fleetCompletedCount');
-      const spdEl = document.getElementById('fleetTotalSpeed');
-      const syncEl = document.getElementById('fleetLastSync');
+      const actCountEl = document.getElementById('kpiActiveDaemons');
+      const compCountEl = document.getElementById('kpiDistrictsCompleted');
+      const spdEl = document.getElementById('kpiAggregateSpeed');
+      const syncEl = document.getElementById('kpiLastSync');
+      const navBadge = document.getElementById('header-fleet-badge');
 
-      if (compCountEl) compCountEl.textContent = `${{data.districts_completed || 0}} / ${{data.total_districts || 785}}`;
+      if (compCountEl) compCountEl.textContent = `${{data.districts_completed || 0}} / ${{data.total_districts || 788}}`;
       if (syncEl) syncEl.textContent = new Date().toLocaleTimeString();
 
       let activeCount = 0;
       let totalSpeed = 0.0;
 
-      if (!activeWorkers.length) {{
-        if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-dim); padding: 24px;">No active workers reporting at this moment.</td></tr>';
-        if (actCountEl) actCountEl.textContent = '0 Active';
-        if (spdEl) spdEl.textContent = '0.0 rpm';
+      activeWorkers.forEach(w => {{
+        const mins = w.minutesAgo || 0;
+        const spd = parseFloat(w.speed) || 0.0;
+        if (mins <= 5) {{
+          activeCount++;
+          totalSpeed += spd;
+        }} else if (mins <= 15) {{
+          activeCount++;
+          totalSpeed += spd;
+        }}
+      }});
+
+      if (actCountEl) actCountEl.textContent = `${{activeCount}} Active`;
+      if (spdEl) spdEl.textContent = `${{totalSpeed.toFixed(1)}} rpm`;
+      if (navBadge) {{
+        navBadge.textContent = `${{activeCount}} Active`;
+        navBadge.style.color = activeCount > 0 ? '#34d399' : '#94a3b8';
+      }}
+
+      renderFleetTable();
+    }}
+
+    function setFleetFilter(filter) {{
+      currentFleetFilter = filter;
+      document.querySelectorAll('.fleet-filter-chip').forEach(c => {{
+        c.classList.toggle('active', c.getAttribute('data-filter') === filter);
+      }});
+      renderFleetTable();
+    }}
+
+    function filterFleetTable() {{
+      renderFleetTable();
+    }}
+
+    function renderFleetTable() {{
+      const tbody = document.getElementById('fleetTableBody');
+      if (!tbody) return;
+
+      const query = (document.getElementById('fleetSearchInput')?.value || '').toLowerCase().trim();
+
+      let filtered = fleetRawData.filter(w => {{
+        const mach = (w.machine || '').toLowerCase();
+        const dist = (w.district || '').toLowerCase();
+        if (query && !mach.includes(query) && !dist.includes(query)) return false;
+
+        const mins = w.minutesAgo || 0;
+        if (currentFleetFilter === 'active' && mins > 5) return false;
+        if (currentFleetFilter === 'lagging' && (mins <= 5 || mins > 15)) return false;
+        if (currentFleetFilter === 'stalled' && (mins <= 15 || mins > 60)) return false;
+        if (currentFleetFilter === 'offline' && mins <= 60) return false;
+
+        return true;
+      }});
+
+      if (!filtered.length) {{
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-dim); padding: 2rem;">No worker daemons matching current filter.</td></tr>';
         return;
       }}
 
-      activeWorkers.sort((a, b) => (a.minutesAgo || 0) - (b.minutesAgo || 0));
+      filtered.sort((a, b) => (a.minutesAgo || 0) - (b.minutesAgo || 0));
 
       let rows = '';
-      activeWorkers.forEach(w => {{
+      filtered.forEach(w => {{
         const mins = w.minutesAgo || 0;
         const spd = parseFloat(w.speed) || 0.0;
         let badgeClass = 'status-live';
@@ -1547,13 +1917,9 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
         if (mins <= 5) {{
           badgeClass = 'status-live';
           badgeText = '🟢 Active';
-          activeCount++;
-          totalSpeed += spd;
         }} else if (mins <= 15) {{
           badgeClass = 'status-outdated-progress';
           badgeText = '🟡 Lagging';
-          activeCount++;
-          totalSpeed += spd;
         }} else if (mins <= 60) {{
           badgeClass = 'status-outdated-progress';
           badgeText = '🟠 Stalled';
@@ -1562,86 +1928,38 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
           badgeText = '🔴 Offline';
         }}
 
+        const machName = w.machine || 'Unknown';
+        let hwBadge = '💻 Worker';
+        if (machName.toLowerCase().includes('pi5')) hwBadge = '🍓 Pi 5 (ARM64)';
+        else if (machName.toLowerCase().includes('pi4')) hwBadge = '🍓 Pi 4 (ARM64)';
+        else if (machName.toLowerCase().includes('jetson')) hwBadge = '⚡ Jetson Nano';
+        else if (machName.toLowerCase().includes('colab')) hwBadge = '☁️ Colab Cloud';
+        else if (machName.toLowerCase().includes('github')) hwBadge = '🐙 GitHub Runner';
+
         const lastPingText = mins === 0 ? 'Just now' : (mins === 1 ? '1 min ago' : (mins < 60 ? `${{mins}} mins ago` : `${{(mins/60).toFixed(1)}} hrs ago`));
 
         rows += `
           <tr>
-            <td style="font-weight: 600; color: #fff;">${{w.machine || 'Unknown'}}</td>
+            <td style="font-weight: 600; color: #fff;">${{machName}}</td>
+            <td><span class="pill-badge" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: var(--text-muted); font-size: 0.74rem;">${{hwBadge}}</span></td>
             <td><span class="status-badge ${{badgeClass}}">${{badgeText}}</span></td>
             <td class="dist-code">${{w.district || '-'}}</td>
-            <td class="mono-num" style="color: #93c5fd;">${{w.lastRecord || '-'}}</td>
-            <td class="mono-num" style="color: #34d399;">${{spd.toFixed(1)}} rpm</td>
-            <td style="color: var(--text-muted); font-size: 0.8rem;">${{lastPingText}}</td>
+            <td class="mono-num" style="color: #93c5fd; font-size: 0.88rem;">${{w.lastRecord || '-'}}</td>
+            <td class="mono-num" style="color: #34d399; font-weight: 600;">${{spd.toFixed(1)}} rpm</td>
+            <td style="color: var(--text-muted); font-size: 0.82rem;">${{lastPingText}}</td>
           </tr>
         `;
       }});
 
-      if (tbody) tbody.innerHTML = rows;
-      if (actCountEl) actCountEl.textContent = `${{activeCount}} Active`;
-      if (spdEl) spdEl.textContent = `${{totalSpeed.toFixed(1)}} rpm`;
+      tbody.innerHTML = rows;
     }}
 
     // Initial render
     renderView();
+    // Start background polling every 15s
+    fetchFleetStatus();
+    fleetPollingTimer = setInterval(fetchFleetStatus, 15000);
   </script>
-
-  <!-- Central Fleet Health Modal -->
-  <div id="fleetModal" class="fleet-modal-overlay" style="display: none;" onclick="closeFleetModal(event)">
-    <div class="fleet-modal-content" onclick="event.stopPropagation()">
-      <div class="fleet-modal-header">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 1.4rem;">🌐</span>
-          <div>
-            <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">Central Fleet Live Health</h3>
-            <span style="font-size: 0.76rem; color: var(--text-dim);">Live Raspberry Pi, Jetson & PC Daemons</span>
-          </div>
-        </div>
-        <button class="fleet-close-btn" onclick="closeFleetModal()">&times;</button>
-      </div>
-
-      <div class="fleet-modal-summary" id="fleetSummary">
-        <div class="fleet-card">
-          <span class="fleet-lbl">ACTIVE DAEMONS</span>
-          <span class="fleet-val" id="fleetActiveCount" style="color: #34d399;">-- Active</span>
-        </div>
-        <div class="fleet-card">
-          <span class="fleet-lbl">DISTRICTS COMPLETED</span>
-          <span class="fleet-val" id="fleetCompletedCount">-- / 785</span>
-        </div>
-        <div class="fleet-card">
-          <span class="fleet-lbl">AGGREGATE SPEED</span>
-          <span class="fleet-val" id="fleetTotalSpeed" style="color: #38bdf8;">-- rpm</span>
-        </div>
-        <div class="fleet-card">
-          <span class="fleet-lbl">LAST SYNC TIME</span>
-          <span class="fleet-val" id="fleetLastSync" style="font-size: 1rem; color: #fbbf24;">--</span>
-        </div>
-      </div>
-
-      <div style="margin: 14px 0 6px 0; display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-size: 0.8rem; color: var(--text-dim);" id="fleetStatusMsg">Auto-refreshes every 15s</span>
-        <button onclick="fetchFleetStatus()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 4px 12px; border-radius: 6px; font-size: 0.78rem; cursor: pointer;">🔄 Refresh Now</button>
-      </div>
-
-      <div class="fleet-table-wrapper">
-        <table class="sub-table" id="fleetTable">
-          <thead>
-            <tr>
-              <th>Machine / Board</th>
-              <th>Status</th>
-              <th>District</th>
-              <th>Current Record</th>
-              <th>Speed</th>
-              <th>Last Heartbeat</th>
-            </tr>
-          </thead>
-          <tbody id="fleetTableBody">
-            <tr><td colspan="6" style="text-align: center; color: var(--text-dim); padding: 24px;">Loading fleet telemetry from coordinator...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
 </body>
 </html>
 """

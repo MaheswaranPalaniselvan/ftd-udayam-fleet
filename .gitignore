@@ -42,7 +42,11 @@ live_dashboard.html
 live_udayam_extract.xlsx
 sample_drilldown_viewer.html
 generate_drilldown_sample.py
-public/
+sample_integrated_dashboard.html
+# Generated public temp files (track production index.html, assets, logo for Cloudflare Pages)
+public/*.xlsx
+public/*.csv
+public/*.txt
 
 # Local caches and legacy test directory
 gsheet_cache.json

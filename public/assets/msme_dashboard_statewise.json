@@ -1,0 +1,300 @@
+{
+  "totals": {
+    "micro": 55110920,
+    "small": 545971,
+    "medium": 42087,
+    "total_udyam": 55698978,
+    "uap_imes": 45025018,
+    "total_msmes": 100723996
+  },
+  "states": {
+    "ANDHRA PRADESH": {
+      "micro": 2494358,
+      "small": 18261,
+      "medium": 1099,
+      "total_udyam": 2513718,
+      "uap_imes": 2465393,
+      "total_msmes": 4979111
+    },
+    "ARUNACHAL PRADESH": {
+      "micro": 38951,
+      "small": 427,
+      "medium": 22,
+      "total_udyam": 39400,
+      "uap_imes": 26904,
+      "total_msmes": 66304
+    },
+    "ASSAM": {
+      "micro": 1392208,
+      "small": 7229,
+      "medium": 559,
+      "total_udyam": 1399996,
+      "uap_imes": 816252,
+      "total_msmes": 2216248
+    },
+    "BIHAR": {
+      "micro": 2381558,
+      "small": 13979,
+      "medium": 672,
+      "total_udyam": 2396209,
+      "uap_imes": 3245014,
+      "total_msmes": 5641223
+    },
+    "CHHATTISGARH": {
+      "micro": 850987,
+      "small": 9374,
+      "medium": 802,
+      "total_udyam": 861163,
+      "uap_imes": 843864,
+      "total_msmes": 1705027
+    },
+    "GOA": {
+      "micro": 106431,
+      "small": 1229,
+      "medium": 82,
+      "total_udyam": 107742,
+      "uap_imes": 52959,
+      "total_msmes": 160701
+    },
+    "GUJARAT": {
+      "micro": 3442810,
+      "small": 61418,
+      "medium": 4926,
+      "total_udyam": 3509154,
+      "uap_imes": 1906331,
+      "total_msmes": 5415485
+    },
+    "HARYANA": {
+      "micro": 1615701,
+      "small": 26022,
+      "medium": 2039,
+      "total_udyam": 1643762,
+      "uap_imes": 1069488,
+      "total_msmes": 2713250
+    },
+    "HIMACHAL PRADESH": {
+      "micro": 307560,
+      "small": 2856,
+      "medium": 228,
+      "total_udyam": 310644,
+      "uap_imes": 135363,
+      "total_msmes": 446007
+    },
+    "JHARKHAND": {
+      "micro": 934817,
+      "small": 6604,
+      "medium": 387,
+      "total_udyam": 941808,
+      "uap_imes": 1062281,
+      "total_msmes": 2004089
+    },
+    "KARNATAKA": {
+      "micro": 2985993,
+      "small": 34711,
+      "medium": 2639,
+      "total_udyam": 3023343,
+      "uap_imes": 3173779,
+      "total_msmes": 6197122
+    },
+    "KERALA": {
+      "micro": 1274377,
+      "small": 13898,
+      "medium": 869,
+      "total_udyam": 1289144,
+      "uap_imes": 1095501,
+      "total_msmes": 2384645
+    },
+    "MADHYA PRADESH": {
+      "micro": 2813737,
+      "small": 22199,
+      "medium": 1389,
+      "total_udyam": 2837325,
+      "uap_imes": 3259885,
+      "total_msmes": 6097210
+    },
+    "MAHARASHTRA": {
+      "micro": 8279340,
+      "small": 83678,
+      "medium": 7925,
+      "total_udyam": 8370943,
+      "uap_imes": 4191324,
+      "total_msmes": 12562267
+    },
+    "MANIPUR": {
+      "micro": 155327,
+      "small": 445,
+      "medium": 18,
+      "total_udyam": 155790,
+      "uap_imes": 67301,
+      "total_msmes": 223091
+    },
+    "MEGHALAYA": {
+      "micro": 75406,
+      "small": 471,
+      "medium": 31,
+      "total_udyam": 75908,
+      "uap_imes": 33134,
+      "total_msmes": 109042
+    },
+    "MIZORAM": {
+      "micro": 44431,
+      "small": 218,
+      "medium": 8,
+      "total_udyam": 44657,
+      "uap_imes": 23638,
+      "total_msmes": 68295
+    },
+    "NAGALAND": {
+      "micro": 58287,
+      "small": 198,
+      "medium": 12,
+      "total_udyam": 58497,
+      "uap_imes": 33909,
+      "total_msmes": 92406
+    },
+    "ODISHA": {
+      "micro": 1790441,
+      "small": 11014,
+      "medium": 655,
+      "total_udyam": 1802110,
+      "uap_imes": 1464178,
+      "total_msmes": 3266288
+    },
+    "PUNJAB": {
+      "micro": 1814101,
+      "small": 18870,
+      "medium": 1404,
+      "total_udyam": 1834375,
+      "uap_imes": 789466,
+      "total_msmes": 2623841
+    },
+    "RAJASTHAN": {
+      "micro": 3608229,
+      "small": 30030,
+      "medium": 1883,
+      "total_udyam": 3640142,
+      "uap_imes": 2211894,
+      "total_msmes": 5852036
+    },
+    "SIKKIM": {
+      "micro": 26244,
+      "small": 167,
+      "medium": 17,
+      "total_udyam": 26428,
+      "uap_imes": 18585,
+      "total_msmes": 45013
+    },
+    "TAMIL NADU": {
+      "micro": 4736940,
+      "small": 43028,
+      "medium": 3189,
+      "total_udyam": 4783157,
+      "uap_imes": 2833171,
+      "total_msmes": 7616328
+    },
+    "TELANGANA": {
+      "micro": 2485034,
+      "small": 22593,
+      "medium": 2017,
+      "total_udyam": 2509644,
+      "uap_imes": 2578928,
+      "total_msmes": 5088572
+    },
+    "TRIPURA": {
+      "micro": 149148,
+      "small": 790,
+      "medium": 49,
+      "total_udyam": 149987,
+      "uap_imes": 221343,
+      "total_msmes": 371330
+    },
+    "UTTAR PRADESH": {
+      "micro": 5915550,
+      "small": 45503,
+      "medium": 3064,
+      "total_udyam": 5964117,
+      "uap_imes": 5760217,
+      "total_msmes": 11724334
+    },
+    "UTTARAKHAND": {
+      "micro": 526880,
+      "small": 4703,
+      "medium": 302,
+      "total_udyam": 531885,
+      "uap_imes": 337731,
+      "total_msmes": 869616
+    },
+    "WEST BENGAL": {
+      "micro": 2647302,
+      "small": 27281,
+      "medium": 2007,
+      "total_udyam": 2676590,
+      "uap_imes": 4093083,
+      "total_msmes": 6769673
+    },
+    "ANDAMAN AND NICOBAR ISLANDS": {
+      "micro": 21335,
+      "small": 180,
+      "medium": 4,
+      "total_udyam": 21519,
+      "uap_imes": 4687,
+      "total_msmes": 26206
+    },
+    "CHANDIGARH": {
+      "micro": 74730,
+      "small": 1406,
+      "medium": 139,
+      "total_udyam": 76275,
+      "uap_imes": 38493,
+      "total_msmes": 114768
+    },
+    "DELHI": {
+      "micro": 1225734,
+      "small": 31808,
+      "medium": 3210,
+      "total_udyam": 1260752,
+      "uap_imes": 779228,
+      "total_msmes": 2039980
+    },
+    "JAMMU AND KASHMIR": {
+      "micro": 713310,
+      "small": 3550,
+      "medium": 230,
+      "total_udyam": 717090,
+      "uap_imes": 314518,
+      "total_msmes": 1031608
+    },
+    "LADAKH": {
+      "micro": 16869,
+      "small": 136,
+      "medium": 4,
+      "total_udyam": 17009,
+      "uap_imes": 6143,
+      "total_msmes": 23152
+    },
+    "LAKSHADWEEP": {
+      "micro": 1897,
+      "small": 1,
+      "medium": 0,
+      "total_udyam": 1898,
+      "uap_imes": 933,
+      "total_msmes": 2831
+    },
+    "PUDUCHERRY": {
+      "micro": 73382,
+      "small": 713,
+      "medium": 69,
+      "total_udyam": 74164,
+      "uap_imes": 58255,
+      "total_msmes": 132419
+    },
+    "THE DADRA AND NAGAR HAVELI AND DAMAN AND DIU": {
+      "micro": 31515,
+      "small": 981,
+      "medium": 137,
+      "total_udyam": 32633,
+      "uap_imes": 11845,
+      "total_msmes": 44478
+    }
+  }
+}

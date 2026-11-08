@@ -441,10 +441,39 @@ function handleClaimTask(machine, preferredState, preferredDistrict) {
   };
 }
 
+function canonicalizeUdyamNumber(val, distCode) {
+  if (!val) return "";
+  const s = val.toString().trim();
+  if (!s || s === "None" || s === "-" || s === "0" || s === "null") return "";
+  if (s.toUpperCase().startsWith("UDYAM-")) {
+    const m = s.match(/^(UDYAM-[A-Z]{2}-\d{2}-)(\d+)$/i);
+    if (m) {
+      return m[1].toUpperCase() + String(parseInt(m[2], 10)).padStart(7, "0");
+    }
+    return s.toUpperCase();
+  }
+  const mCode = s.match(/^([A-Z]{2}-\d{2}-)(\d+)$/i);
+  if (mCode) {
+    return "UDYAM-" + mCode[1].toUpperCase() + String(parseInt(mCode[2], 10)).padStart(7, "0");
+  }
+  const cleaned = s.replace(/,/g, "").split(".")[0].trim();
+  const digits = cleaned.replace(/\D/g, "");
+  if (digits && parseInt(digits, 10) > 0) {
+    const seq = parseInt(digits, 10);
+    const code = (distCode || "").toString().trim().toUpperCase();
+    if (code.indexOf("-") !== -1) {
+      return `UDYAM-${code}-${String(seq).padStart(7, "0")}`;
+    } else if (code) {
+      return `UDYAM-${code}-01-${String(seq).padStart(7, "0")}`;
+    }
+  }
+  return s;
+}
+
 function handleHeartbeat(payload) {
   const machine = payload.machine || "Unknown";
   const distCode = payload.district_code;
-  const currentRecord = payload.current_record || "";
+  const currentRecord = canonicalizeUdyamNumber(payload.current_record || "", distCode);
   const currentDor = payload.current_dor || "";
   const totalExtracted = payload.total_extracted || 0;
   const totalFailed = payload.total_failed || 0;
@@ -481,7 +510,7 @@ function handleCompleteTask(payload) {
   const distCode = payload.district_code;
   const totalExtracted = payload.total_extracted || 0;
   const totalFailed = payload.total_failed || 0;
-  const lastRecord = payload.final_record || "";
+  const lastRecord = canonicalizeUdyamNumber(payload.final_record || "", distCode);
   const lastDor = payload.final_dor || "";
 
   const ctx = getSheetContext();

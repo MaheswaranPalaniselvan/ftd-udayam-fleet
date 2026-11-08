@@ -1,23 +1,21 @@
-name: Deploy Coverage Dashboard to GitHub Pages
+name: Deploy Coverage Dashboard to GitHub Pages (PAUSED - Quota Preserved)
 
 on:
-  # Deploy automatically whenever code is pushed to master or main
-  push:
-    branches:
-      - master
-      - main
+  # Automated triggers paused - representation moved to Cloudflare Pages (free unlimited bandwidth & zero Actions quota)
+  # push:
+  #   branches:
+  #     - master
+  #     - main
 
-  # Deploy automatically whenever a scraper worker workflow completes
-  workflow_run:
-    workflows: ["Udayam Fleet Worker"]
-    types:
-      - completed
+  # workflow_run:
+  #   workflows: ["Udayam Fleet Worker"]
+  #   types:
+  #     - completed
 
-  # Deploy periodically every 6 hours (UTC) - disabled to preserve Actions quota
   # schedule:
   #   - cron: '30 */6 * * *'
 
-  # Allow manual trigger from the GitHub Actions tab
+  # Manual trigger only (if ever needed)
   workflow_dispatch:
 
 permissions:
