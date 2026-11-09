@@ -379,8 +379,15 @@ async def execute_district_extraction(
                 r = csv.reader(f)
                 next(r, None)
                 for row in r:
-                    if row:
-                        processed_failed.add(row[0].strip())
+                    if row and len(row) > 0:
+                        uid = row[0].strip()
+                        # Differentiate true portal Not Found from transient network/captcha errors
+                        status = row[1].lower() if len(row) > 1 else ""
+                        reason = row[2].lower() if len(row) > 2 else ""
+                        is_transient = any(k in status or k in reason for k in ("captcha", "timeout", "server slow", "playwright", "connection"))
+                        # Only skip if it was a verified true portal miss; allow transient errors to be re-attempted
+                        if not is_transient:
+                            processed_failed.add(uid)
 
     processed_numbers = processed_success | processed_failed
     last_business_day = get_latest_valid_business_day()
