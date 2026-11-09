@@ -323,7 +323,7 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                 # District is Live ONLY if verified completed, has extracted records, and latest registration date is current (within 4 days).
                 # All older historical extracts or unstarted/in-progress are classified as Outdated.
                 is_live = (
-                    status_raw.lower() == "completed"
+                    status_raw.lower() in ("completed", "live")
                     and extracted > 0
                     and is_registration_live(last_dor_raw or harvest_date)
                 )
@@ -331,8 +331,8 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                     live_status_label = "Live"
                 elif status_raw.lower() == "in progress":
                     live_status_label = "Outdated (In Progress)"
-                elif status_raw.lower() == "completed":
-                    live_status_label = "Outdated"
+                elif status_raw.lower() in ("completed", "live", "outdated"):
+                    live_status_label = "Outdated" if extracted > 0 else "Outdated (Not Started)"
                 else:
                     live_status_label = "Outdated (Not Started)"
 

@@ -390,6 +390,10 @@ async def execute_district_extraction(
     total_failures = len(processed_failed)
     last_record_id = existing_last_record
     latest_dor_str = existing_last_dor
+    if latest_dor_str:
+        init_dor = parse_dor(latest_dor_str)
+        if init_dor and init_dor >= last_business_day:
+            is_at_cutting_edge = True
 
     results_batch = []
     failed_batch = []
@@ -477,38 +481,74 @@ async def execute_district_extraction(
                     reason = failure_reason or status.replace("Failed (", "").rstrip(")")
                     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     failed_batch.append([udyam_number, status, reason, ts, elapsed])
-                    consecutive_not_found += 1
+                    
+                    # ONLY increment consecutive_not_found on true "Record Not Found" responses from portal!
+                    # Do NOT increment on Timeout, Captcha failure, or network errors!
+                    is_true_miss = any(k in reason.lower() for k in ("not found", "unregistered", "portal message", "invalid", "does not exist"))
+                    if is_true_miss:
+                        consecutive_not_found += 1
                     logging.info(f"[W-{worker_id}] [{udyam_number}] FAIL -> Reason: {reason} ({elapsed}s)")
 
-                    # BOUNDARY DETECTION 1: Cutting Edge Early Exit
-                    if is_at_cutting_edge and consecutive_not_found >= 5:
-                        logging.info(f"*** District {clean_prefix} completed: Reached today/Friday DOR ({latest_dor_str}) and hit 5 consecutive Not Founds. ***")
+                    # BOUNDARY DETECTION 1: Live Cutting Edge Exit
+                    # ONLY exit if we have verified records from TODAY or recent business days (last 4 days)
+                    if is_at_cutting_edge and consecutive_not_found >= 10:
+                        logging.info(f"*** District {clean_prefix} caught up with live portal! Latest DOR: {latest_dor_str} with {consecutive_not_found} consecutive tail misses. Finished live pass. ***")
                         stop_event_local.set()
 
-                    # BOUNDARY DETECTION 2: Leapfrog Lookahead Probing
-                    elif consecutive_not_found >= 5 and not stop_event_local.is_set():
+                    # BOUNDARY DETECTION 2: Historical Gap Leapfrog Probing
+                    # If date is historical (e.g. 2020-2025) or unstarted, a sequence gap does NOT mean the district is complete!
+                    elif consecutive_not_found >= 10 and not stop_event_local.is_set():
                         async with probe_lock:
-                            if consecutive_not_found >= 5 and not stop_event_local.is_set():
-                                logging.info(f"[W-{worker_id}] Checking leapfrog probes (+10, +25, +50, +100) for {clean_prefix}...")
-                                tail_empty = True
-                                for probe_offset in (10, 25, 50, 100):
-                                    probe_num = current_n + probe_offset
-                                    if probe_num > limit:
-                                        break
-                                    probe_id = f"UDYAM-{clean_prefix}-{probe_num:07d}"
-                                    p_status, _, _, _, _ = await process_udyam_number(page, probe_id)
+                            if consecutive_not_found >= 10 and not stop_event_local.is_set():
+                                logging.info(f"[W-{worker_id}] Encountered sequence gap at #{current_n} for {clean_prefix} (Last DOR: {latest_dor_str or 'None'}). Initiating wide lookahead probe...")
+                                found_probe_num = None
+                                prev_offset = 0
+                                
+                                # Exponential probe ladder up to district limit (from +25 up to +100,000)
+                                probe_ladder = [25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000]
+                                for offset in probe_ladder:
+                                    target_p = current_n + offset
+                                    if target_p > limit:
+                                        target_p = limit
+                                    probe_id = f"UDYAM-{clean_prefix}-{target_p:07d}"
+                                    p_status, p_name, _, _, p_dor = await process_udyam_number(page, probe_id)
                                     if p_status.startswith("Success"):
-                                        logging.info(f"Leapfrog probe found valid record at {probe_id}! Resuming from {probe_id}...")
-                                        async with num_lock:
-                                            nonlocal next_num
-                                            if next_num < probe_num:
-                                                next_num = probe_num
-                                        tail_empty = False
-                                        consecutive_not_found = 0
+                                        logging.info(f"✨ Wide probe HIT at {probe_id} ({p_name} | DOR: {p_dor})! Pinpointing first valid record after gap...")
+                                        
+                                        # Binary search between (current_n + prev_offset) and target_p to find the first valid record
+                                        low = current_n + prev_offset + 1
+                                        high = target_p
+                                        first_valid = target_p
+                                        while low <= high:
+                                            mid = (low + high) // 2
+                                            mid_id = f"UDYAM-{clean_prefix}-{mid:07d}"
+                                            m_status, _, _, _, _ = await process_udyam_number(page, mid_id)
+                                            if m_status.startswith("Success"):
+                                                first_valid = mid
+                                                high = mid - 1
+                                            else:
+                                                low = mid + 1
+                                        
+                                        found_probe_num = first_valid
                                         break
+                                    
+                                    if target_p >= limit:
+                                        break
+                                    prev_offset = offset
 
-                                if tail_empty:
-                                    logging.info(f"*** District {clean_prefix} completed: All leapfrog probes empty up to +100. Finishing district. ***")
+                                if found_probe_num is not None:
+                                    logging.info(f"🚀 Leapfrogged sequence gap! Resuming {clean_prefix} from #{found_probe_num}...")
+                                    async with num_lock:
+                                        nonlocal next_num
+                                        if next_num < found_probe_num:
+                                            next_num = found_probe_num
+                                    consecutive_not_found = 0
+                                else:
+                                    # All probes up to limit / 100,000 were empty!
+                                    if is_at_cutting_edge:
+                                        logging.info(f"*** District {clean_prefix} completed: Reached cutting edge DOR and no further records exist. ***")
+                                    else:
+                                        logging.warning(f"*** District {clean_prefix} sequence end: All wide probes up to #{limit} empty. Last DOR: {latest_dor_str}. ***")
                                     stop_event_local.set()
 
                 if len(results_batch) + len(failed_batch) >= BATCH_SIZE:

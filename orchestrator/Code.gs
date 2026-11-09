@@ -154,6 +154,8 @@ function doGet(e) {
       return jsonResponse(handleAuditDuplicates());
     } else if (action === "clean_duplicates") {
       return jsonResponse(handleCleanDuplicates());
+    } else if (action === "reset_stale_districts") {
+      return jsonResponse(handleResetStaleDistricts());
     } else if (action === "ping") {
       return jsonResponse({ status: "ok", time: new Date().toISOString() });
     } else {
@@ -205,6 +207,8 @@ function doPost(e) {
       return jsonResponse(handleAuditDuplicates());
     } else if (action === "clean_duplicates") {
       return jsonResponse(handleCleanDuplicates());
+    } else if (action === "reset_stale_districts") {
+      return jsonResponse(handleResetStaleDistricts());
     } else {
       return jsonResponse({ error: "Invalid POST action: " + action }, 400);
     }
@@ -248,25 +252,15 @@ function getSheetContext() {
 }
 
 /**
- * Determines whether a district's latest registration date (or last audit ping) is current.
+ * Determines whether a district's latest registration date is current.
  * Threshold: Within 4 calendar days (96 hours).
  */
-function isDateLatest(rawDate, rawPing) {
+function isDateLatest(rawDate) {
+  if (!rawDate) return false;
   const now = new Date();
   const FOUR_DAYS_MS = 4 * 24 * 60 * 60 * 1000;
 
-  // 1. If worker recently completed/verified this district within 4 days, treat as fresh
-  if (rawPing) {
-    const pingDate = (rawPing instanceof Date) ? rawPing : new Date(rawPing);
-    if (!isNaN(pingDate.getTime())) {
-      if ((now.getTime() - pingDate.getTime()) < FOUR_DAYS_MS) {
-        return true;
-      }
-    }
-  }
-
-  // 2. Parse registration date
-  if (!rawDate) return false;
+  // Parse registration date
   let d = null;
   if (rawDate instanceof Date) {
     d = rawDate;
@@ -333,14 +327,18 @@ function handleClaimTask(machine, preferredState, preferredDistrict) {
     return true;
   }
 
-  // PASS 1: Search for pending / uncompleted districts (Status !== "Completed")
+  // PASS 1: Search for unstarted or outdated districts (!isDateLatest)
   for (let r = 1; r < data.length; r++) {
     const row = data[r];
     const level = (row[col["Level"]] || "").toString().trim();
     if (level !== "District") continue;
 
     const status = (row[col["Status"]] || "").toString().trim();
-    if (status === "Completed") continue;
+    const rawDor = row[col["Last Recorded Date"]];
+    const isFresh = isDateLatest(rawDor);
+
+    // If district is already fresh (verified within last 4 days), skip in pass 1
+    if (isFresh && (status === "Completed" || status === "Live")) continue;
 
     let distCode = (row[col["State Code"]] || "").toString().trim();
     const stateName = (row[col["State/UT"]] || "").toString().trim();
@@ -371,24 +369,22 @@ function handleClaimTask(machine, preferredState, preferredDistrict) {
     }
   }
 
-  // PASS 2: If no pending districts found, search for Completed districts whose Date of Registration is STALE (!isDateLatest)
+  // PASS 2: If no unleased district found, check any remaining district whose DOR is not fresh
   if (assignedRow === -1) {
     for (let r = 1; r < data.length; r++) {
       const row = data[r];
       const level = (row[col["Level"]] || "").toString().trim();
       if (level !== "District") continue;
 
-      const status = (row[col["Status"]] || "").toString().trim();
-      if (status !== "Completed") continue;
-
       const rawDor = row[col["Last Recorded Date"]];
-      const rawPing = row[col["Last Ping"]];
+      if (isDateLatest(rawDor)) continue;
 
-      if (isDateLatest(rawDor, rawPing)) continue;
+      const status = (row[col["Status"]] || "").toString().trim();
+      const claimedBy = (row[col["Claimed By"]] || "").toString().trim();
+      const lastPingStr = row[col["Last Ping"]];
 
       let distCode = (row[col["State Code"]] || "").toString().trim();
       const stateName = (row[col["State/UT"]] || "").toString().trim();
-      const claimedBy = (row[col["Claimed By"]] || "").toString().trim();
       const statePrefix = CANONICAL_STATE_CODES[stateName] || (distCode.indexOf("-") !== -1 ? distCode.split("-")[0] : distCode);
 
       if (!distCode.includes("-")) {
@@ -397,7 +393,7 @@ function handleClaimTask(machine, preferredState, preferredDistrict) {
         sheet.getRange(r + 1, col["State Code"] + 1).setValue(distCode);
       }
 
-      if (isRowLeased(claimedBy, status, rawPing)) continue;
+      if (isRowLeased(claimedBy, status, lastPingStr)) continue;
 
       if (rowMatchesFilter(distCode, statePrefix, stateName)) {
         assignedRow = r + 1;
@@ -538,7 +534,12 @@ function handleCompleteTask(payload) {
     const code = (data[r][col["State Code"]] || "").toString().trim();
     if (code.toUpperCase() === distCode.toUpperCase()) {
       const rowIdx = r + 1;
-      sheet.getRange(rowIdx, col["Status"] + 1).setValue("Completed");
+      
+      const isFresh = isDateLatest(lastDor);
+      // In live continuous extraction: if DOR is within 4 days of today, mark Live. If older, mark Outdated so fleet workers continue advancing it!
+      const finalStatus = isFresh ? "Live" : "Outdated";
+
+      sheet.getRange(rowIdx, col["Status"] + 1).setValue(finalStatus);
       sheet.getRange(rowIdx, col["Claimed By"] + 1).setValue(machine);
       sheet.getRange(rowIdx, col["Last Ping"] + 1).setValue(new Date().toISOString());
       if (lastRecord) sheet.getRange(rowIdx, col["Last Record"] + 1).setValue(lastRecord);
@@ -546,8 +547,8 @@ function handleCompleteTask(payload) {
       if (totalExtracted) sheet.getRange(rowIdx, col["Total Records Extracted"] + 1).setValue(totalExtracted);
       if (totalFailed) sheet.getRange(rowIdx, col["Total Failed Records"] + 1).setValue(totalFailed);
 
-      sendTelegramAlert(`🏁 <b>District Completed!</b>\n💻 <b>Machine:</b> ${machine}\n🏛 <b>District:</b> ${distCode}\n✅ <b>Extracted:</b> ${totalExtracted.toLocaleString()}\n❌ <b>Failed:</b> ${totalFailed.toLocaleString()}\n📅 <b>Latest DOR:</b> ${lastDor}`);
-      return { success: true };
+      sendTelegramAlert(`🏁 <b>District Sync Pass!</b>\n💻 <b>Machine:</b> ${machine}\n🏛 <b>District:</b> ${distCode}\n📊 <b>Status:</b> ${finalStatus}\n✅ <b>Extracted:</b> ${totalExtracted.toLocaleString()}\n❌ <b>Failed:</b> ${totalFailed.toLocaleString()}\n📅 <b>Latest DOR:</b> ${lastDor}`);
+      return { success: true, status: finalStatus };
     }
   }
 
@@ -735,6 +736,43 @@ function handleCleanDuplicates() {
     success: true,
     removed_count: removedCount,
     message: "Moved " + removedCount + " duplicate files to Drive Trash (kept newest version of each)."
+  };
+}
+
+/**
+ * Resets all districts whose Date of Registration is not fresh (< 4 days from today).
+ * Sets Status to 'Outdated' and clears worker lease so fleet machines can advance them to 2026.
+ */
+function handleResetStaleDistricts() {
+  const ctx = getSheetContext();
+  const sheet = ctx.sheet;
+  const data = ctx.data;
+  const col = ctx.colMap;
+
+  let resetCount = 0;
+  for (let r = 1; r < data.length; r++) {
+    const row = data[r];
+    const level = (row[col["Level"]] || "").toString().trim();
+    if (level !== "District") continue;
+
+    const status = (row[col["Status"]] || "").toString().trim();
+    const rawDor = row[col["Last Recorded Date"]];
+    const isFresh = isDateLatest(rawDor);
+
+    // If status is Completed or Live but registration date is stale:
+    if (!isFresh && (status === "Completed" || status === "Live" || status === "In Progress")) {
+      const rowIdx = r + 1;
+      const newStatus = (row[col["Total Records Extracted"]] && parseInt(row[col["Total Records Extracted"]], 10) > 0) ? "Outdated" : "Pending";
+      sheet.getRange(rowIdx, col["Status"] + 1).setValue(newStatus);
+      sheet.getRange(rowIdx, col["Claimed By"] + 1).setValue("");
+      resetCount++;
+    }
+  }
+
+  return {
+    success: true,
+    reset_count: resetCount,
+    message: "Reset " + resetCount + " stale districts to Outdated/Pending for continuous live sync."
   };
 }
 

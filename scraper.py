@@ -447,9 +447,13 @@ async def worker(
                     consecutive_failures[prefix] = consecutive_failures.get(prefix, 0) + 1
 
                     if consecutive_failures[prefix] >= 100:
-                        if state_status.get(prefix) != "skip":
-                            logging.info(f"*** Skipping remaining for {prefix} due to 100 consecutive failures ***")
-                            state_status[prefix] = "skip"
+                        last_dor_str = progress_info.get("latest_dor", "") if progress_info else ""
+                        last_d = parse_dor(last_dor_str) if last_dor_str else None
+                        is_fresh = last_d and last_d >= (date.today() - timedelta(days=4))
+                        if is_fresh or not last_dor_str:
+                            if state_status.get(prefix) != "skip":
+                                logging.info(f"*** Stopping counter for {prefix} at cutting-edge ({last_dor_str}) due to 100 consecutive failures ***")
+                                state_status[prefix] = "skip"
 
                 if len(results_batch) + len(failed_batch) >= BATCH_SIZE:
                     flush_batches(results_batch, failed_batch, html_batch)
