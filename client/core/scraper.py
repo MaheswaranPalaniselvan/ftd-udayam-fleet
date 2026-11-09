@@ -140,6 +140,9 @@ async def detect_failure_reason(page: Page, default_reason: str = "") -> str:
             if await loc.is_visible(timeout=250):
                 txt = (await loc.inner_text()).strip()
                 if txt and "enter" not in txt.lower() and "captcha" not in txt.lower():
+                    # If the portal merely echoes back the searched Udyam ID in red (.text-danger), don't treat it as the error message
+                    if re.match(r"^UDYAM-[A-Z]{2}-\d{2}-\d+$", txt, re.IGNORECASE):
+                        continue
                     return f"Portal Message: {txt}"
         except Exception:
             pass
