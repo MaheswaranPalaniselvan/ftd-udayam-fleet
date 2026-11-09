@@ -2,10 +2,14 @@ import argparse
 import asyncio
 import base64
 import csv
+import io
 import logging
 import os
 import re
+import shutil
+import subprocess
 import time
+import zipfile
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 import ddddocr
@@ -181,6 +185,27 @@ def get_already_processed_numbers(state_code: str, start_code: int, end_code: in
                 for row in reader:
                     if row:
                         processed.add(row[0].strip())
+        else:
+            # Check 7z archive if uncompressed folder is absent
+            archive_7z = os.path.join(RESULTS_DIR, f"{prefix}.7z")
+            if os.path.exists(archive_7z):
+                seven_zip = shutil.which("7z")
+                if not seven_zip:
+                    for p in [r"C:\Program Files\7-Zip\7z.exe", r"C:\Program Files (x86)\7-Zip\7z.exe", "/usr/bin/7z", "/usr/local/bin/7z"]:
+                        if os.path.exists(p):
+                            seven_zip = p
+                            break
+                if seven_zip:
+                    try:
+                        proc = subprocess.run([seven_zip, "e", archive_7z, "-r", f"results_{prefix}.csv", "-so"], capture_output=True, text=True, errors="replace")
+                        if proc.returncode == 0 and proc.stdout.strip():
+                            reader = csv.reader(io.StringIO(proc.stdout))
+                            next(reader, None)
+                            for row in reader:
+                                if row:
+                                    processed.add(row[0].strip())
+                    except Exception:
+                        pass
 
         # Check failed CSV
         failed_csv = os.path.join(FAILED_DIR, prefix, f"failed_{prefix}.csv")

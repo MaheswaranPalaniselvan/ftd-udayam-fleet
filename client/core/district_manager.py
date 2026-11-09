@@ -12,6 +12,9 @@ import csv
 import io
 import os
 import re
+import shutil
+import subprocess
+import zipfile
 from pathlib import Path
 from typing import Optional
 import openpyxl
@@ -180,11 +183,76 @@ def find_district_last_number(district: str, workspace_dir: Path = Path(".")) ->
                                 if val > max_num:
                                     max_num = val
                                     last_record_id = row[0].strip()
-                                    if len(row) > 3 and row[3].strip():
+                                    if len(row) > 3 and re.search(r"\d{1,2}[/-]\d{1,2}[/-]\d{2,4}", row[3]):
                                         last_dor = row[3].strip()
                                     source = f"results/{clean_dist}"
             except Exception:
                 pass
+
+    # 2b. Check archives: results/{district}.7z, archives/{district}.7z, results/{district}.zip, archives/{district}.zip
+    archive_candidates = [
+        workspace_dir / "results" / f"{clean_dist}.7z",
+        workspace_dir / "archives" / f"{clean_dist}.7z",
+        workspace_dir / "results" / f"{clean_dist}.zip",
+        workspace_dir / "archives" / f"{clean_dist}.zip",
+    ]
+    for arc in archive_candidates:
+        if arc.is_file() and arc.stat().st_size > 0:
+            csv_text = None
+            if arc.suffix.lower() == ".zip":
+                try:
+                    with zipfile.ZipFile(arc, "r") as zf:
+                        for name in zf.namelist():
+                            if f"results_{clean_dist}.csv" in name or (name.endswith(".csv") and "results" in name.lower()):
+                                csv_text = zf.read(name).decode("utf-8", errors="replace")
+                                break
+                except Exception:
+                    pass
+            elif arc.suffix.lower() == ".7z":
+                seven_zip = shutil.which("7z")
+                if not seven_zip:
+                    for p in [r"C:\Program Files\7-Zip\7z.exe", r"C:\Program Files (x86)\7-Zip\7z.exe", "/usr/bin/7z", "/usr/local/bin/7z"]:
+                        if Path(p).is_file():
+                            seven_zip = p
+                            break
+                if seven_zip:
+                    try:
+                        proc = subprocess.run([seven_zip, "e", str(arc), "-r", f"results_{clean_dist}.csv", "-so"], capture_output=True, text=True, errors="replace")
+                        if proc.returncode == 0 and proc.stdout.strip():
+                            csv_text = proc.stdout
+                        else:
+                            proc = subprocess.run([seven_zip, "e", str(arc), "-r", "results_*.csv", "-so"], capture_output=True, text=True, errors="replace")
+                            if proc.returncode == 0 and proc.stdout.strip():
+                                csv_text = proc.stdout
+                    except Exception:
+                        pass
+
+            if csv_text:
+                try:
+                    reader = csv.reader(io.StringIO(csv_text))
+                    header = next(reader, None)
+                    dor_idx = -1
+                    if header:
+                        for i, col in enumerate(header):
+                            c_lower = col.strip().lower()
+                            if "date" in c_lower or "dor" in c_lower:
+                                dor_idx = i
+                                break
+                    for row in reader:
+                        if row and row[0].startswith(prefix):
+                            m = re.search(r"-(\d+)$", row[0].strip())
+                            if m:
+                                val = int(m.group(1))
+                                if val > max_num:
+                                    max_num = val
+                                    last_record_id = row[0].strip()
+                                    if dor_idx != -1 and len(row) > dor_idx and re.search(r"\d{1,2}[/-]\d{1,2}[/-]\d{2,4}", row[dor_idx]):
+                                        last_dor = row[dor_idx].strip()
+                                    elif len(row) > 3 and re.search(r"\d{1,2}[/-]\d{1,2}[/-]\d{2,4}", row[3]):
+                                        last_dor = row[3].strip()
+                                    source = f"archive:{arc.name}"
+                except Exception:
+                    pass
 
     # 3. Check results.csv
     local_csv = workspace_dir / "results.csv"
