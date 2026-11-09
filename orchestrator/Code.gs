@@ -633,6 +633,7 @@ function handleListArchives() {
 function handleUploadArchive(payload) {
   const filename = payload.filename;
   const base64Data = payload.data;
+  const allowOverwrite = payload.overwrite === true;
 
   if (!filename || !base64Data) {
     return { success: false, message: "Missing filename or data" };
@@ -650,14 +651,23 @@ function handleUploadArchive(payload) {
   // Check if file already exists with same name to avoid duplicates
   const existingFiles = folder.getFilesByName(filename);
   if (existingFiles.hasNext()) {
-    const existingFile = existingFiles.next();
-    return { 
-      success: true, 
-      already_exists: true, 
-      file_id: existingFile.getId(), 
-      url: existingFile.getUrl(),
-      message: "File already exists in Google Drive"
-    };
+    if (allowOverwrite) {
+      // Overwrite requested (e.g. rerun recovered missing entries): trash older copies
+      while (existingFiles.hasNext()) {
+        try {
+          existingFiles.next().setTrashed(true);
+        } catch (e) {}
+      }
+    } else {
+      const existingFile = existingFiles.next();
+      return { 
+        success: true, 
+        already_exists: true, 
+        file_id: existingFile.getId(), 
+        url: existingFile.getUrl(),
+        message: "File already exists in Google Drive"
+      };
+    }
   }
 
   const bytes = Utilities.base64Decode(base64Data);

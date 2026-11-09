@@ -113,6 +113,8 @@ def run_headless_cli(args):
                         total_extracted=audit["total_extracted"],
                         total_failed=audit["failed_count"]
                     )
+                    logging.info(f"[{dist_code}] {res.get('recovered')} records recovered! Uploading updated archive to Google Drive...")
+                    await compress_and_upload_district(dist_code, coordinator=coordinator, overwrite=True)
 
                 districts_completed_count += 1
 

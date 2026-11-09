@@ -389,7 +389,8 @@ def upload_file_to_drive(web_app_url: str, file_path: Path, upload_filename: str
     payload = {
         "action": "upload_archive",
         "filename": upload_filename,
-        "data": base64_data
+        "data": base64_data,
+        "overwrite": force_upload
     }
 
     try:

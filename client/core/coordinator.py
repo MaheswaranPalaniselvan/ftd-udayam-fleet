@@ -126,7 +126,7 @@ class CentralCoordinator:
         except Exception:
             return False
 
-    async def upload_archive_to_drive(self, archive_path: Path) -> dict:
+    async def upload_archive_to_drive(self, archive_path: Path, overwrite: bool = False) -> dict:
         """Uploads a compressed .7z file directly to Google Drive via Apps Script."""
         if not self.web_app_url or not archive_path.exists():
             return {"success": False, "message": "Invalid URL or archive not found"}
@@ -137,7 +137,8 @@ class CentralCoordinator:
         payload = {
             "action": "upload_archive",
             "filename": archive_path.name,
-            "data": b64_data
+            "data": b64_data,
+            "overwrite": overwrite
         }
 
         try:

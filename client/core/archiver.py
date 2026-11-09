@@ -78,7 +78,8 @@ async def compress_and_upload_district(
     prefix: str,
     results_dir: Path = Path("results"),
     coordinator: CentralCoordinator = None,
-    delete_source_after: bool = False
+    delete_source_after: bool = False,
+    overwrite: bool = False
 ) -> bool:
     """
     Compresses a completed district and uploads it to Google Drive.
@@ -98,8 +99,8 @@ async def compress_and_upload_district(
         return False
 
     if coordinator:
-        logging.info(f"Uploading {archive_path.name} ({archive_path.stat().st_size / (1024*1024):.1f} MB) to Google Drive...")
-        res = await coordinator.upload_archive_to_drive(archive_path)
+        logging.info(f"Uploading {archive_path.name} ({archive_path.stat().st_size / (1024*1024):.1f} MB) to Google Drive (overwrite={overwrite})...")
+        res = await coordinator.upload_archive_to_drive(archive_path, overwrite=overwrite)
         if res.get("success"):
             logging.info(f"[SUCCESS] Archive uploaded to Google Drive: {res.get('url')}")
             return True
