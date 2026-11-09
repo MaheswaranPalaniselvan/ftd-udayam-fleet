@@ -9,6 +9,7 @@ import argparse
 import base64
 import csv
 import io
+import json
 import math
 import os
 import re
@@ -24,10 +25,72 @@ import httpx
 
 DEFAULT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby3tmgH9PtjUhl6XfGrBfgRNZFQZaSLR0N4Dnff9tt9K5qjatyarJy_nnE0ulCtMNm2xA/exec"
 MAX_UPLOAD_CHUNK_BYTES = 22 * 1024 * 1024  # 22 MB per chunk to stay safely below Apps Script 50MB limits
+UPLOAD_MANIFEST_PATH = Path(".gdrive_uploads.json")
 
 
 def log(msg: str):
     print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
+
+
+def load_upload_manifest() -> dict:
+    if UPLOAD_MANIFEST_PATH.is_file():
+        try:
+            return json.loads(UPLOAD_MANIFEST_PATH.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+    return {}
+
+
+def save_upload_manifest(manifest: dict):
+    try:
+        UPLOAD_MANIFEST_PATH.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    except Exception:
+        pass
+
+
+def record_upload_in_manifest(filename: str, file_id: str, size_bytes: int):
+    manifest = load_upload_manifest()
+    manifest[filename] = {
+        "file_id": file_id or "uploaded",
+        "size_bytes": size_bytes,
+        "uploaded_at": time.strftime("%Y-%m-%d %H:%M:%S")
+    }
+    save_upload_manifest(manifest)
+
+
+def is_file_available_in_gdrive(web_app_url: str, filename: str, file_size: Optional[int] = None) -> Tuple[bool, Optional[str]]:
+    """
+    Checks if a file is already present in Google Drive.
+    1. Checks local persistent upload manifest (.gdrive_uploads.json).
+    2. Queries Apps Script Web App (?action=check_file&filename=...).
+    """
+    # 1. Local manifest check
+    manifest = load_upload_manifest()
+    if filename in manifest:
+        entry = manifest[filename]
+        recorded_size = entry.get("size_bytes", 0)
+        # Match size if available (within 4KB tolerance for metadata changes)
+        if not file_size or recorded_size == 0 or abs(recorded_size - file_size) < 4096:
+            return True, entry.get("file_id")
+
+    # 2. Remote check via Apps Script Web App
+    try:
+        resp = httpx.get(
+            web_app_url,
+            params={"action": "check_file", "filename": filename},
+            timeout=15.0,
+            follow_redirects=True
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            if data.get("exists"):
+                fid = data.get("file_id") or "remote_confirmed"
+                record_upload_in_manifest(filename, fid, file_size or data.get("size", 0))
+                return True, fid
+    except Exception:
+        pass
+
+    return False, None
 
 
 def parse_district_stats(folder: Path, failed_dir: Path) -> dict:
@@ -306,9 +369,18 @@ def create_archive(folder: Path, failed_dir: Path, out_dir: Path, force_compress
     return archive_path, "zip"
 
 
-def upload_file_to_drive(web_app_url: str, file_path: Path, upload_filename: str) -> bool:
+def upload_file_to_drive(web_app_url: str, file_path: Path, upload_filename: str, force_upload: bool = False) -> bool:
     size_bytes = file_path.stat().st_size
-    log(f"  ☁️ Uploading {upload_filename} ({size_bytes / (1024*1024):.2f} MB) to Google Drive...")
+    size_mb = size_bytes / (1024 * 1024)
+
+    # 1. Check if already available in Google Drive
+    if not force_upload:
+        exists, file_id = is_file_available_in_gdrive(web_app_url, upload_filename, size_bytes)
+        if exists:
+            log(f"    ⚡ {upload_filename} ({size_mb:.2f} MB) is already available in Google Drive! Skipping upload.")
+            return True
+
+    log(f"  ☁️ Uploading {upload_filename} ({size_mb:.2f} MB) to Google Drive...")
 
     with open(file_path, "rb") as f:
         file_bytes = f.read()
@@ -325,7 +397,12 @@ def upload_file_to_drive(web_app_url: str, file_path: Path, upload_filename: str
         if resp.status_code == 200:
             res_json = resp.json()
             if res_json.get("success"):
-                log(f"    ✅ Drive Upload OK! File ID: {res_json.get('file_id')}")
+                file_id = res_json.get("file_id", "")
+                if res_json.get("already_exists"):
+                    log(f"    ⚡ Drive reports file already exists: {upload_filename} (ID: {file_id})")
+                else:
+                    log(f"    ✅ Drive Upload OK! File ID: {file_id}")
+                record_upload_in_manifest(upload_filename, file_id, size_bytes)
                 return True
             else:
                 log(f"    ❌ Drive error: {res_json.get('message')}")
@@ -337,14 +414,30 @@ def upload_file_to_drive(web_app_url: str, file_path: Path, upload_filename: str
     return False
 
 
-def upload_archive_smart(web_app_url: str, archive_path: Path) -> bool:
+def upload_archive_smart(web_app_url: str, archive_path: Path, force_upload: bool = False) -> bool:
     size_bytes = archive_path.stat().st_size
-    if size_bytes <= MAX_UPLOAD_CHUNK_BYTES:
-        return upload_file_to_drive(web_app_url, archive_path, archive_path.name)
+    size_mb = size_bytes / (1024 * 1024)
 
-    # File exceeds safe single-request threshold, split into chunks
+    # 1. For single files <= 22MB, check if archive itself already exists in Drive
+    if size_bytes <= MAX_UPLOAD_CHUNK_BYTES:
+        return upload_file_to_drive(web_app_url, archive_path, archive_path.name, force_upload=force_upload)
+
+    # 2. For chunked archives (> 22MB): check if all parts already exist in Drive
     num_parts = math.ceil(size_bytes / MAX_UPLOAD_CHUNK_BYTES)
-    log(f"  ⚠️ Archive is {size_bytes / (1024*1024):.1f} MB (exceeds single upload threshold). Splitting into {num_parts} parts...")
+
+    if not force_upload:
+        all_parts_exist = True
+        for part_idx in range(1, num_parts + 1):
+            part_name = f"{archive_path.stem}.part{part_idx:02d}{archive_path.suffix}"
+            exists, _ = is_file_available_in_gdrive(web_app_url, part_name)
+            if not exists:
+                all_parts_exist = False
+                break
+        if all_parts_exist:
+            log(f"    ⚡ All {num_parts} parts of {archive_path.name} ({size_mb:.2f} MB) are already available in Google Drive! Skipping upload.")
+            return True
+
+    log(f"  ⚠️ Archive is {size_mb:.1f} MB (exceeds single upload threshold). Splitting into {num_parts} parts...")
 
     success = True
     with open(archive_path, "rb") as f:
@@ -354,7 +447,7 @@ def upload_archive_smart(web_app_url: str, archive_path: Path) -> bool:
             part_tmp = archive_path.parent / f"_tmp_{part_name}"
             part_tmp.write_bytes(chunk_data)
 
-            ok = upload_file_to_drive(web_app_url, part_tmp, part_name)
+            ok = upload_file_to_drive(web_app_url, part_tmp, part_name, force_upload=force_upload)
             try:
                 part_tmp.unlink()
             except Exception:
@@ -402,6 +495,7 @@ def main():
     parser.add_argument("--url", type=str, default=DEFAULT_WEB_APP_URL, help="Google Apps Script Coordinator URL")
     parser.add_argument("--districts", nargs="*", help="Specific district codes to sync (e.g. MN-05 MN-06). Defaults to all found in results/.")
     parser.add_argument("--force-compress", action="store_true", help="Re-compress even if .7z or .zip archive already exists")
+    parser.add_argument("--force-upload", action="store_true", help="Upload to Google Drive even if already available")
     args = parser.parse_args()
 
     results_dir = Path(args.results_dir)
@@ -474,8 +568,8 @@ def main():
         size_mb = archive_path.stat().st_size / (1024 * 1024)
         log(f"  💾 Archive ready: {archive_path.name} ({size_mb:.2f} MB)")
 
-        # 3. Upload to Google Drive
-        upload_ok = upload_archive_smart(args.url, archive_path)
+        # 3. Upload to Google Drive (Skips if already available in Drive)
+        upload_ok = upload_archive_smart(args.url, archive_path, force_upload=args.force_upload)
 
         # 4. Update Google Sheet
         sheet_ok = False

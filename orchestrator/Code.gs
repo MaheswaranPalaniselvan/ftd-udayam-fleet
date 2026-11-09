@@ -146,6 +146,10 @@ function doGet(e) {
       return jsonResponse(handleClaimTask(params.machine, params.preferred_state, params.preferred_district));
     } else if (action === "fleet_status") {
       return jsonResponse(getFleetStatus());
+    } else if (action === "check_file") {
+      return jsonResponse(handleCheckFileExists(params.filename));
+    } else if (action === "list_archives") {
+      return jsonResponse(handleListArchives());
     } else if (action === "ping") {
       return jsonResponse({ status: "ok", time: new Date().toISOString() });
     } else {
@@ -189,6 +193,10 @@ function doPost(e) {
       return jsonResponse(handleBulkSyncStatus(payload.districts));
     } else if (action === "upload_archive") {
       return jsonResponse(handleUploadArchive(payload));
+    } else if (action === "check_file") {
+      return jsonResponse(handleCheckFileExists(payload.filename));
+    } else if (action === "list_archives") {
+      return jsonResponse(handleListArchives());
     } else {
       return jsonResponse({ error: "Invalid POST action: " + action }, 400);
     }
@@ -574,6 +582,45 @@ function handleBulkSyncStatus(districtsMap) {
 // GOOGLE DRIVE ARCHIVE INGESTION
 // ==========================================
 
+function handleCheckFileExists(filename) {
+  if (!filename) {
+    return { success: false, exists: false, message: "Missing filename parameter" };
+  }
+  const folders = DriveApp.getFoldersByName(ARCHIVE_FOLDER_NAME);
+  if (!folders.hasNext()) {
+    return { success: true, exists: false, filename: filename };
+  }
+  const folder = folders.next();
+  const files = folder.getFilesByName(filename);
+  if (files.hasNext()) {
+    const f = files.next();
+    return { 
+      success: true, 
+      exists: true, 
+      filename: filename, 
+      file_id: f.getId(), 
+      url: f.getUrl(), 
+      size: f.getSize() 
+    };
+  }
+  return { success: true, exists: false, filename: filename };
+}
+
+function handleListArchives() {
+  const folders = DriveApp.getFoldersByName(ARCHIVE_FOLDER_NAME);
+  if (!folders.hasNext()) {
+    return { success: true, files: [] };
+  }
+  const folder = folders.next();
+  const files = folder.getFiles();
+  const fileList = [];
+  while (files.hasNext()) {
+    const f = files.next();
+    fileList.push({ name: f.getName(), id: f.getId(), size: f.getSize() });
+  }
+  return { success: true, files: fileList };
+}
+
 function handleUploadArchive(payload) {
   const filename = payload.filename;
   const base64Data = payload.data;
@@ -589,6 +636,19 @@ function handleUploadArchive(payload) {
     folder = folders.next();
   } else {
     folder = DriveApp.createFolder(ARCHIVE_FOLDER_NAME);
+  }
+
+  // Check if file already exists with same name to avoid duplicates
+  const existingFiles = folder.getFilesByName(filename);
+  if (existingFiles.hasNext()) {
+    const existingFile = existingFiles.next();
+    return { 
+      success: true, 
+      already_exists: true, 
+      file_id: existingFile.getId(), 
+      url: existingFile.getUrl(),
+      message: "File already exists in Google Drive"
+    };
   }
 
   const bytes = Utilities.base64Decode(base64Data);
