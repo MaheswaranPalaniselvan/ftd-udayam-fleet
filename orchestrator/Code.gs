@@ -150,6 +150,10 @@ function doGet(e) {
       return jsonResponse(handleCheckFileExists(params.filename));
     } else if (action === "list_archives") {
       return jsonResponse(handleListArchives());
+    } else if (action === "audit_duplicates") {
+      return jsonResponse(handleAuditDuplicates());
+    } else if (action === "clean_duplicates") {
+      return jsonResponse(handleCleanDuplicates());
     } else if (action === "ping") {
       return jsonResponse({ status: "ok", time: new Date().toISOString() });
     } else {
@@ -197,6 +201,10 @@ function doPost(e) {
       return jsonResponse(handleCheckFileExists(payload.filename));
     } else if (action === "list_archives") {
       return jsonResponse(handleListArchives());
+    } else if (action === "audit_duplicates") {
+      return jsonResponse(handleAuditDuplicates());
+    } else if (action === "clean_duplicates") {
+      return jsonResponse(handleCleanDuplicates());
     } else {
       return jsonResponse({ error: "Invalid POST action: " + action }, 400);
     }
@@ -656,6 +664,78 @@ function handleUploadArchive(payload) {
   const file = folder.createFile(blob);
 
   return { success: true, file_id: file.getId(), url: file.getUrl() };
+}
+
+function handleAuditDuplicates() {
+  const folders = DriveApp.getFoldersByName(ARCHIVE_FOLDER_NAME);
+  if (!folders.hasNext()) {
+    return { success: true, total_files: 0, unique_filenames: 0, duplicate_count: 0, duplicates: {} };
+  }
+  const folder = folders.next();
+  const files = folder.getFiles();
+  const fileMap = {};
+  const duplicates = {};
+  let totalFiles = 0;
+
+  while (files.hasNext()) {
+    const f = files.next();
+    totalFiles++;
+    const name = f.getName();
+    if (!fileMap[name]) {
+      fileMap[name] = [];
+    }
+    fileMap[name].push({
+      id: f.getId(),
+      size: f.getSize(),
+      dateCreated: f.getDateCreated().toISOString()
+    });
+  }
+
+  for (const name in fileMap) {
+    if (fileMap[name].length > 1) {
+      duplicates[name] = fileMap[name];
+    }
+  }
+
+  return {
+    success: true,
+    total_files: totalFiles,
+    unique_filenames: Object.keys(fileMap).length,
+    duplicate_count: Object.keys(duplicates).length,
+    duplicates: duplicates
+  };
+}
+
+function handleCleanDuplicates() {
+  const audit = handleAuditDuplicates();
+  if (!audit.success || audit.duplicate_count === 0) {
+    return { success: true, removed_count: 0, message: "No duplicates to clean." };
+  }
+
+  let removedCount = 0;
+  for (const name in audit.duplicates) {
+    const copies = audit.duplicates[name];
+    // Sort descending by dateCreated (keep newest)
+    copies.sort(function(a, b) {
+      return new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime();
+    });
+    // Keep copies[0], trash the rest
+    for (let i = 1; i < copies.length; i++) {
+      try {
+        const fileToTrash = DriveApp.getFileById(copies[i].id);
+        fileToTrash.setTrashed(true);
+        removedCount++;
+      } catch (err) {
+        Logger.log("Could not trash file: " + copies[i].id + " - " + err);
+      }
+    }
+  }
+
+  return {
+    success: true,
+    removed_count: removedCount,
+    message: "Moved " + removedCount + " duplicate files to Drive Trash (kept newest version of each)."
+  };
 }
 
 // ==========================================
