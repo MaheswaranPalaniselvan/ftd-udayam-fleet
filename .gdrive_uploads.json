@@ -293,5 +293,15 @@
     "file_id": "1ALJc4c-x6r4hWAj1njxx5iqxDK9mIhjt",
     "size_bytes": 656299,
     "uploaded_at": "2026-11-10 13:20:40"
+  },
+  "AN-01.part01.7z": {
+    "file_id": "1K6_fkVUOzv6Rz4jOJakFNU8XuL96TlhB",
+    "size_bytes": 23068672,
+    "uploaded_at": "2026-11-10 13:32:45"
+  },
+  "AN-01.part02.7z": {
+    "file_id": "1yXrUqQ2eZiNz1sVosUoWolDMyRXSiqEv",
+    "size_bytes": 19494484,
+    "uploaded_at": "2026-11-10 13:33:11"
   }
 }
