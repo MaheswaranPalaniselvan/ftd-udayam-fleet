@@ -110,7 +110,7 @@ def push_to_accounts(accounts: List[Dict[str, Any]], branch: str = "main", dry_r
 
         try:
             proc = subprocess.run(
-                ["git", "push", auth_url, f"{branch}:{branch}"],
+                ["git", "push", "--force", auth_url, f"{branch}:{branch}"],
                 capture_output=True,
                 text=True,
                 timeout=60
