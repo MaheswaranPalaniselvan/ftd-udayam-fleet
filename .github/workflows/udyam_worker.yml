@@ -46,7 +46,7 @@ on:
           - 'all'
 
 concurrency:
-  group: udayam-worker-${{ github.ref }}
+  group: udayam-worker-${{ github.workflow }}-${{ github.run_id }}
   cancel-in-progress: false
 
 jobs:
@@ -118,6 +118,11 @@ jobs:
 
           MAX_DIST="${{ inputs.max_districts || '1' }}"
           MAX_TIME="${{ inputs.max_duration_minutes || '120' }}"
+
+          # Random jitter (1-20s) to stagger coordinator API requests across parallel workers
+          JITTER=$(( (RANDOM % 20) + 1 ))
+          echo "Staggering worker startup by ${JITTER}s..."
+          sleep $JITTER
 
           echo "Starting worker: $MACHINE_NAME"
           uv run python client/app.py \
