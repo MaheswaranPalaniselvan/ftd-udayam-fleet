@@ -121,6 +121,14 @@ def run_headless_cli(args):
         asyncio.run(rerun_loop())
         return
 
+    from client.core.district_manager import find_district_last_number, get_districts_for_state
+
+    # Prepare state queue if state argument provided
+    state_queue = []
+    if args.state:
+        state_queue = get_districts_for_state(args.state)
+        logging.info(f"Target state queue initialized for {args.state.upper()} ({len(state_queue)} districts): {state_queue}")
+
     async def main_loop():
         nonlocal districts_completed_count, claim_attempts
         while True:
@@ -142,30 +150,43 @@ def run_headless_cli(args):
             last_record = ""
             last_dor = ""
 
-            if not claim_res.get("success"):
-                claim_attempts += 1
-                logging.warning(f"Could not claim task: {claim_res.get('message')}. (Attempt {claim_attempts}/3)")
-                if args.state and claim_attempts >= 3:
-                    st_prefix = args.state.upper().strip()
-                    worker_offset = 1
-                    m_num = re.search(r"Worker-(\d+)", machine, re.IGNORECASE)
-                    if m_num:
-                        worker_offset = int(m_num.group(1))
-                    dist_code = f"{st_prefix}-{worker_offset:02d}"
-                    logging.info(f"Autonomous fallback: Coordinator unindexed for state {st_prefix}. Claiming district {dist_code} directly.")
-                else:
-                    await asyncio.sleep(15)
-                    if args.district:
-                        logging.info("Requested district could not be claimed. Exiting.")
-                        break
-                    continue
-            else:
+            if claim_res.get("success"):
                 dist_code = claim_res.get("district_code")
                 start_num = claim_res.get("start_num", 1)
                 limit = claim_res.get("limit", 500000)
                 prev_extracted = int(claim_res.get("prev_extracted") or 0)
                 last_record = claim_res.get("last_record", "")
                 last_dor = claim_res.get("last_dor", "")
+                claim_attempts = 0
+            else:
+                claim_attempts += 1
+                msg = claim_res.get("message", "No available districts matching criteria.")
+                logging.warning(f"Coordinator claim: {msg}. (Attempt {claim_attempts})")
+
+                if args.district:
+                    # DIRECT DISTRICT OVERRIDE:
+                    # Proceed directly with requested district, resolving starting number from local archives / sheet
+                    dist_code = args.district.upper().strip()
+                    last_info = find_district_last_number(dist_code)
+                    start_num = max(1, last_info.get("max_number", 0) + 1)
+                    last_record = last_info.get("last_record", "")
+                    last_dor = last_info.get("last_dor", "")
+                    prev_extracted = last_info.get("max_number", 0)
+                    logging.info(f"Direct District Override: Proceeding with {dist_code} (Resuming from #{start_num}, Last DOR: {last_dor or 'None'}).")
+                elif args.state and state_queue:
+                    # STATE QUEUE SEQUENCE:
+                    # Advance through each district in the state
+                    dist_code = state_queue.pop(0)
+                    last_info = find_district_last_number(dist_code)
+                    start_num = max(1, last_info.get("max_number", 0) + 1)
+                    last_record = last_info.get("last_record", "")
+                    last_dor = last_info.get("last_dor", "")
+                    prev_extracted = last_info.get("max_number", 0)
+                    logging.info(f"Autonomous State Sequence: Claiming {dist_code} ({len(state_queue)} remaining in state queue, Resuming from #{start_num}).")
+                else:
+                    logging.info("No tasks available from coordinator and no direct targets queued. Waiting 20s before retry...")
+                    await asyncio.sleep(20)
+                    continue
 
             logging.info(f"Task Claimed: {dist_code} | Start: #{start_num} | Limit: #{limit} | Prev Extracted: {prev_extracted}")
 
@@ -208,8 +229,14 @@ def run_headless_cli(args):
             await compress_and_upload_district(dist_code, coordinator=coordinator)
 
             districts_completed_count += 1
+            if args.district:
+                logging.info(f"Target district {args.district} completed. Exiting.")
+                break
             if getattr(args, 'max_districts', None) and districts_completed_count >= args.max_districts:
                 logging.info(f"Target districts ({args.max_districts}) completed. Exiting.")
+                break
+            if args.state and not state_queue:
+                logging.info(f"All districts in state {args.state} have been processed! Exiting.")
                 break
 
     asyncio.run(main_loop())

@@ -31,8 +31,17 @@ case $CHOICE in
         ;;
     2)
         HOSTNAME=$(hostname)
-        echo "Starting fleet worker as Pi-$HOSTNAME..."
-        uv run python client/app.py --cli --machine "Pi-$HOSTNAME" --concurrency 2
+        read -p "Enter Target State (e.g. TN, KL, MP, UP, or Enter for auto): " ST
+        read -p "Enter Target District (e.g. TN-02, or Enter for auto): " DIST
+        CMD="uv run python client/app.py --cli --machine \"Pi-$HOSTNAME\" --concurrency 2"
+        if [ -n "$ST" ]; then
+            CMD="$CMD --state $ST"
+        fi
+        if [ -n "$DIST" ]; then
+            CMD="$CMD --district $DIST"
+        fi
+        echo "Launching: $CMD"
+        eval $CMD
         ;;
     3)
         echo "Re-checking failed records in results.xlsx..."

@@ -128,6 +128,31 @@ def discover_all_districts(workspace_dir: Path = Path(".")) -> list[str]:
     return sorted(list(districts))
 
 
+def get_districts_for_state(state_prefix: str, workspace_dir: Path = Path(".")) -> list[str]:
+    """
+    Returns the ordered list of all district codes for a given state prefix (e.g. 'TN' -> ['TN-01', ..., 'TN-38']).
+    Sources from public/column_B_all_districts.csv if present.
+    """
+    st = state_prefix.strip().upper()
+    csv_path = workspace_dir / "public" / "column_B_all_districts.csv"
+    districts = []
+    if csv_path.is_file():
+        try:
+            with open(csv_path, "r", encoding="utf-8", errors="replace") as f:
+                reader = csv.DictReader(f)
+                for r in reader:
+                    if r.get("Level") == "District":
+                        code = r.get("Assigned District Code", "").strip().upper()
+                        if code.startswith(f"{st}-") and code not in districts:
+                            districts.append(code)
+        except Exception:
+            pass
+    if not districts:
+        for i in range(1, 45):
+            districts.append(f"{st}-{i:02d}")
+    return districts
+
+
 def find_district_last_number(district: str, workspace_dir: Path = Path(".")) -> dict:
     """
     Finds the highest existing sequence number and last record for a given district.
@@ -283,14 +308,18 @@ def find_district_last_number(district: str, workspace_dir: Path = Path(".")) ->
             header = next(rows, None)
             if header and "Udyam Number" in header:
                 idx = header.index("Udyam Number")
+                ent_idx = header.index("Enterprise Name") if "Enterprise Name" in header else -1
                 for r in rows:
                     if r and len(r) > idx and r[idx]:
+                        # Skip if it is marked Failed
+                        if ent_idx != -1 and len(r) > ent_idx and str(r[ent_idx] or "").startswith("Failed"):
+                            continue
                         num_str = str(r[idx]).strip()
                         if num_str.startswith(prefix):
                             m = re.search(r"-(\d+)$", num_str)
                             if m:
                                 val = int(m.group(1))
-                                if val > max_num:
+                                if 0 < val < 5000000 and val > max_num:
                                     max_num = val
                                     last_record_id = num_str
                                     source = "results.xlsx"
@@ -327,7 +356,7 @@ def find_district_last_number(district: str, workspace_dir: Path = Path(".")) ->
                             m = re.search(r"-(\d+)$", row[0].strip())
                             if m:
                                 val = int(m.group(1))
-                                if val > max_num:
+                                if 0 < val < 5000000 and val > max_num:
                                     max_num = val
                                     last_record_id = row[0].strip()
                                     source = f"failed/{clean_dist}"
