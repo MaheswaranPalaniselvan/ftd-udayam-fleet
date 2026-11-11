@@ -151,8 +151,8 @@ def format_harvest_date(val) -> str:
     return s if s not in ("None", "", "null") else "-"
 
 
-def is_registration_live(val, threshold_days: int = 4) -> bool:
-    """Returns True if the registration date is current (within threshold_days of current date)."""
+def is_registration_live(val, threshold_days: int = 5) -> bool:
+    """Returns True if the registration date is current (within threshold_days of current date, accounting for weekend cycles)."""
     dt = parse_date_to_datetime(val)
     if not dt:
         return False
@@ -424,22 +424,26 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                     if loc["last_dor"]:
                         d_dor = format_harvest_date(loc["last_dor"])
                         if d_dor and d_dor != "-":
-                            d["harvest_date"] = d_dor
+                            dt_loc = parse_date_to_datetime(d_dor)
+                            dt_current = parse_date_to_datetime(d.get("harvest_date"))
+                            # Only overwrite if local sync is strictly newer or current date is absent
+                            if dt_loc and (not dt_current or dt_loc > dt_current):
+                                d["harvest_date"] = d_dor
                     if loc["failed"] > 0:
                         d["failed"] = max(d["failed"], loc["failed"])
 
                     # Strict freshness evaluation:
                     is_live = (
-                        d["status"].lower() == "completed"
+                        d["status"].lower() in ("completed", "live")
                         and d["extracted"] > 0
-                        and is_registration_live(loc.get("last_dor") or d.get("harvest_date"))
+                        and is_registration_live(d.get("harvest_date"))
                     )
                     d["is_live"] = is_live
                     if is_live:
                         d["live_status"] = "Live"
                     elif d["status"].lower() == "in progress":
                         d["live_status"] = "Outdated (In Progress)"
-                    elif d["status"].lower() == "completed":
+                    elif d["status"].lower() in ("completed", "live"):
                         d["live_status"] = "Outdated"
                     else:
                         d["live_status"] = "Outdated (Not Started)"
@@ -2197,7 +2201,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
         }}
 
         visibleStates++;
-        const isAutoOpen = Boolean(q) || openStateSet.has(state.code);
+        const isAutoOpen = Boolean(q) || currentFilter === 'live' || currentFilter === 'inprogress' || openStateSet.has(state.code);
 
         const safeId = state.code.replace(/[^a-zA-Z0-9]/g, '_');
         const stateCard = document.createElement('div');
