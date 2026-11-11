@@ -41,24 +41,39 @@ def create_example_config():
         json.dump(example_content, f, indent=2)
 
 
+def get_config_path() -> Path:
+    for p in (Path(".fleet_accounts.json"), Path("fleet_accounts.json")):
+        if p.is_file():
+            return p
+    return Path(".fleet_accounts.json")
+
+
 def load_accounts() -> List[Dict[str, Any]]:
-    """Loads accounts from .fleet_accounts.json."""
-    if not CONFIG_PATH.is_file():
+    """Loads accounts from .fleet_accounts.json or fleet_accounts.json."""
+    cfg_file = get_config_path()
+    if not cfg_file.is_file():
         create_example_config()
-        print(f"⚠️ Configuration file '{CONFIG_PATH}' not found!")
+        print(f"⚠️ Configuration file not found at '.fleet_accounts.json' or 'fleet_accounts.json'!")
         print(f"📄 Created template at: '{EXAMPLE_PATH.resolve()}'")
-        print(f"👉 Copy '{EXAMPLE_PATH}' to '{CONFIG_PATH}', add your GitHub accounts and tokens, then rerun.\n")
+        print(f"👉 Copy '{EXAMPLE_PATH}' to '.fleet_accounts.json', add your GitHub accounts and tokens, then rerun.\n")
         sys.exit(1)
 
     try:
-        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            accounts = json.load(f)
-        if not isinstance(accounts, list) or len(accounts) == 0:
-            print(f"❌ '{CONFIG_PATH}' must contain a non-empty list of account objects.")
+        with open(cfg_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if isinstance(data, list):
+            accounts = data
+        elif isinstance(data, dict):
+            accounts = data.get("accounts", [])
+        else:
+            accounts = []
+
+        if not accounts:
+            print(f"❌ '{cfg_file}' must contain a non-empty list of account objects.")
             sys.exit(1)
         return accounts
     except Exception as e:
-        print(f"❌ Failed to parse '{CONFIG_PATH}': {e}")
+        print(f"❌ Failed to parse '{cfg_file}': {e}")
         sys.exit(1)
 
 
@@ -301,6 +316,8 @@ def main():
     parser.add_argument("--status", action="store_true", help="View recent workflow run statuses across accounts")
     parser.add_argument("--cancel", action="store_true", help="Cancel active workflow runs across accounts")
     parser.add_argument("--init", action="store_true", help="Interactively add accounts to .fleet_accounts.json")
+    parser.add_argument("--push", action="store_true", help="Push latest code to origin and all fleet accounts")
+    parser.add_argument("--push-and-launch", action="store_true", help="Push code to all accounts and immediately launch workflows")
 
     # Workflow parameters
     parser.add_argument("--workers", type=str, default="10", choices=["2", "3", "5", "8", "10"], help="Parallel workers per account (default 10)")
@@ -312,6 +329,14 @@ def main():
     parser.add_argument("--ref", type=str, default="main", help="Git branch ref (default main)")
 
     args = parser.parse_args()
+
+    if args.push or args.push_and_launch:
+        from scripts.push_fleet import push_to_origin, push_to_accounts, load_config
+        accounts, _ = load_config()
+        push_to_origin(branch=args.ref)
+        push_to_accounts(accounts, branch=args.ref)
+        if args.push and not args.push_and_launch:
+            return
 
     if args.init:
         init_interactive()

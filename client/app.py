@@ -8,6 +8,7 @@ import asyncio
 import logging
 import os
 import re
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -26,6 +27,59 @@ if env_path.is_file():
                 os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 
 
+def check_and_apply_git_update() -> bool:
+    """
+    Checks if upstream commits are available on origin/main.
+    If updates are found, performs a fast-forward git pull and returns True.
+    """
+    try:
+        if not Path(".git").is_dir():
+            return False
+
+        # Fetch quietly from origin
+        res = subprocess.run(
+            ["git", "fetch", "origin", "main", "--quiet"],
+            capture_output=True,
+            timeout=20
+        )
+        if res.returncode != 0:
+            return False
+
+        local_head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True, timeout=5).strip()
+        remote_head = subprocess.check_output(["git", "rev-parse", "origin/main"], text=True, timeout=5).strip()
+
+        if local_head != remote_head:
+            logging.info(f"🚀 [AUTO-UPDATE] Codebase update detected on origin/main ({local_head[:7]} -> {remote_head[:7]})!")
+            pull_res = subprocess.run(
+                ["git", "pull", "--ff-only", "origin", "main"],
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            if pull_res.returncode == 0:
+                logging.info(f"✅ [AUTO-UPDATE] Successfully updated to {remote_head[:7]}!")
+                return True
+            else:
+                logging.warning(f"⚠️ [AUTO-UPDATE] git pull failed: {pull_res.stderr.strip()}")
+    except Exception as e:
+        logging.debug(f"[AUTO-UPDATE] Check skipped: {e}")
+    return False
+
+
+def restart_worker():
+    """Restarts current worker process to reload updated code."""
+    try:
+        # If running as systemd service, exit 0 lets systemd Restart=always handle clean restart
+        if os.environ.get("INVOCATION_ID") or os.environ.get("JOURNAL_STREAM"):
+            logging.info("🔄 [AUTO-UPDATE] Exiting to let systemd restart service with fresh code...")
+            sys.exit(0)
+        # If running interactively in terminal, re-execute process
+        logging.info("🔄 [AUTO-UPDATE] Re-launching worker process...")
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+    except Exception:
+        sys.exit(0)
+
+
 def run_headless_cli(args):
     """Headless CLI runner for servers or automated background workers."""
     from client.core.coordinator import CentralCoordinator, get_default_machine_name
@@ -37,6 +91,12 @@ def run_headless_cli(args):
 
     logging.info(f"Starting headless worker for machine: {machine}")
     coordinator = CentralCoordinator(url, machine)
+
+    # Check for git updates at worker startup
+    if not getattr(args, "no_auto_update", False):
+        if check_and_apply_git_update():
+            restart_worker()
+            return
 
     districts_completed_count = 0
     start_time = time.time()
@@ -74,6 +134,9 @@ def run_headless_cli(args):
                 if p.is_dir():
                     found.add(p.name)
             target_districts = sorted(list(found))
+            if not target_districts:
+                from client.core.district_manager import get_districts_for_state
+                target_districts = get_districts_for_state(st)
         else:
             res_dir = Path("results")
             fail_dir = Path("failed")
@@ -207,6 +270,11 @@ def run_headless_cli(args):
                         logging.info(f"Fleet Autonomous Fallback: Claiming stale district {dist_code} ({cand['name']}, {cand['state']}) for worker '{machine}' (Resuming from #{start_num}).")
                     else:
                         logging.info("No tasks available from coordinator and no direct targets queued. Waiting 20s before retry...")
+                        if not getattr(args, "no_auto_update", False):
+                            if check_and_apply_git_update():
+                                logging.info("🔄 [AUTO-UPDATE] Codebase updated while idle. Restarting worker...")
+                                restart_worker()
+                                return
                         await asyncio.sleep(20)
                         continue
 
@@ -233,6 +301,29 @@ def run_headless_cli(args):
                 existing_last_dor=last_dor
             )
 
+            # Automatic Cleanup & Recovery Pass: Rerun any failed or sequence gap records before archiving
+            if not getattr(args, "no_auto_rerun", False):
+                from client.core.scraper import get_district_failed_and_missing, execute_district_rerun
+                audit = get_district_failed_and_missing(dist_code)
+                target_count = audit.get("failed_count", 0) + audit.get("missing_gaps_count", 0)
+                if target_count > 0:
+                    logging.info(f"[{dist_code}] 🔍 Initiating auto-recovery pass on {target_count} records ({audit.get('failed_count', 0)} logged failures, {audit.get('missing_gaps_count', 0)} sequence gaps)...")
+                    try:
+                        rerun_res = await execute_district_rerun(
+                            prefix=dist_code,
+                            rerun_type="all",
+                            concurrency=args.concurrency,
+                            update_archive=False
+                        )
+                        recovered = rerun_res.get("recovered", 0)
+                        if recovered > 0:
+                            logging.info(f"[{dist_code}] 🎉 Auto-recovery recovered {recovered} records!")
+                            updated_audit = get_district_failed_and_missing(dist_code)
+                            res["total_extracted"] = updated_audit["total_extracted"]
+                            res["total_failed"] = updated_audit["failed_count"]
+                    except Exception as e:
+                        logging.warning(f"[{dist_code}] Auto-recovery pass encountered error: {e}")
+
             final_record = res.get("last_record") or last_record
             final_dor = res.get("last_dor") or last_dor
             total_extracted = res.get("total_extracted") if res.get("total_extracted") is not None else prev_extracted
@@ -249,6 +340,13 @@ def run_headless_cli(args):
 
             logging.info(f"Compressing {dist_code} and uploading to Google Drive...")
             await compress_and_upload_district(dist_code, coordinator=coordinator)
+
+            # Check for git updates before starting next district
+            if not getattr(args, "no_auto_update", False):
+                if check_and_apply_git_update():
+                    logging.info("🔄 [AUTO-UPDATE] Codebase updated. Restarting worker...")
+                    restart_worker()
+                    return
 
             districts_completed_count += 1
             if args.district:
@@ -277,6 +375,8 @@ def main():
     parser.add_argument("--rerun-failed", action="store_true", help="Rerun all previously failed records for district(s)")
     parser.add_argument("--rerun-missing", action="store_true", help="Detect and rerun all sequence gap records for district(s)")
     parser.add_argument("--rerun-type", type=str, choices=["none", "failed", "missing", "all"], default="none", help="Rerun mode for records")
+    parser.add_argument("--no-auto-rerun", action="store_true", help="Disable automatic post-extraction recovery pass on failed and missing records")
+    parser.add_argument("--no-auto-update", action="store_true", help="Disable automatic git check and reload between tasks")
     args = parser.parse_args()
 
     logging.basicConfig(

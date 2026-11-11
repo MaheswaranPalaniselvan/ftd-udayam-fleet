@@ -818,56 +818,89 @@ async def execute_district_rerun(
 
     start_time = time.perf_counter()
 
-    async with AsyncStealthySession(headless=True) as session:
-        page = await session.context.new_page()
-        await page.route("**/*", abort_unnecessary_resources)
+    num_workers = min(max(1, int(concurrency or 2)), max(1, total_targets))
+    task_idx = 0
+    idx_lock = asyncio.Lock()
+    batch_lock = asyncio.Lock()
+
+    async def rerun_worker_loop(w_id: int, p: Page):
+        nonlocal task_idx, recovered_success, still_failed
         records_processed = 0
 
-        for idx, seq_num in enumerate(target_seq_nums, start=1):
+        while True:
             if stop_event and stop_event.is_set():
-                logging.info(f"[{clean_prefix}] Rerun stopped by user request.")
                 break
+
+            seq_num = None
+            current_i = 0
+            async with idx_lock:
+                if task_idx >= total_targets:
+                    break
+                current_i = task_idx + 1
+                seq_num = target_seq_nums[task_idx]
+                task_idx += 1
 
             if records_processed >= 50:
                 try:
-                    await page.close()
+                    await p.close()
                 except Exception:
                     pass
-                page = await session.context.new_page()
-                await page.route("**/*", abort_unnecessary_resources)
+                p = await session.context.new_page()
+                await p.route("**/*", abort_unnecessary_resources)
                 records_processed = 0
 
             udyam_number = f"UDYAM-{clean_prefix}-{seq_num:07d}"
             t0 = time.perf_counter()
-            status, enterprise_name, html_content, failure_reason, dor_text = await process_udyam_number(page, udyam_number)
+            status, enterprise_name, html_content, failure_reason, dor_text = await process_udyam_number(p, udyam_number)
             elapsed = round(time.perf_counter() - t0, 2)
             records_processed += 1
 
-            if status.startswith("Success"):
-                recovered_success += 1
-                results_batch.append([udyam_number, status, enterprise_name, dor_text, elapsed])
-                html_batch[udyam_number] = html_content
-                # If was previously logged as failed, remove from failed map
-                if udyam_number in failed_map:
-                    del failed_map[udyam_number]
+            should_flush = False
+            async with batch_lock:
+                if status.startswith("Success"):
+                    recovered_success += 1
+                    results_batch.append([udyam_number, status, enterprise_name, dor_text, elapsed])
+                    html_batch[udyam_number] = html_content
+                    # If was previously logged as failed, remove from failed map
+                    if udyam_number in failed_map:
+                        del failed_map[udyam_number]
 
-                logging.info(f"[{clean_prefix}] [{idx}/{total_targets}] RECOVERED: {udyam_number} -> {enterprise_name} ({elapsed}s)")
-            else:
-                still_failed += 1
-                reason = failure_reason or status.replace("Failed (", "").rstrip(")")
-                ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                failed_map[udyam_number] = [udyam_number, status, reason, ts, elapsed]
-                failure_reasons.append(reason)
+                    logging.info(f"[{clean_prefix}] [W-{w_id}] [{current_i}/{total_targets}] RECOVERED: {udyam_number} -> {enterprise_name} ({elapsed}s)")
+                else:
+                    still_failed += 1
+                    reason = failure_reason or status.replace("Failed (", "").rstrip(")")
+                    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    failed_map[udyam_number] = [udyam_number, status, reason, ts, elapsed]
+                    failure_reasons.append(reason)
 
-                logging.info(f"[{clean_prefix}] [{idx}/{total_targets}] UNEXTRACTABLE: {udyam_number} -> Reason: {reason} ({elapsed}s)")
+                    logging.info(f"[{clean_prefix}] [W-{w_id}] [{current_i}/{total_targets}] UNEXTRACTABLE: {udyam_number} -> Reason: {reason} ({elapsed}s)")
 
-            # Periodic batch flush every 25 records
-            if len(results_batch) >= 25:
-                flush_results_batch(results_dir, failed_dir, results_batch, [], html_batch)
-                results_batch.clear()
-                html_batch.clear()
+                # Periodic batch flush every 25 records
+                if len(results_batch) >= 25:
+                    should_flush = True
+                    flush_res = list(results_batch)
+                    flush_html = dict(html_batch)
+                    results_batch.clear()
+                    html_batch.clear()
 
-        # Final batch flush
+            if should_flush:
+                flush_results_batch(results_dir, failed_dir, flush_res, [], flush_html)
+
+    async with AsyncStealthySession(headless=True) as session:
+        pages = []
+        for _ in range(num_workers):
+            p = await session.context.new_page()
+            await p.route("**/*", abort_unnecessary_resources)
+            pages.append(p)
+
+        worker_tasks = [
+            asyncio.create_task(rerun_worker_loop(w_idx + 1, pages[w_idx]))
+            for w_idx in range(num_workers)
+        ]
+        await asyncio.gather(*worker_tasks)
+
+    # Final batch flush
+    async with batch_lock:
         if results_batch:
             flush_results_batch(results_dir, failed_dir, results_batch, [], html_batch)
             results_batch.clear()

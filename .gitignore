@@ -16,6 +16,7 @@ venv/
 *.pem
 gsheets_deployed_app.txt
 .fleet_accounts.json
+fleet_accounts.json
 !fleet_accounts.example.json
 
 # Heavy scraping data and logs (kept local, uploaded to Drive/Sheet)

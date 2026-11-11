@@ -54,6 +54,10 @@ sudo apt-get update -qq
 sudo apt-get install -y -qq git python3-pip python3-venv p7zip-full \
     libopenblas-dev libgomp1 libglib2.0-0 > /dev/null 2>&1 || true
 
+# Configure clean fast-forward git pulls for autonomous updates
+git config pull.rebase false 2>/dev/null || true
+git config pull.ff only 2>/dev/null || true
+
 # 3. Setup Python Virtual Environment
 echo "[2/5] Setting up Python virtual environment (.venv)..."
 if [ ! -d ".venv" ]; then

@@ -1,16 +1,30 @@
-[
-  {
-    "username": "YourFirstGitHubAccount",
-    "repo": "ftd-udayam-fleet",
-    "token": "ghp_YourPersonalAccessToken1",
-    "enabled": true,
-    "default_workers": 10
-  },
-  {
-    "username": "YourSecondGitHubAccount",
-    "repo": "ftd-udayam-fleet",
-    "token": "ghp_YourPersonalAccessToken2",
-    "enabled": true,
-    "default_workers": 10
-  }
-]
+{
+  "accounts": [
+    {
+      "username": "YourFirstGitHubAccount",
+      "repo": "ftd-udayam-fleet",
+      "token": "ghp_YourPersonalAccessToken1",
+      "enabled": true,
+      "default_workers": 10
+    },
+    {
+      "username": "YourSecondGitHubAccount",
+      "repo": "ftd-udayam-fleet",
+      "token": "ghp_YourPersonalAccessToken2",
+      "enabled": true,
+      "default_workers": 10
+    }
+  ],
+  "pi_workers": [
+    {
+      "host": "pi5.local",
+      "user": "pi",
+      "path": "~/udayam"
+    },
+    {
+      "host": "pi4.local",
+      "user": "pi",
+      "path": "~/udayam"
+    }
+  ]
+}
