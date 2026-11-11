@@ -153,6 +153,55 @@ def get_districts_for_state(state_prefix: str, workspace_dir: Path = Path(".")) 
     return districts
 
 
+def discover_stale_or_unstarted_districts(workspace_dir: Path = Path(".")) -> list[dict]:
+    """
+    Returns an indexed list of districts across India, prioritizing unstarted
+    and oldest-harvested districts for autonomous fleet worker distribution.
+    """
+    all_districts = []
+    col_b = workspace_dir / "public" / "column_B_all_districts.csv"
+    if col_b.is_file():
+        try:
+            with open(col_b, "r", encoding="utf-8", errors="replace") as f:
+                for r in csv.DictReader(f):
+                    if r.get("Level") == "District":
+                        code = r.get("Assigned District Code", "").strip().upper()
+                        name = r.get("District Name", "").strip()
+                        state = r.get("State/UT", "").strip()
+                        if "-" in code:
+                            all_districts.append({
+                                "code": code,
+                                "name": name,
+                                "state": state,
+                                "dor": "None",
+                                "extracted": 0
+                            })
+        except Exception:
+            pass
+
+    known = {}
+    sync_csv = workspace_dir / "sync_report.csv"
+    if sync_csv.is_file():
+        try:
+            with open(sync_csv, "r", encoding="utf-8", errors="replace") as f:
+                for r in csv.DictReader(f):
+                    c = r.get("District Code", "").strip().upper()
+                    known[c] = {
+                        "dor": r.get("Last Recorded Date", "").strip(),
+                        "extracted": int(r.get("Total Extracted", 0) or 0)
+                    }
+        except Exception:
+            pass
+
+    for d in all_districts:
+        c = d["code"]
+        if c in known:
+            d["dor"] = known[c]["dor"]
+            d["extracted"] = known[c]["extracted"]
+
+    return all_districts
+
+
 def find_district_last_number(district: str, workspace_dir: Path = Path(".")) -> dict:
     """
     Finds the highest existing sequence number and last record for a given district.

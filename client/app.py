@@ -121,7 +121,11 @@ def run_headless_cli(args):
         asyncio.run(rerun_loop())
         return
 
-    from client.core.district_manager import find_district_last_number, get_districts_for_state
+    from client.core.district_manager import (
+        find_district_last_number,
+        get_districts_for_state,
+        discover_stale_or_unstarted_districts
+    )
 
     # Prepare state queue if state argument provided
     state_queue = []
@@ -184,9 +188,27 @@ def run_headless_cli(args):
                     prev_extracted = last_info.get("max_number", 0)
                     logging.info(f"Autonomous State Sequence: Claiming {dist_code} ({len(state_queue)} remaining in state queue, Resuming from #{start_num}).")
                 else:
-                    logging.info("No tasks available from coordinator and no direct targets queued. Waiting 20s before retry...")
-                    await asyncio.sleep(20)
-                    continue
+                    # FLEET AUTONOMOUS FALLBACK:
+                    # Coordinator rejected claim (e.g. all marked Completed in sheet).
+                    # Automatically select from unstarted/stale districts across India,
+                    # offset by machine identity to avoid collisions between workers!
+                    stale_list = discover_stale_or_unstarted_districts()
+                    if stale_list:
+                        import hashlib
+                        m_hash = int(hashlib.md5(machine.encode()).hexdigest(), 16)
+                        pick_idx = (m_hash + districts_completed_count * 7) % len(stale_list)
+                        cand = stale_list[pick_idx]
+                        dist_code = cand["code"]
+                        last_info = find_district_last_number(dist_code)
+                        start_num = max(1, last_info.get("max_number", 0) + 1)
+                        last_record = last_info.get("last_record", "")
+                        last_dor = last_info.get("last_dor", "")
+                        prev_extracted = last_info.get("max_number", 0)
+                        logging.info(f"Fleet Autonomous Fallback: Claiming stale district {dist_code} ({cand['name']}, {cand['state']}) for worker '{machine}' (Resuming from #{start_num}).")
+                    else:
+                        logging.info("No tasks available from coordinator and no direct targets queued. Waiting 20s before retry...")
+                        await asyncio.sleep(20)
+                        continue
 
             logging.info(f"Task Claimed: {dist_code} | Start: #{start_num} | Limit: #{limit} | Prev Extracted: {prev_extracted}")
 
