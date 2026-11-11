@@ -44,22 +44,37 @@ def load_config() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
 
 def push_to_origin(branch: str = "main", dry_run: bool = False) -> bool:
     print(f"\n=======================================================")
-    print(f"📦 [1/3] Pushing to Primary Repository (origin/{branch})")
+    print(f"📦 [1/3] Pushing to Repositories (origin/{branch} and fleet/{branch})")
     print(f"=======================================================")
     if dry_run:
         print(f"   [DRY-RUN] git push origin {branch}")
+        print(f"   [DRY-RUN] git push --force fleet {branch}:{branch}")
         return True
+    success = True
     try:
         proc = subprocess.run(["git", "push", "origin", branch], capture_output=True, text=True, timeout=60)
         if proc.returncode == 0:
-            print(f"   ✅ Successfully pushed to origin/{branch}!")
-            return True
+            print(f"   ✅ Successfully pushed to origin/{branch} (udayam-source)!")
         else:
             print(f"   ❌ git push origin failed:\n{proc.stderr.strip()}")
-            return False
+            success = False
     except Exception as e:
         print(f"   ❌ Error pushing to origin: {e}")
-        return False
+        success = False
+
+    # Check if 'fleet' remote (public repository) exists
+    try:
+        proc_remotes = subprocess.run(["git", "remote"], capture_output=True, text=True)
+        if "fleet" in proc_remotes.stdout.split():
+            proc_fleet = subprocess.run(["git", "push", "--force", "fleet", f"{branch}:{branch}"], capture_output=True, text=True, timeout=60)
+            if proc_fleet.returncode == 0:
+                print(f"   ✅ Successfully pushed to fleet/{branch} (ftd-udayam-fleet)!")
+            else:
+                print(f"   ⚠️ git push fleet failed:\n{proc_fleet.stderr.strip()}")
+    except Exception as e:
+        print(f"   ⚠️ Could not push to fleet remote: {e}")
+
+    return success
 
 
 def push_to_accounts(accounts: List[Dict[str, Any]], branch: str = "main", dry_run: bool = False) -> int:
