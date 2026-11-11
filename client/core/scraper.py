@@ -231,7 +231,7 @@ async def process_udyam_number(page: Page, udyam_number: str) -> tuple[str, str,
             await page.locator('#ctl00_ContentPlaceHolder1_txtCaptcha').fill(captcha_text)
 
             try:
-                async with page.expect_navigation(wait_until="domcontentloaded", timeout=3500):
+                async with page.expect_navigation(wait_until="load", timeout=3500):
                     await page.locator('#ctl00_ContentPlaceHolder1_btnVerify').click(force=True, timeout=2500)
             except PlaywrightTimeoutError:
                 pass
@@ -262,14 +262,12 @@ async def process_udyam_number(page: Page, udyam_number: str) -> tuple[str, str,
                     continue  # Retry captcha
                 else:
                     reason = await detect_failure_reason(page, "Record Not Found / Unregistered")
-                    # High-speed optimization: on failure, the portal response is already on Udyam_Verify.aspx with a new captcha ready!
-                    # Do NOT reload window.location if already on Udyam_Verify.aspx
-                    if "Udyam_Verify.aspx" not in page.url:
-                        try:
-                            async with page.expect_navigation(wait_until="domcontentloaded", timeout=2000):
-                                await page.evaluate("window.location = 'Udyam_Verify.aspx';")
-                        except Exception:
-                            pass
+                    # Explicit page reload on failure to guarantee clean ASP.NET ViewState and fresh session CAPTCHA
+                    try:
+                        async with page.expect_navigation(wait_until="domcontentloaded", timeout=2500):
+                            await page.evaluate("window.location = 'Udyam_Verify.aspx';")
+                    except Exception:
+                        pass
                     return f"Failed ({reason})", "", "", reason, ""
 
         except PlaywrightTimeoutError:

@@ -273,9 +273,9 @@ async def process_udyam_number(page: Page, udyam_number: str) -> tuple[str, str,
 
             await page.locator('#ctl00_ContentPlaceHolder1_txtCaptcha').fill(captcha_text)
             
-            # Click verify and wait for domcontentloaded
+            # Click verify and wait for page load
             try:
-                async with page.expect_navigation(wait_until="domcontentloaded", timeout=2500):
+                async with page.expect_navigation(wait_until="load", timeout=2500):
                     await page.locator('#ctl00_ContentPlaceHolder1_btnVerify').click(force=True)
             except PlaywrightTimeoutError:
                 pass
