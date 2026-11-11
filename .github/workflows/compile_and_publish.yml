@@ -9,6 +9,7 @@ on:
 
 jobs:
   build-and-publish:
+    if: github.repository == 'MaheswaranPalaniselvan/udayam-source'
     runs-on: ubuntu-latest
 
     steps:
