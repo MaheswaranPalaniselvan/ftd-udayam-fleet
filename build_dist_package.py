@@ -20,7 +20,7 @@ def create_portable_distribution():
 
     exclude_dirs = {
         ".git", ".venv", "__pycache__", "build", "dist", "logs", "old",
-        "downloaded_html", "results", "failed", "github-pages", ".tempmediaStorage", ".gemini"
+        "downloaded_html", "results", "failed", "public", ".tempmediaStorage", ".gemini"
     }
 
     exclude_extensions = {

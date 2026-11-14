@@ -7,7 +7,7 @@ import re
 
 RESULTS_DIR = "results"
 FAILED_DIR = "failed"
-DB_PATH = os.path.join("github-pages", "udyam_data.sqlite")
+DB_PATH = "udyam_data.sqlite"
 
 def extract_text(soup, element_id):
     el = soup.find(id=element_id)
