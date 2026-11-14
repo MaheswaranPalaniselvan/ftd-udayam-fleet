@@ -51,8 +51,16 @@ def push_to_origin(branch: str = "main", dry_run: bool = False) -> bool:
         print(f"   [DRY-RUN] git push --force fleet {branch}:{branch}")
         return True
     success = True
+    accounts, _ = load_config()
+    primary_token = next((a.get("token") for a in accounts if a.get("username") == "MaheswaranPalaniselvan"), None)
+
+    env = {**os.environ, "GIT_TERMINAL_PROMPT": "0", "GCM_INTERACTIVE": "never"}
+    origin_target = f"https://x-access-token:{primary_token}@github.com/MaheswaranPalaniselvan/udayam-source.git" if primary_token else "origin"
+    fleet_target = f"https://x-access-token:{primary_token}@github.com/MaheswaranPalaniselvan/ftd-udayam-fleet.git" if primary_token else "fleet"
+
     try:
-        proc = subprocess.run(["git", "push", "origin", branch], capture_output=True, text=True, timeout=60)
+        push_args = ["git", "push", origin_target, f"{branch}:{branch}"] if primary_token else ["git", "push", "origin", branch]
+        proc = subprocess.run(push_args, capture_output=True, text=True, timeout=45, env=env)
         if proc.returncode == 0:
             print(f"   ✅ Successfully pushed to origin/{branch} (udayam-source)!")
         else:
@@ -62,15 +70,13 @@ def push_to_origin(branch: str = "main", dry_run: bool = False) -> bool:
         print(f"   ❌ Error pushing to origin: {e}")
         success = False
 
-    # Check if 'fleet' remote (public repository) exists
     try:
-        proc_remotes = subprocess.run(["git", "remote"], capture_output=True, text=True)
-        if "fleet" in proc_remotes.stdout.split():
-            proc_fleet = subprocess.run(["git", "push", "--force", "fleet", f"{branch}:{branch}"], capture_output=True, text=True, timeout=60)
-            if proc_fleet.returncode == 0:
-                print(f"   ✅ Successfully pushed to fleet/{branch} (ftd-udayam-fleet)!")
-            else:
-                print(f"   ⚠️ git push fleet failed:\n{proc_fleet.stderr.strip()}")
+        fleet_args = ["git", "push", "--force", fleet_target, f"{branch}:{branch}"]
+        proc_fleet = subprocess.run(fleet_args, capture_output=True, text=True, timeout=45, env=env)
+        if proc_fleet.returncode == 0:
+            print(f"   ✅ Successfully pushed to fleet/{branch} (ftd-udayam-fleet)!")
+        else:
+            print(f"   ⚠️ git push fleet failed:\n{proc_fleet.stderr.strip()}")
     except Exception as e:
         print(f"   ⚠️ Could not push to fleet remote: {e}")
 
