@@ -617,6 +617,32 @@ async def execute_district_extraction(
     }
 
 
+def is_terminal_portal_status(status_or_reason: str) -> bool:
+    """
+    Returns True if the record was definitively evaluated by the portal as
+    deregistered, cancelled, or unregistered (not found in portal), meaning
+    it has reached a terminal state and should NOT be processed again.
+    """
+    text = (status_or_reason or "").lower()
+    return any(k in text for k in (
+        "not found", "unregistered", "cancelled", "canceled",
+        "deregister", "de-register", "does not exist", "no record found",
+        "migrated", "suspended", "invalid registration number"
+    ))
+
+
+def is_transient_failure(status_or_reason: str) -> bool:
+    """
+    Returns True if the failure was transient (timeout, captcha, network, server error),
+    meaning it timed out or failed for an operational reason and is useful to rerun.
+    """
+    text = (status_or_reason or "").lower()
+    return any(k in text for k in (
+        "timeout", "captcha", "slow", "exception", "playwright",
+        "connection", "server error", "runtime error", "error"
+    ))
+
+
 def get_district_failed_and_missing(
     prefix: str,
     results_dir: Path = Path("results"),
@@ -625,6 +651,9 @@ def get_district_failed_and_missing(
     """
     Scans a district's results and failures to identify:
     1. All logged failed records from failed_<prefix>.csv (or .7z archive).
+       - Separates records into:
+         a) Deregistered & Unregistered (terminal states - no rerun needed).
+         b) Transient Failed / Timeouts (timed out or connection error - useful to rerun).
     2. All sequence gap records missing between 1 and max_record_num.
     3. The complete set of numbers missing from verified results.
     """
@@ -673,7 +702,10 @@ def get_district_failed_and_missing(
                         max_record_num = val
 
     # 2. Inspect Failed (Folder first, then .7z archive)
-    failed_records = {}  # seq_num -> row data
+    failed_records = {}          # seq_num -> full row
+    dereg_unreg_records = {}     # seq_num -> row (terminal, settled, no rerun needed)
+    transient_failed_records = {} # seq_num -> row (timed out / transient error, useful to rerun)
+
     fail_csv = failed_dir / clean_prefix / f"failed_{clean_prefix}.csv"
     fail_content = None
 
@@ -709,8 +741,18 @@ def get_district_failed_and_missing(
                     val = int(m.group(1))
                     failed_records[val] = row
 
-    failed_numbers = sorted(list(failed_records.keys()))
-    failed_set = set(failed_numbers)
+                    # Categorize row by status and reason
+                    row_text = " ".join(str(c) for c in row[1:]).lower()
+                    if is_terminal_portal_status(row_text):
+                        dereg_unreg_records[val] = row
+                    else:
+                        transient_failed_records[val] = row
+
+    all_logged_failed_numbers = sorted(list(failed_records.keys()))
+    dereg_unreg_numbers = sorted(list(dereg_unreg_records.keys()))
+    transient_failed_numbers = sorted(list(transient_failed_records.keys()))
+
+    failed_set = set(all_logged_failed_numbers)
 
     # 3. Calculate sequence gaps in range 1..max_record_num
     all_sequence = set(range(1, max_record_num + 1)) if max_record_num > 0 else set()
@@ -723,9 +765,14 @@ def get_district_failed_and_missing(
         "district_code": clean_prefix,
         "total_extracted": len(success_numbers),
         "max_record_num": max_record_num,
-        "failed_numbers": failed_numbers,
-        "failed_count": len(failed_numbers),
-        "failed_records": failed_records,
+        "failed_numbers": transient_failed_numbers,         # ONLY transient failures / timeouts!
+        "failed_count": len(transient_failed_numbers),
+        "failed_records": transient_failed_records,
+        "dereg_unreg_numbers": dereg_unreg_numbers,         # Settled terminal records
+        "dereg_unreg_count": len(dereg_unreg_numbers),
+        "dereg_unreg_records": dereg_unreg_records,
+        "all_logged_failed_numbers": all_logged_failed_numbers,
+        "all_logged_failed_count": len(all_logged_failed_numbers),
         "missing_gaps": missing_gaps,
         "missing_gaps_count": len(missing_gaps),
         "all_missing_from_results": all_missing_from_results,
@@ -749,9 +796,10 @@ async def execute_district_rerun(
     if any record remains unextractable.
 
     Rerun types:
-    - 'failed': Targets records listed in failed_<prefix>.csv. If extracted, moves to results and removes from failed.
+    - 'failed': Targets records that timed out or had transient network/captcha errors.
+                Deregistered and Unregistered records are considered settled and skipped!
     - 'missing': Targets sequence gap numbers (between 1 and max_record) that were skipped.
-    - 'all': Targets both failed records and sequence gaps.
+    - 'all': Targets timed-out/transient failed records and sequence gaps.
     """
     clean_prefix = prefix.replace("UDYAM-", "").strip().upper()
     logging.info(f"[{clean_prefix}] Initializing rerun task (Mode: {rerun_type.upper()})...")
@@ -759,17 +807,30 @@ async def execute_district_rerun(
     audit = get_district_failed_and_missing(clean_prefix, results_dir, failed_dir)
 
     if rerun_type == "failed":
+        # Target ONLY transient failures / timeouts!
         target_seq_nums = audit["failed_numbers"]
+        logging.info(
+            f"[{clean_prefix}] Target failed records: {len(target_seq_nums)} timeout/transient failures "
+            f"(Skipping {audit['dereg_unreg_count']} settled Deregistered/Unregistered records)."
+        )
     elif rerun_type == "missing":
         target_seq_nums = audit["missing_gaps"]
     elif rerun_type == "all":
-        target_seq_nums = audit["all_missing_from_results"]
+        # Target transient failures + sequence gaps, skipping settled deregistered/unregistered
+        target_seq_nums = sorted(list(set(audit["failed_numbers"]) | set(audit["missing_gaps"])))
+        logging.info(
+            f"[{clean_prefix}] Target records: {len(target_seq_nums)} ({len(audit['failed_numbers'])} timeouts + "
+            f"{len(audit['missing_gaps'])} sequence gaps; skipping {audit['dereg_unreg_count']} settled Deregistered/Unregistered)."
+        )
     else:
         raise ValueError(f"Unknown rerun_type: {rerun_type}. Must be 'failed', 'missing', or 'all'.")
 
     total_targets = len(target_seq_nums)
     if total_targets == 0:
-        logging.info(f"[{clean_prefix}] Zero {rerun_type} records found. District dataset is 100% complete!")
+        logging.info(
+            f"[{clean_prefix}] Zero {rerun_type} records needing rerun. "
+            f"({audit['dereg_unreg_count']} records are settled Deregistered/Unregistered). Dataset is in optimal state!"
+        )
         return {
             "district_code": clean_prefix,
             "rerun_type": rerun_type,

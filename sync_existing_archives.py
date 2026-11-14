@@ -138,15 +138,31 @@ def parse_results_csv_content(csv_content: str) -> dict:
     }
 
 
-def parse_failed_csv_content(csv_content: str) -> int:
-    """Counts failed records from CSV text."""
+def parse_failed_csv_content(csv_content: str) -> tuple[int, int]:
+    """
+    Parses failed CSV text and separates records into:
+    - total_dereg_unreg: Definitive terminal states (unregistered / not found, deregistered / cancelled)
+                         which do not need to be processed again.
+    - total_failed: True transient failures (timeout, captcha exhausted, connection error)
+                    which are useful to rerun.
+    Returns: (total_dereg_unreg, total_failed)
+    """
     reader = csv.reader(io.StringIO(csv_content))
     next(reader, None)
-    count = 0
+    dereg_unreg = 0
+    transient_failed = 0
     for row in reader:
         if row and row[0].strip():
-            count += 1
-    return count
+            combined = " ".join(str(c) for c in row[1:]).lower()
+            if any(k in combined for k in (
+                "not found", "unregistered", "cancelled", "canceled",
+                "deregister", "de-register", "does not exist", "no record found",
+                "migrated", "suspended", "invalid registration number"
+            )):
+                dereg_unreg += 1
+            else:
+                transient_failed += 1
+    return dereg_unreg, transient_failed
 
 
 def scan_district_data(results_dir: Path, failed_dir: Path, seven_zip_bin: str) -> dict[str, dict]:
@@ -181,8 +197,9 @@ def scan_district_data(results_dir: Path, failed_dir: Path, seven_zip_bin: str) 
             if not failed_csv_text:
                 failed_csv_text = extract_csv_from_7z(archive, "failed_*.csv", seven_zip_bin)
 
-            total_failed = parse_failed_csv_content(failed_csv_text) if failed_csv_text else 0
+            total_dereg, total_failed = parse_failed_csv_content(failed_csv_text) if failed_csv_text else (0, 0)
 
+            stats["total_dereg_unreg"] = total_dereg
             stats["total_failed"] = total_failed
             stats["is_archive"] = True
             stats["path"] = str(archive)
@@ -199,6 +216,7 @@ def scan_district_data(results_dir: Path, failed_dir: Path, seven_zip_bin: str) 
                         stats = parse_results_csv_content(f.read())
                     stats["is_archive"] = False
                     stats["path"] = str(folder)
+                    stats["total_dereg_unreg"] = 0
                     stats["total_failed"] = 0
                     district_data[prefix] = stats
 
@@ -215,7 +233,9 @@ def scan_district_data(results_dir: Path, failed_dir: Path, seven_zip_bin: str) 
 
             if failed_csv and prefix in district_data:
                 with open(failed_csv, "r", encoding="utf-8", errors="replace") as f:
-                    district_data[prefix]["total_failed"] = parse_failed_csv_content(f.read())
+                    dereg, failed = parse_failed_csv_content(f.read())
+                    district_data[prefix]["total_dereg_unreg"] = dereg
+                    district_data[prefix]["total_failed"] = failed
 
     return district_data
 
@@ -282,13 +302,14 @@ def main():
     report_path = Path(args.export_csv)
     with open(report_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["District Code", "Last Record", "Last Recorded Date", "Total Extracted", "Total Failed", "Is Archive", "Source Path"])
+        writer.writerow(["District Code", "Last Record", "Last Recorded Date", "Total Extracted", "Deregistered/Unregistered", "Total Failed", "Is Archive", "Source Path"])
         for prefix, d in sorted(district_data.items()):
             writer.writerow([
                 prefix,
                 d.get("last_record", ""),
                 d.get("last_recorded_date", ""),
                 d.get("total_extracted", 0),
+                d.get("total_dereg_unreg", 0),
                 d.get("total_failed", 0),
                 d.get("is_archive", False),
                 d.get("path", "")

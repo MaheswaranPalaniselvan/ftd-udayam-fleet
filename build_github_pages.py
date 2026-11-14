@@ -291,6 +291,7 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                             "last_record": row.get("Last Record", "").strip(),
                             "last_dor": row.get("Last Recorded Date", "").strip(),
                             "extracted": clean_int(row.get("Total Extracted", 0)),
+                            "dereg_unreg": clean_int(row.get("Deregistered/Unregistered", row.get("Dereg/Unreg", 0))),
                             "failed": clean_int(row.get("Total Failed", 0)),
                         }
         except Exception:
@@ -344,6 +345,7 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                     "extracted": extracted,
                     "last_record": normalize_udyam_number(r[9], code),
                     "harvest_date": harvest_date,
+                    "dereg_unreg": 0,
                     "failed": clean_int(r[12]),
                     "status": status_raw,
                     "is_live": is_live,
@@ -431,8 +433,10 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                             # Only overwrite if local sync is strictly newer or current date is absent
                             if dt_loc and (not dt_current or dt_loc > dt_current):
                                 d["harvest_date"] = d_dor
-                    if loc["failed"] > 0:
-                        d["failed"] = max(d["failed"], loc["failed"])
+                    if loc.get("dereg_unreg", 0) > 0:
+                        d["dereg_unreg"] = loc["dereg_unreg"]
+                    if loc.get("failed", 0) >= 0:
+                        d["failed"] = loc["failed"]
 
                     # Strict freshness evaluation:
                     is_live = (
@@ -459,6 +463,7 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
 
     # Calculate aggregations
     total_extracted_records = 0
+    total_dereg_unreg_records = 0
     total_failed_records = 0
     total_districts_count = 0
     total_live_districts = 0
@@ -477,6 +482,7 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
         s["completed_count"] = sum(1 for d in dists if d["status"].lower() == "completed")
         s["in_progress_count"] = sum(1 for d in dists if d["status"].lower() == "in progress")
         s["extracted_total"] = sum(d["extracted"] for d in dists)
+        s["dereg_unreg_total"] = sum(d.get("dereg_unreg", 0) for d in dists)
         s["failed_total"] = sum(d["failed"] for d in dists)
         s["live_pct"] = round((s["live_count"] / len(dists) * 100), 1) if dists else 0.0
         s["completion_pct"] = round((s["completed_count"] / len(dists) * 100), 1) if dists else 0.0
@@ -490,6 +496,7 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
         total_completed_districts += s["completed_count"]
         total_inprogress_districts += s["in_progress_count"]
         total_extracted_records += s["extracted_total"]
+        total_dereg_unreg_records += s["dereg_unreg_total"]
         total_failed_records += s["failed_total"]
 
     overall_live_pct = round((total_live_districts / total_districts_count * 100), 1) if total_districts_count else 0.0
@@ -526,6 +533,7 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
             "completed_districts": total_completed_districts,
             "inprogress_districts": total_inprogress_districts,
             "completion_pct": overall_pct,
+            "total_dereg_unreg": total_dereg_unreg_records,
             "total_failed": total_failed_records,
         },
         "states": states_list,
@@ -1756,6 +1764,16 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
         <div class="kpi-value">{format_indian_num(data['kpi']['total_extracted'])}</div>
         <div class="kpi-subtext">Verified Harvested MSMEs</div>
       </div>
+      <div class="kpi-card" style="--card-accent: #64748b;">
+        <div class="kpi-label">Deregistered & Gaps</div>
+        <div class="kpi-value">{format_indian_num(data['kpi']['total_dereg_unreg'])}</div>
+        <div class="kpi-subtext">Settled Records (No Rerun Needed)</div>
+      </div>
+      <div class="kpi-card" style="--card-accent: #f87171;">
+        <div class="kpi-label">Failed (Timeouts)</div>
+        <div class="kpi-value">{format_indian_num(data['kpi']['total_failed'])}</div>
+        <div class="kpi-subtext">Transient Errors (Useful to Rerun)</div>
+      </div>
     </div>
 
     <!-- Freshness Classification Logic Explanation Banner -->
@@ -1790,8 +1808,9 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
           <option value="harvest_date_asc">Last Date Harvested (Oldest First)</option>
           <option value="extracted_desc">Extracted Records (Highest First)</option>
           <option value="extracted_asc">Extracted Records (Lowest First)</option>
+          <option value="dereg_unreg_desc">Deregistered & Gaps (Highest First)</option>
           <option value="status_desc">Status (Live → In Progress → Outdated)</option>
-          <option value="failed_desc">Failed Records (Highest First)</option>
+          <option value="failed_desc">Failed / Timeouts (Highest First)</option>
           <option value="speed_desc">Speed (Highest rpm First)</option>
           <option value="last_record_asc">Last Record Extracted (A → Z)</option>
           <option value="claimed_by_asc">Worker / Node (A → Z)</option>
@@ -2272,7 +2291,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
         currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
       }} else {{
         currentSortField = field;
-        if (['extracted', 'harvest_date', 'failed', 'speed', 'status'].includes(field)) {{
+        if (['extracted', 'dereg_unreg', 'harvest_date', 'failed', 'speed', 'status'].includes(field)) {{
           currentSortDir = 'desc';
         }} else {{
           currentSortDir = 'asc';
@@ -2324,6 +2343,8 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
           diff = (a.name || '').localeCompare(b.name || '', undefined, {{ sensitivity: 'base' }});
         }} else if (currentSortField === 'extracted') {{
           diff = (Number(a.extracted) || 0) - (Number(b.extracted) || 0);
+        }} else if (currentSortField === 'dereg_unreg') {{
+          diff = (Number(a.dereg_unreg) || 0) - (Number(b.dereg_unreg) || 0);
         }} else if (currentSortField === 'failed') {{
           diff = (Number(a.failed) || 0) - (Number(b.failed) || 0);
         }} else if (currentSortField === 'speed') {{
@@ -2480,9 +2501,12 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
               <td class="mono-num" style="color: #34d399; font-weight: 600; font-size: 0.92rem;">
                 ${{d.extracted ? d.extracted.toLocaleString('en-IN') : '0'}}
               </td>
+              <td class="mono-num" style="color: #94a3b8; font-size: 0.84rem;" title="Definitive government cancelled or gap numbers (settled, no rerun needed)">
+                ${{d.dereg_unreg ? d.dereg_unreg.toLocaleString('en-IN') : '0'}}
+              </td>
               <td class="mono-num" style="font-size: 0.82rem; color: #93c5fd;">${{d.last_record || '-'}}</td>
               <td style="font-size: 0.82rem; color: #fbbf24; font-weight: 500;">${{d.harvest_date || '-'}}</td>
-              <td class="mono-num" style="color: ${{d.failed ? '#f87171' : 'var(--text-dim)'}};">${{d.failed || '0'}}</td>
+              <td class="mono-num" style="color: ${{d.failed ? '#f87171' : 'var(--text-dim)'}};" title="Records that timed out or failed due to network (useful to rerun)">${{d.failed || '0'}}</td>
               <td style="font-size: 0.78rem; color: var(--text-dim);">${{d.claimed_by || '-'}}</td>
               <td class="mono-num" style="font-size: 0.78rem; color: var(--text-dim);">${{d.speed ? d.speed + ' rpm' : '-'}}</td>
             </tr>
@@ -2514,6 +2538,10 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
               <div class="stat-col">
                 <div class="stat-val" style="color: #34d399; font-size: 0.98rem;">${{state.extracted_total ? state.extracted_total.toLocaleString('en-IN') : '0'}}</div>
                 <div class="stat-sub">Harvested Records</div>
+              </div>
+              <div class="stat-col" title="Definitive government cancellations & sequence gaps (settled, no rerun needed)">
+                <div class="stat-val" style="color: #94a3b8; font-size: 0.92rem;">${{state.dereg_unreg_total ? state.dereg_unreg_total.toLocaleString('en-IN') : '0'}}</div>
+                <div class="stat-sub">Dereg / Gaps</div>
               </div>
               <div class="stat-col">
                 <div class="stat-val" style="color: #fbbf24; font-size: 0.92rem;">${{state.latest_harvest || '-'}}</div>
@@ -2549,14 +2577,18 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
                   <th class="sortable-th ${{currentSortField === 'extracted' ? 'active' : ''}}" onclick="setDistrictSort('extracted')" title="Click to sort by Extracted Records">
                     Extracted Records <span class="sort-icon">${{getSortIcon('extracted')}}</span>
                   </th>
+                  <th class="sortable-th ${{currentSortField === 'dereg_unreg' ? 'active' : ''}}" onclick="setDistrictSort('dereg_unreg')" title="Click to sort by Deregistered & Sequence Gap records">
+                    Dereg / Unregistered <span class="sort-icon">${{getSortIcon('dereg_unreg')}}</span>
+                  </th>
                   <th class="sortable-th ${{currentSortField === 'last_record' ? 'active' : ''}}" onclick="setDistrictSort('last_record')" title="Click to sort by Last Record Extracted">
                     Last Record Extracted <span class="sort-icon">${{getSortIcon('last_record')}}</span>
                   </th>
                   <th class="sortable-th ${{currentSortField === 'harvest_date' ? 'active' : ''}}" onclick="setDistrictSort('harvest_date')" title="Click to sort by Last Date Harvested">
                     Last Date Harvested <span class="sort-icon">${{getSortIcon('harvest_date')}}</span>
                   </th>
-                  <th class="sortable-th ${{currentSortField === 'failed' ? 'active' : ''}}" onclick="setDistrictSort('failed')" title="Click to sort by Failed Records">
-                    Failed <span class="sort-icon">${{getSortIcon('failed')}}</span>
+                  <th class="sortable-th ${{currentSortField === 'failed' ? 'active' : ''}}" onclick="setDistrictSort('failed')" title="Click to sort by Timed Out / Transient Failed records">
+                    Failed (Timeouts) <span class="sort-icon">${{getSortIcon('failed')}}</span>
+                  </th>
                   </th>
                   <th class="sortable-th ${{currentSortField === 'claimed_by' ? 'active' : ''}}" onclick="setDistrictSort('claimed_by')" title="Click to sort by Worker / Node">
                     Node / Worker <span class="sort-icon">${{getSortIcon('claimed_by')}}</span>
@@ -2622,7 +2654,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
 
     function exportFilteredExcel() {{
       const rows = [];
-      rows.push(['State Code', 'State Name', 'District Code', 'District Name', 'Data Freshness', 'Harvested Records', 'Last Record Extracted', 'Last Date Harvested', 'Raw Status', 'Ministry MSME Total', 'Ministry Udyam Formal', 'Ministry UAP Informal', 'Failed Records', 'Worker Machine', 'Speed']);
+      rows.push(['State Code', 'State Name', 'District Code', 'District Name', 'Data Freshness', 'Harvested Records', 'Deregistered / Unregistered', 'Last Record Extracted', 'Last Date Harvested', 'Raw Status', 'Ministry MSME Total', 'Ministry Udyam Formal', 'Ministry UAP Informal', 'Failed (Timeouts)', 'Worker Machine', 'Speed']);
 
       RAW_DATA.states.forEach(s => {{
         s.districts.forEach(d => {{
@@ -2633,6 +2665,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
             d.name,
             d.live_status || (d.is_live ? 'Live' : 'Outdated'),
             d.extracted,
+            d.dereg_unreg || 0,
             d.last_record,
             d.harvest_date,
             d.status,

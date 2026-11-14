@@ -60,6 +60,7 @@ def load_local_sync_report(workspace_dir: Path = Path(".")) -> dict[str, dict]:
                             "last_record": row.get("Last Record", "").strip(),
                             "last_dor": row.get("Last Recorded Date", "").strip(),
                             "extracted": clean_number(row.get("Total Extracted", 0)),
+                            "dereg_unreg": clean_number(row.get("Deregistered/Unregistered", row.get("Dereg/Unreg", 0))),
                             "failed": clean_number(row.get("Total Failed", 0)),
                             "is_archive": row.get("Is Archive", "").strip().lower() == "true",
                             "source": "Local sync_report.csv"
@@ -102,6 +103,7 @@ def get_cached_or_local_statistics(workspace_dir: Path = Path(".")) -> dict:
                 "name": state_prefix,
                 "districts": [],
                 "total_extracted": 0,
+                "total_dereg_unreg": 0,
                 "total_failed": 0,
                 "districts_total": 0,
                 "districts_covered": 0,
@@ -119,6 +121,7 @@ def get_cached_or_local_statistics(workspace_dir: Path = Path(".")) -> dict:
             "last_record": item["last_record"],
             "last_dor": item["last_dor"],
             "extracted": item["extracted"],
+            "dereg_unreg": item.get("dereg_unreg", 0),
             "failed": item["failed"],
             "is_covered": is_covered,
             "status": "Completed" if is_covered else "Pending",
@@ -129,6 +132,7 @@ def get_cached_or_local_statistics(workspace_dir: Path = Path(".")) -> dict:
         if is_covered:
             states_dict[state_prefix]["districts_covered"] += 1
         states_dict[state_prefix]["total_extracted"] += item["extracted"]
+        states_dict[state_prefix]["total_dereg_unreg"] += item.get("dereg_unreg", 0)
         states_dict[state_prefix]["total_failed"] += item["failed"]
         fleet_extracted += item["extracted"]
         fleet_failed += item["failed"]

@@ -505,11 +505,12 @@ class UdyamDashboard(tk.Tk):
             audit = get_district_failed_and_missing(dist_code)
             self.log(
                 f"[{dist_code}] Audit: Extracted={audit['total_extracted']:,} | "
-                f"Failed={len(audit['failed_numbers']):,} | Gaps={len(audit['missing_gaps']):,}"
+                f"Dereg/Unreg={audit.get('dereg_unreg_count', 0):,} | "
+                f"Timeouts/Failed={len(audit['failed_numbers']):,} | Gaps={len(audit['missing_gaps']):,}"
             )
 
             if rerun_type == "failed" and not audit["failed_numbers"]:
-                self.log(f"[{dist_code}] No failed records to rerun. Skipping.")
+                self.log(f"[{dist_code}] No timed-out/failed records to rerun ({audit.get('dereg_unreg_count', 0):,} are settled Deregistered/Unregistered). Skipping.")
                 continue
             if rerun_type == "missing" and not audit["missing_gaps"]:
                 self.log(f"[{dist_code}] No gap records to rerun. Skipping.")

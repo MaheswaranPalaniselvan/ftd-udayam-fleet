@@ -301,13 +301,13 @@ def run_headless_cli(args):
                 existing_last_dor=last_dor
             )
 
-            # Automatic Cleanup & Recovery Pass: Rerun any failed or sequence gap records before archiving
+            # Automatic Cleanup & Recovery Pass: Rerun any timed-out or sequence gap records before archiving
             if not getattr(args, "no_auto_rerun", False):
                 from client.core.scraper import get_district_failed_and_missing, execute_district_rerun
                 audit = get_district_failed_and_missing(dist_code)
                 target_count = audit.get("failed_count", 0) + audit.get("missing_gaps_count", 0)
                 if target_count > 0:
-                    logging.info(f"[{dist_code}] 🔍 Initiating auto-recovery pass on {target_count} records ({audit.get('failed_count', 0)} logged failures, {audit.get('missing_gaps_count', 0)} sequence gaps)...")
+                    logging.info(f"[{dist_code}] 🔍 Initiating auto-recovery pass on {target_count} records ({audit.get('failed_count', 0)} timeouts/failures, {audit.get('missing_gaps_count', 0)} sequence gaps; skipping {audit.get('dereg_unreg_count', 0)} settled deregistered/unregistered)...")
                     try:
                         rerun_res = await execute_district_rerun(
                             prefix=dist_code,
@@ -318,11 +318,15 @@ def run_headless_cli(args):
                         recovered = rerun_res.get("recovered", 0)
                         if recovered > 0:
                             logging.info(f"[{dist_code}] 🎉 Auto-recovery recovered {recovered} records!")
-                            updated_audit = get_district_failed_and_missing(dist_code)
-                            res["total_extracted"] = updated_audit["total_extracted"]
-                            res["total_failed"] = updated_audit["failed_count"]
+                        updated_audit = get_district_failed_and_missing(dist_code)
+                        res["total_extracted"] = updated_audit["total_extracted"]
+                        res["total_failed"] = updated_audit["failed_count"]
+                        res["total_dereg_unreg"] = updated_audit["dereg_unreg_count"]
                     except Exception as e:
                         logging.warning(f"[{dist_code}] Auto-recovery pass encountered error: {e}")
+                else:
+                    res["total_failed"] = audit.get("failed_count", 0)
+                    res["total_dereg_unreg"] = audit.get("dereg_unreg_count", 0)
 
             final_record = res.get("last_record") or last_record
             final_dor = res.get("last_dor") or last_dor
