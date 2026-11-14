@@ -68,6 +68,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
           FORCE="${{ inputs.force_run || 'false' }}"
           if [ "$FORCE" = "true" ]; then
@@ -76,9 +77,9 @@ jobs:
             exit 0
           fi
 
-          echo "🔍 Checking if another worker run is currently active for this repository..."
+          echo "🔍 Checking if another worker run is currently active for repository: $GH_REPO..."
           # Query GitHub API via gh CLI for in_progress or queued runs, excluding this current run
-          ACTIVE_RUNS=$(gh run list --workflow="udyam_worker.yml" --json databaseId,status,createdAt,url --jq "[.[] | select(.databaseId != ${{ github.run_id }} and (.status == \"in_progress\" or .status == \"queued\"))]" 2>/dev/null || echo "[]")
+          ACTIVE_RUNS=$(gh run list --repo "$GH_REPO" --workflow="udyam_worker.yml" --json databaseId,status,createdAt,url --jq "[.[] | select(.databaseId != ${{ github.run_id }} and (.status == \"in_progress\" or .status == \"queued\"))]" 2>/dev/null || echo "[]")
           ACTIVE_COUNT=$(echo "$ACTIVE_RUNS" | jq 'length' 2>/dev/null || echo "0")
 
           if [ "$ACTIVE_COUNT" -gt 0 ]; then
