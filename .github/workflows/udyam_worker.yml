@@ -1,9 +1,8 @@
 name: Udayam Fleet Worker
 
 on:
-  # Automated schedule disabled to preserve GitHub Actions minute quota
-  # schedule:
-  #   - cron: '0 */6 * * *'
+  schedule:
+    - cron: '*/30 * * * *'
 
   workflow_dispatch:
     inputs:
@@ -44,13 +43,61 @@ on:
           - 'failed'
           - 'missing'
           - 'all'
+      force_run:
+        description: 'Force run even if another worker is currently active'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  actions: read
+  contents: read
 
 concurrency:
   group: udayam-worker-${{ github.workflow }}-${{ github.run_id }}
   cancel-in-progress: false
 
 jobs:
+  check-active-workers:
+    name: Check Active Fleet Workers
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - name: Inspect In-Progress Runs
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FORCE="${{ inputs.force_run || 'false' }}"
+          if [ "$FORCE" = "true" ]; then
+            echo "🚀 Force run requested via workflow dispatch. Skipping active worker check."
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "🔍 Checking if another worker run is currently active for this repository..."
+          # Query GitHub API via gh CLI for in_progress or queued runs, excluding this current run
+          ACTIVE_RUNS=$(gh run list --workflow="udyam_worker.yml" --json databaseId,status,createdAt,url --jq "[.[] | select(.databaseId != ${{ github.run_id }} and (.status == \"in_progress\" or .status == \"queued\"))]" 2>/dev/null || echo "[]")
+          ACTIVE_COUNT=$(echo "$ACTIVE_RUNS" | jq 'length' 2>/dev/null || echo "0")
+
+          if [ "$ACTIVE_COUNT" -gt 0 ]; then
+            echo "=========================================================="
+            echo "⚠️ ACTIVE WORKER RUN ALREADY IN PROGRESS ($ACTIVE_COUNT active/queued)"
+            echo "=========================================================="
+            echo "$ACTIVE_RUNS" | jq -r '.[] | " • Run #\(.databaseId) [\(.status)] started at \(.createdAt) -> \(.url)"' 2>/dev/null || true
+            echo ""
+            echo "✅ An active worker is already extracting. Completing this run cleanly to avoid duplicate work."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "✅ No other active workers found. Proceeding with worker initialization."
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          fi
+
   prepare-matrix:
+    name: Configure Worker Matrix
+    needs: check-active-workers
+    if: needs.check-active-workers.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     outputs:
       workers: ${{ steps.set-matrix.outputs.workers }}
@@ -61,7 +108,9 @@ jobs:
           python3 -c "import json, sys; count=int(sys.argv[1]); print('workers=' + json.dumps([str(i) for i in range(1, count + 1)]))" "$COUNT" >> "$GITHUB_OUTPUT"
 
   run-worker:
-    needs: prepare-matrix
+    name: Worker ${{ matrix.worker_id }}
+    needs: [check-active-workers, prepare-matrix]
+    if: needs.check-active-workers.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 240
     strategy:
@@ -132,5 +181,3 @@ jobs:
             --max-districts "$MAX_DIST" \
             --max-duration-minutes "$MAX_TIME" \
             $STATE_FLAG $DIST_FLAG $RERUN_FLAG
-
-
