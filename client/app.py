@@ -330,10 +330,17 @@ def run_headless_cli(args):
 
             final_record = res.get("last_record") or last_record
             final_dor = res.get("last_dor") or last_dor
-            total_extracted = res.get("total_extracted") if res.get("total_extracted") is not None else prev_extracted
-            total_failed = res.get("total_failed", 0)
+            
+            # Ensure total_extracted takes the union of archive + local folder results
+            final_audit = get_district_failed_and_missing(dist_code)
+            total_extracted = max(
+                final_audit.get("total_extracted", 0),
+                res.get("total_extracted", 0),
+                int(prev_extracted or 0)
+            )
+            total_failed = final_audit.get("failed_count", 0)
 
-            logging.info(f"District {dist_code} complete. Finalizing in Google Sheet (Total: {total_extracted}, DOR: {final_dor})...")
+            logging.info(f"District {dist_code} complete. Finalizing in Google Sheet (Total: {total_extracted}, Failures: {total_failed}, DOR: {final_dor})...")
             await coordinator.complete_task(
                 district_code=dist_code,
                 final_record=final_record,

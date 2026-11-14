@@ -1,8 +1,8 @@
 """
-Build script for GitHub Pages Dashboard.
+Build & Deploy Script for Cloudflare Pages Dashboard (ftd-udayam-fleet.pages.dev).
 Downloads the latest state from the master Google Sheet,
 converts it into an interactive hierarchical drill-down HTML viewer,
-and places it in public/index.html.
+and generates the public/ bundle for Cloudflare Pages.
 """
 
 import base64
@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import subprocess
 import httpx
 import openpyxl
 
@@ -3072,7 +3073,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
         f.write(html_content)
 
 
-def build_pages(output_dir: Path = Path("public"), gsheet_url: str = None):
+def build_pages(output_dir: Path = Path("public"), gsheet_url: str = None, deploy_to_cloudflare: bool = False):
     """Orchestrates downloading Google Sheet, building drill-down HTML viewer, and copying assets."""
     output_dir.mkdir(parents=True, exist_ok=True)
     temp_xlsx = output_dir / "udayam_latest.xlsx"
@@ -3127,8 +3128,30 @@ def build_pages(output_dir: Path = Path("public"), gsheet_url: str = None):
         shutil.copy2(logo_src, output_dir / "flawless_logo.png")
         print(f"      [OK] Copied logo to {output_dir}")
 
-    print(f"\n[SUCCESS] GitHub Pages bundle ready in: {output_dir.resolve()}")
+    print(f"\n[SUCCESS] Cloudflare Pages bundle ready in: {output_dir.resolve()}")
+
+    if deploy_to_cloudflare:
+        print(f"\n[4/4] Deploying live to Cloudflare Pages (ftd-udayam-fleet.pages.dev)...")
+        try:
+            # Use npx on Windows / Linux
+            npx_cmd = shutil.which("npx") or "npx"
+            proc = subprocess.run(
+                [npx_cmd, "wrangler", "pages", "deploy", str(output_dir), "--project-name", "ftd-udayam-fleet", "--commit-dirty=true"],
+                shell=(os.name == "nt")
+            )
+            if proc.returncode == 0:
+                print(f"[SUCCESS] Deployed live to: https://ftd-udayam-fleet.pages.dev")
+            else:
+                print(f"[WARN] Deployment exited with code {proc.returncode}")
+        except Exception as e:
+            print(f"[ERROR] Cloudflare Pages deployment failed: {e}")
 
 
 if __name__ == "__main__":
-    build_pages()
+    import argparse
+    parser = argparse.ArgumentParser(description="Build and optionally deploy Cloudflare Pages dashboard.")
+    parser.add_argument("--deploy", action="store_true", help="Deploy directly to Cloudflare Pages after build")
+    parser.add_argument("--output-dir", type=str, default="public", help="Output directory for static site")
+    args = parser.parse_args()
+
+    build_pages(output_dir=Path(args.output_dir), deploy_to_cloudflare=args.deploy)

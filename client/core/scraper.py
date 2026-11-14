@@ -361,17 +361,52 @@ async def execute_district_extraction(
     results_dir.mkdir(parents=True, exist_ok=True)
     failed_dir.mkdir(parents=True, exist_ok=True)
 
-    # Load already processed numbers (if local lookup enabled)
+    # Load already processed numbers (from existing .7z archive AND results folder)
     processed_success = set()
     processed_failed = set()
     if not ignore_local_lookup:
+        seven_zip = get_7z_binary()
+        archive_path = results_dir / f"{clean_prefix}.7z"
+
+        # 1. Inspect existing .7z archive
+        if archive_path.is_file() and seven_zip:
+            try:
+                proc = subprocess.run(
+                    [seven_zip, "e", str(archive_path), "-r", f"results_{clean_prefix}.csv", "-so"],
+                    capture_output=True, text=True, errors="replace"
+                )
+                if proc.stdout:
+                    r = csv.reader(io.StringIO(proc.stdout))
+                    next(r, None)
+                    for row in r:
+                        if row and row[0].strip():
+                            processed_success.add(row[0].strip())
+
+                proc_fail = subprocess.run(
+                    [seven_zip, "e", str(archive_path), "-r", f"failed_{clean_prefix}.csv", "-so"],
+                    capture_output=True, text=True, errors="replace"
+                )
+                if proc_fail.stdout:
+                    r = csv.reader(io.StringIO(proc_fail.stdout))
+                    next(r, None)
+                    for row in r:
+                        if row and row[0].strip():
+                            uid = row[0].strip()
+                            st = row[1].lower() if len(row) > 1 else ""
+                            re = row[2].lower() if len(row) > 2 else ""
+                            if not any(k in st or k in re for k in ("captcha", "timeout", "server slow", "playwright", "connection")):
+                                processed_failed.add(uid)
+            except Exception:
+                pass
+
+        # 2. Inspect active results folder
         res_csv = results_dir / clean_prefix / f"results_{clean_prefix}.csv"
         if res_csv.exists():
             with open(res_csv, "r", encoding="utf-8", errors="replace") as f:
                 r = csv.reader(f)
                 next(r, None)
                 for row in r:
-                    if row:
+                    if row and row[0].strip():
                         processed_success.add(row[0].strip())
 
         fail_csv = failed_dir / clean_prefix / f"failed_{clean_prefix}.csv"
@@ -382,11 +417,9 @@ async def execute_district_extraction(
                 for row in r:
                     if row and len(row) > 0:
                         uid = row[0].strip()
-                        # Differentiate true portal Not Found from transient network/captcha errors
                         status = row[1].lower() if len(row) > 1 else ""
                         reason = row[2].lower() if len(row) > 2 else ""
                         is_transient = any(k in status or k in reason for k in ("captcha", "timeout", "server slow", "playwright", "connection"))
-                        # Only skip if it was a verified true portal miss; allow transient errors to be re-attempted
                         if not is_transient:
                             processed_failed.add(uid)
 
@@ -663,75 +696,57 @@ def get_district_failed_and_missing(
     success_numbers = set()
     max_record_num = 0
 
-    # 1. Inspect Results (Folder first, then .7z archive)
-    res_csv = results_dir / clean_prefix / f"results_{clean_prefix}.csv"
-    res_content = None
+    # 1. Inspect Results from .7z archive (if present)
+    archive_path = results_dir / f"{clean_prefix}.7z"
+    if archive_path.is_file() and seven_zip:
+        try:
+            proc = subprocess.run(
+                [seven_zip, "e", str(archive_path), "-r", f"results_{clean_prefix}.csv", "-so"],
+                capture_output=True,
+                text=True,
+                errors="replace"
+            )
+            if proc.stdout:
+                reader = csv.reader(io.StringIO(proc.stdout))
+                next(reader, None)
+                for row in reader:
+                    if row and row[0].strip():
+                        num_id = row[0].strip()
+                        m = re.search(r"-(\d+)$", num_id)
+                        if m:
+                            val = int(m.group(1))
+                            success_numbers.add(val)
+                            if val > max_record_num:
+                                max_record_num = val
+        except Exception:
+            pass
 
+    # 1b. Inspect Results from active folder (unioning any newly harvested records)
+    res_csv = results_dir / clean_prefix / f"results_{clean_prefix}.csv"
     if res_csv.is_file():
         try:
             with open(res_csv, "r", encoding="utf-8", errors="replace") as f:
-                res_content = f.read()
+                reader = csv.reader(f)
+                next(reader, None)
+                for row in reader:
+                    if row and row[0].strip():
+                        num_id = row[0].strip()
+                        m = re.search(r"-(\d+)$", num_id)
+                        if m:
+                            val = int(m.group(1))
+                            success_numbers.add(val)
+                            if val > max_record_num:
+                                max_record_num = val
         except Exception:
             pass
-    elif seven_zip:
-        archive_path = results_dir / f"{clean_prefix}.7z"
-        if archive_path.is_file():
-            try:
-                proc = subprocess.run(
-                    [seven_zip, "e", str(archive_path), "-r", f"results_{clean_prefix}.csv", "-so"],
-                    capture_output=True,
-                    text=True,
-                    errors="replace"
-                )
-                if proc.stdout:
-                    res_content = proc.stdout
-            except Exception:
-                pass
 
-    if res_content:
-        reader = csv.reader(io.StringIO(res_content))
-        next(reader, None)
-        for row in reader:
-            if row and row[0].strip():
-                num_id = row[0].strip()
-                m = re.search(r"-(\d+)$", num_id)
-                if m:
-                    val = int(m.group(1))
-                    success_numbers.add(val)
-                    if val > max_record_num:
-                        max_record_num = val
-
-    # 2. Inspect Failed (Folder first, then .7z archive)
+    # 2. Inspect Failed records from both archive and active folder
     failed_records = {}          # seq_num -> full row
     dereg_unreg_records = {}     # seq_num -> row (terminal, settled, no rerun needed)
     transient_failed_records = {} # seq_num -> row (timed out / transient error, useful to rerun)
 
-    fail_csv = failed_dir / clean_prefix / f"failed_{clean_prefix}.csv"
-    fail_content = None
-
-    if fail_csv.is_file():
-        try:
-            with open(fail_csv, "r", encoding="utf-8", errors="replace") as f:
-                fail_content = f.read()
-        except Exception:
-            pass
-    elif seven_zip:
-        archive_path = results_dir / f"{clean_prefix}.7z"
-        if archive_path.is_file():
-            try:
-                proc = subprocess.run(
-                    [seven_zip, "e", str(archive_path), "-r", f"failed_{clean_prefix}.csv", "-so"],
-                    capture_output=True,
-                    text=True,
-                    errors="replace"
-                )
-                if proc.stdout:
-                    fail_content = proc.stdout
-            except Exception:
-                pass
-
-    if fail_content:
-        reader = csv.reader(io.StringIO(fail_content))
+    def parse_fail_stream(content: str):
+        reader = csv.reader(io.StringIO(content))
         next(reader, None)
         for row in reader:
             if row and row[0].strip():
@@ -741,12 +756,32 @@ def get_district_failed_and_missing(
                     val = int(m.group(1))
                     failed_records[val] = row
 
-                    # Categorize row by status and reason
                     row_text = " ".join(str(c) for c in row[1:]).lower()
                     if is_terminal_portal_status(row_text):
                         dereg_unreg_records[val] = row
                     else:
                         transient_failed_records[val] = row
+
+    if archive_path.is_file() and seven_zip:
+        try:
+            proc = subprocess.run(
+                [seven_zip, "e", str(archive_path), "-r", f"failed_{clean_prefix}.csv", "-so"],
+                capture_output=True,
+                text=True,
+                errors="replace"
+            )
+            if proc.stdout:
+                parse_fail_stream(proc.stdout)
+        except Exception:
+            pass
+
+    fail_csv = failed_dir / clean_prefix / f"failed_{clean_prefix}.csv"
+    if fail_csv.is_file():
+        try:
+            with open(fail_csv, "r", encoding="utf-8", errors="replace") as f:
+                parse_fail_stream(f.read())
+        except Exception:
+            pass
 
     all_logged_failed_numbers = sorted(list(failed_records.keys()))
     dereg_unreg_numbers = sorted(list(dereg_unreg_records.keys()))
