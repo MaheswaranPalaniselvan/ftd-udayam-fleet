@@ -502,7 +502,11 @@ function handleHeartbeat(payload) {
       const rowIdx = r + 1;
       if (currentRecord) sheet.getRange(rowIdx, col["Last Record"] + 1).setValue(currentRecord);
       if (currentDor) sheet.getRange(rowIdx, col["Last Recorded Date"] + 1).setValue(currentDor);
-      if (totalExtracted) sheet.getRange(rowIdx, col["Total Records Extracted"] + 1).setValue(totalExtracted);
+      const currentExt = Number(data[r][col["Total Records Extracted"]] || 0);
+      const newExt = Number(totalExtracted || 0);
+      if (newExt > currentExt) {
+        sheet.getRange(rowIdx, col["Total Records Extracted"] + 1).setValue(newExt);
+      }
       if (totalFailed) sheet.getRange(rowIdx, col["Total Failed Records"] + 1).setValue(totalFailed);
       sheet.getRange(rowIdx, col["Last Ping"] + 1).setValue(new Date().toISOString());
       sheet.getRange(rowIdx, col["Claimed By"] + 1).setValue(machine);
@@ -544,7 +548,11 @@ function handleCompleteTask(payload) {
       sheet.getRange(rowIdx, col["Last Ping"] + 1).setValue(new Date().toISOString());
       if (lastRecord) sheet.getRange(rowIdx, col["Last Record"] + 1).setValue(lastRecord);
       if (lastDor) sheet.getRange(rowIdx, col["Last Recorded Date"] + 1).setValue(lastDor);
-      if (totalExtracted) sheet.getRange(rowIdx, col["Total Records Extracted"] + 1).setValue(totalExtracted);
+      const currentExt = Number(data[r][col["Total Records Extracted"]] || 0);
+      const newExt = Number(totalExtracted || 0);
+      if (newExt > currentExt) {
+        sheet.getRange(rowIdx, col["Total Records Extracted"] + 1).setValue(newExt);
+      }
       if (totalFailed) sheet.getRange(rowIdx, col["Total Failed Records"] + 1).setValue(totalFailed);
 
       sendTelegramAlert(`🏁 <b>District Sync Pass!</b>\n💻 <b>Machine:</b> ${machine}\n🏛 <b>District:</b> ${distCode}\n📊 <b>Status:</b> ${finalStatus}\n✅ <b>Extracted:</b> ${totalExtracted.toLocaleString()}\n❌ <b>Failed:</b> ${totalFailed.toLocaleString()}\n📅 <b>Latest DOR:</b> ${lastDor}`);
@@ -573,7 +581,13 @@ function handleBulkSyncStatus(districtsMap) {
 
       if (info.last_record) sheet.getRange(rowIdx, col["Last Record"] + 1).setValue(info.last_record);
       if (info.last_recorded_date) sheet.getRange(rowIdx, col["Last Recorded Date"] + 1).setValue(info.last_recorded_date);
-      if (info.total_extracted !== undefined) sheet.getRange(rowIdx, col["Total Records Extracted"] + 1).setValue(info.total_extracted);
+      if (info.total_extracted !== undefined) {
+        const currentExt = Number(data[r][col["Total Records Extracted"]] || 0);
+        const newExt = Number(info.total_extracted || 0);
+        if (newExt > currentExt) {
+          sheet.getRange(rowIdx, col["Total Records Extracted"] + 1).setValue(newExt);
+        }
+      }
       if (info.total_failed !== undefined) sheet.getRange(rowIdx, col["Total Failed Records"] + 1).setValue(info.total_failed);
 
       sheet.getRange(rowIdx, col["Status"] + 1).setValue("Completed");
