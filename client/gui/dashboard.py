@@ -258,10 +258,17 @@ class UdyamDashboard(tk.Tk):
 
         # Card 4: Last Sync
         c4 = ttk.Frame(f_metrics, style="Card.TFrame", padding=12)
-        c4.pack(side="left", fill="both", expand=True, padx=(6, 0))
+        c4.pack(side="left", fill="both", expand=True, padx=6)
         ttk.Label(c4, text="LAST COORDINATOR PING", style="MetricLbl.TLabel").pack(anchor="w")
         self.fleet_sync_lbl = ttk.Label(c4, text="Connecting...", style="MetricVal.TLabel")
         self.fleet_sync_lbl.pack(anchor="w", pady=(2, 0))
+
+        # Card 5: Dynamic Completion ETA
+        c5 = ttk.Frame(f_metrics, style="Card.TFrame", padding=12)
+        c5.pack(side="left", fill="both", expand=True, padx=(6, 0))
+        ttk.Label(c5, text="ESTIMATED ALL-INDIA ETA", style="MetricLbl.TLabel").pack(anchor="w")
+        self.fleet_eta_lbl = ttk.Label(c5, text="-- (Idle)", style="MetricVal.TLabel")
+        self.fleet_eta_lbl.pack(anchor="w", pady=(2, 0))
 
         # 2. Control & Status Bar
         ctrl_card = ttk.Frame(parent, style="Card.TFrame", padding=10)
@@ -389,9 +396,24 @@ class UdyamDashboard(tk.Tk):
         self.fleet_active_lbl.config(text=f"{active_count} Active")
         self.fleet_completed_lbl.config(text=f"{completed} / {total_dist}")
         self.fleet_speed_lbl.config(text=f"{total_speed:.1f}")
+
+        # Dynamic Completion ETA based on aggregate speed
+        if total_speed > 0:
+            rem_records = 45810343
+            days = rem_records / (total_speed * 1440)
+            if days > 60:
+                eta_text = f"{days:.0f}d ({days/30.417:.1f}mo)"
+            elif days >= 1:
+                eta_text = f"{days:.1f} days"
+            else:
+                eta_text = f"{days*24:.1f} hrs"
+        else:
+            eta_text = "-- (Idle)"
+        self.fleet_eta_lbl.config(text=eta_text)
+
         now_time = time.strftime("%H:%M:%S")
         self.fleet_sync_lbl.config(text=now_time)
-        self.fleet_info_lbl.config(text=f"Last updated: {now_time} | {len(active_workers)} daemons tracked")
+        self.fleet_info_lbl.config(text=f"Last updated: {now_time} | {len(active_workers)} daemons tracked | ETA: {eta_text}")
 
     def log(self, message: str):
         now = time.strftime("%H:%M:%S")

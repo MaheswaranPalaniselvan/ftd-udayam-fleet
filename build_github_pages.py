@@ -336,9 +336,11 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
                 else:
                     live_status_label = "Outdated (Not Started)"
 
+                total_msme = clean_int(r[7]) if len(r) > 7 else 0
                 states_dict[state_name]["districts"].append({
                     "code": code,
                     "name": loc_name,
+                    "total": total_msme,
                     "extracted": extracted,
                     "last_record": normalize_udyam_number(r[9], code),
                     "harvest_date": harvest_date,
@@ -463,10 +465,13 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
     total_outdated_districts = 0
     total_completed_districts = 0
     total_inprogress_districts = 0
+    total_enterprises_all = 0
 
     for s in states_list:
         dists = s["districts"]
         s["district_count"] = len(dists)
+        s["total_enterprises"] = sum(d.get("total", 0) for d in dists)
+        total_enterprises_all += s["total_enterprises"]
         s["live_count"] = sum(1 for d in dists if d.get("is_live", False))
         s["outdated_count"] = s["district_count"] - s["live_count"]
         s["completed_count"] = sum(1 for d in dists if d["status"].lower() == "completed")
@@ -512,13 +517,15 @@ def build_drilldown_data(xlsx_path: Path) -> dict:
         "kpi": {
             "total_states": len(states_list),
             "total_districts": total_districts_count,
+            "total_enterprises": total_enterprises_all,
+            "total_extracted": total_extracted_records,
+            "total_remaining": max(0, total_enterprises_all - total_extracted_records),
             "live_districts": total_live_districts,
             "outdated_districts": total_outdated_districts,
             "live_pct": overall_live_pct,
             "completed_districts": total_completed_districts,
             "inprogress_districts": total_inprogress_districts,
             "completion_pct": overall_pct,
-            "total_extracted": total_extracted_records,
             "total_failed": total_failed_records,
         },
         "states": states_list,
@@ -1387,6 +1394,134 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       background: rgba(255, 255, 255, 0.02);
     }}
 
+    /* ======================================================= */
+    /* FLEET VELOCITY & DYNAMIC COMPLETION ETA SECTION STYLES  */
+    /* ======================================================= */
+    .fleet-eta-section {{
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 1.35rem 1.5rem;
+      margin-bottom: 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }}
+    .fleet-eta-header {{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.15rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }}
+    .fleet-eta-header-left {{
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }}
+    .fleet-eta-grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.15rem;
+    }}
+    .fleet-eta-card {{
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 1.1rem 1.25rem;
+      transition: all 0.2s ease;
+    }}
+    .fleet-eta-card:hover {{
+      transform: translateY(-2px);
+      border-color: rgba(56, 189, 248, 0.4);
+    }}
+    .fleet-eta-card.primary {{
+      background: rgba(56, 189, 248, 0.05);
+      border-color: rgba(56, 189, 248, 0.35);
+    }}
+    .fleet-eta-card-label {{
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 0.35rem;
+    }}
+    .fleet-eta-card-value {{
+      font-family: var(--font-mono);
+      font-size: 1.65rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }}
+    .fleet-eta-card-sub {{
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+    }}
+    .fleet-eta-sim-bar {{
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.15rem;
+    }}
+    .fleet-eta-sim-title {{
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-right: 0.25rem;
+    }}
+    .fleet-sim-chip {{
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted);
+      border-radius: 20px;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }}
+    .fleet-sim-chip:hover {{
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }}
+    .fleet-sim-chip.active {{
+      background: #38bdf8;
+      border-color: #38bdf8;
+      color: #0f172a;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+    }}
+    .fleet-eta-table {{
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+    }}
+    .fleet-eta-table th {{
+      text-align: left;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }}
+    .fleet-eta-table td {{
+      padding: 0.75rem 0.85rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: #cbd5e1;
+    }}
+    .fleet-eta-table tr:hover td {{
+      background: rgba(255, 255, 255, 0.025);
+    }}
+
     /* ========================================== */
     /* ONBOARDING & SETUP TAB STYLES              */
     /* ========================================== */
@@ -1721,6 +1856,95 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
         <div class="fleet-kpi-label">Last Coordinator Ping</div>
         <div class="fleet-kpi-value" id="kpiLastSync" style="font-size: 1.4rem; color: #c084fc;">--</div>
         <div class="fleet-kpi-sub">Google Apps Script Live Sync</div>
+      </div>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- NEW SECTION: FLEET VELOCITY & DYNAMIC COMPLETION ETA    -->
+    <!-- ======================================================= -->
+    <div class="fleet-eta-section">
+      <div class="fleet-eta-header">
+        <div class="fleet-eta-header-left">
+          <span style="font-size: 1.8rem;">⏱️</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.22rem; font-family: 'Outfit', sans-serif; font-weight: 700; color: #fff;">
+              Harvest Velocity & Dynamic Completion ETA Forecast
+            </h3>
+            <p style="margin: 0.2rem 0 0 0; font-size: 0.82rem; color: var(--text-dim);">
+              Projections dynamically computed from active fleet aggregate speed (RPM) against India's MSME universe
+            </p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span class="pill-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 700;">
+            <span class="pulse-dot"></span> Dynamic Forecast
+          </span>
+        </div>
+      </div>
+
+      <!-- ETA Big Metrics Grid -->
+      <div class="fleet-eta-grid">
+        <div class="fleet-eta-card primary">
+          <div class="fleet-eta-card-label">PROJECTED COMPLETION (ALL INDIA)</div>
+          <div class="fleet-eta-card-value" id="etaTimeDisplay" style="color: #38bdf8;">--</div>
+          <div class="fleet-eta-card-sub" id="etaDateDisplay">Target Finish: Calculating...</div>
+        </div>
+
+        <div class="fleet-eta-card">
+          <div class="fleet-eta-card-label">CURRENT FLEET THROUGHPUT</div>
+          <div class="fleet-eta-card-value" id="etaThroughputDisplay" style="color: #fbbf24;">0.0 rpm</div>
+          <div class="fleet-eta-card-sub" id="etaDailyYieldDisplay">-- records / day</div>
+        </div>
+
+        <div class="fleet-eta-card">
+          <div class="fleet-eta-card-label">NET RECORDS REMAINING</div>
+          <div class="fleet-eta-card-value" id="etaRemainingDisplay" style="color: #f43f5e;">--</div>
+          <div class="fleet-eta-card-sub" id="etaProgressPctDisplay">--% Completed</div>
+        </div>
+
+        <div class="fleet-eta-card">
+          <div class="fleet-eta-card-label">SPEED FOR 30-DAY FINISH</div>
+          <div class="fleet-eta-card-value" id="etaTarget30d" style="color: #34d399; font-size: 1.35rem;">--</div>
+          <div class="fleet-eta-card-sub" id="etaTarget90d">-- for 90d target</div>
+        </div>
+      </div>
+
+      <!-- Interactive Speed Simulator / What-If Scenario Bar -->
+      <div class="fleet-eta-sim-bar">
+        <div class="fleet-eta-sim-title">
+          <span>⚡ <strong>Fleet Speed Simulator:</strong> Explore completion timelines at different RPM tiers:</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button class="fleet-sim-chip active" id="chipLiveSpeed" onclick="setEtaSimulationSpeed('live')">🟢 Live RPM (<span id="chipLiveRpmVal">0</span>)</button>
+          <button class="fleet-sim-chip" id="chipSim100" onclick="setEtaSimulationSpeed(100)">100 rpm (8 workers)</button>
+          <button class="fleet-sim-chip" id="chipSim250" onclick="setEtaSimulationSpeed(250)">250 rpm (20 cloud workers)</button>
+          <button class="fleet-sim-chip" id="chipSim500" onclick="setEtaSimulationSpeed(500)">500 rpm (40 workers)</button>
+          <button class="fleet-sim-chip" id="chipSim1000" onclick="setEtaSimulationSpeed(1000)">1,000 rpm (Scale Fleet)</button>
+        </div>
+      </div>
+
+      <!-- Multi-Scope Progress & Projection Table -->
+      <div style="overflow-x: auto;">
+        <table class="fleet-eta-table">
+          <thead>
+            <tr>
+              <th>Extraction Scope</th>
+              <th>Target Universe</th>
+              <th>Extracted So Far</th>
+              <th>Net Remaining</th>
+              <th>Daily Yield (@ Active RPM)</th>
+              <th>Projected Duration</th>
+              <th>Estimated Finish Date</th>
+            </tr>
+          </thead>
+          <tbody id="etaTableBody">
+            <tr>
+              <td colspan="7" style="text-align: center; color: var(--text-dim); padding: 1.5rem;">
+                Calculating dynamic velocity and timeline forecasts...
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -2539,7 +2763,179 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
         navBadge.style.color = activeCount > 0 ? '#34d399' : '#94a3b8';
       }}
 
+      currentLiveAggregateSpeed = totalSpeed;
+      updateEtaForecastUI();
+
       renderFleetTable();
+    }}
+
+    // ==========================================
+    // FLEET VELOCITY & DYNAMIC COMPLETION ETA LOGIC
+    // ==========================================
+    let currentLiveAggregateSpeed = 0.0;
+    let selectedSimRpm = 'live';
+
+    function setEtaSimulationSpeed(val) {{
+      selectedSimRpm = val;
+      document.querySelectorAll('.fleet-sim-chip').forEach(c => c.classList.remove('active'));
+      if (val === 'live') {{
+        document.getElementById('chipLiveSpeed')?.classList.add('active');
+      }} else {{
+        const btn = document.getElementById(`chipSim${{val}}`);
+        if (btn) btn.classList.add('active');
+      }}
+      updateEtaForecastUI();
+    }}
+
+    function formatNumberCommas(n) {{
+      if (n === null || n === undefined || isNaN(n)) return '0';
+      return Math.round(n).toLocaleString('en-IN');
+    }}
+
+    function formatDurationReadable(days) {{
+      if (days === Infinity || isNaN(days) || days <= 0) return '--';
+      if (days < 1) {{
+        const hrs = days * 24;
+        return `${{hrs.toFixed(1)}} hrs`;
+      }}
+      const months = days / 30.417;
+      if (days > 60) {{
+        return `${{days.toFixed(0)}} days (${{months.toFixed(1)}} mo)`;
+      }}
+      return `${{days.toFixed(1)}} days`;
+    }}
+
+    function formatFutureDate(days) {{
+      if (days === Infinity || isNaN(days) || days <= 0) return '--';
+      const d = new Date(Date.now() + days * 86400000);
+      return d.toLocaleDateString('en-GB', {{ day: 'numeric', month: 'short', year: 'numeric' }});
+    }}
+
+    function updateEtaForecastUI() {{
+      let effectiveRpm = currentLiveAggregateSpeed;
+      if (selectedSimRpm !== 'live') {{
+        effectiveRpm = Number(selectedSimRpm);
+      }}
+
+      const liveChipVal = document.getElementById('chipLiveRpmVal');
+      if (liveChipVal) liveChipVal.textContent = currentLiveAggregateSpeed.toFixed(1);
+
+      const kpi = RAW_DATA.kpi || {{}};
+      const totalUniverse = kpi.total_enterprises || 47126597;
+      const totalExtracted = kpi.total_extracted || 0;
+      const netRemainingAll = Math.max(0, totalUniverse - totalExtracted);
+
+      let pendingOutdatedTarget = 0;
+      let pendingOutdatedExtracted = 0;
+      let pendingOnlyTarget = 0;
+
+      (RAW_DATA.states || []).forEach(st => {{
+        (st.districts || []).forEach(d => {{
+          const tot = d.total || 0;
+          const ext = d.extracted || 0;
+          const isDone = d.is_live || (d.status && d.status.toLowerCase() === 'completed' && ext > 100);
+          if (!isDone) {{
+            pendingOutdatedTarget += tot;
+            pendingOutdatedExtracted += ext;
+          }}
+          if (ext === 0) {{
+            pendingOnlyTarget += tot;
+          }}
+        }});
+      }});
+
+      const netRemainingPendingOutdated = Math.max(0, pendingOutdatedTarget - pendingOutdatedExtracted);
+      const netRemainingPendingOnly = pendingOnlyTarget;
+
+      const speedDisp = document.getElementById('etaThroughputDisplay');
+      const dailyYieldDisp = document.getElementById('etaDailyYieldDisplay');
+      const remDisp = document.getElementById('etaRemainingDisplay');
+      const pctDisp = document.getElementById('etaProgressPctDisplay');
+      const timeDisp = document.getElementById('etaTimeDisplay');
+      const dateDisp = document.getElementById('etaDateDisplay');
+      const t30d = document.getElementById('etaTarget30d');
+      const t90d = document.getElementById('etaTarget90d');
+
+      const dailyYield = effectiveRpm > 0 ? (effectiveRpm * 60 * 24) : 0;
+      if (speedDisp) {{
+        const modeLabel = selectedSimRpm === 'live' ? '' : ' (Simulated)';
+        speedDisp.textContent = `${{effectiveRpm.toFixed(1)}} rpm${{modeLabel}}`;
+        speedDisp.style.color = effectiveRpm > 0 ? '#fbbf24' : '#94a3b8';
+      }}
+      if (dailyYieldDisp) {{
+        dailyYieldDisp.textContent = effectiveRpm > 0 ? `${{formatNumberCommas(dailyYield)}} records / day` : '0 records / day (Fleet Idle)';
+      }}
+      if (remDisp) remDisp.textContent = formatNumberCommas(netRemainingAll);
+      if (pctDisp) {{
+        const pct = totalUniverse > 0 ? ((totalExtracted / totalUniverse) * 100).toFixed(2) : 0;
+        pctDisp.textContent = `${{pct}}% of ${{formatNumberCommas(totalUniverse)}} harvested`;
+      }}
+
+      if (effectiveRpm > 0) {{
+        const daysAll = netRemainingAll / (effectiveRpm * 1440);
+        if (timeDisp) timeDisp.textContent = formatDurationReadable(daysAll);
+        if (dateDisp) dateDisp.textContent = `Target Finish: ${{formatFutureDate(daysAll)}}`;
+      }} else {{
+        if (timeDisp) timeDisp.textContent = 'Fleet Idle';
+        if (dateDisp) dateDisp.textContent = 'Select an RPM preset above to calculate ETA';
+      }}
+
+      const rpmFor30d = Math.round(netRemainingAll / (30 * 1440));
+      const rpmFor90d = Math.round(netRemainingAll / (90 * 1440));
+      if (t30d) t30d.textContent = `${{formatNumberCommas(rpmFor30d)}} rpm (${{Math.ceil(rpmFor30d / 12)}} workers)`;
+      if (t90d) t90d.textContent = `${{formatNumberCommas(rpmFor90d)}} rpm (${{Math.ceil(rpmFor90d / 12)}} workers) for 90d target`;
+
+      const tbody = document.getElementById('etaTableBody');
+      if (tbody) {{
+        const scopes = [
+          {{
+            name: 'All-India Remaining Universe',
+            badge: 'Full Country',
+            target: totalUniverse,
+            extracted: totalExtracted,
+            remaining: netRemainingAll,
+            desc: 'Complete universal coverage across all 788 districts'
+          }},
+          {{
+            name: 'Pending + Outdated Districts',
+            badge: 'Active Scope',
+            target: pendingOutdatedTarget,
+            extracted: pendingOutdatedExtracted,
+            remaining: netRemainingPendingOutdated,
+            desc: 'Excludes already harvested & verified live districts'
+          }},
+          {{
+            name: 'Pending Districts Only',
+            badge: 'Unstarted',
+            target: pendingOnlyTarget,
+            extracted: 0,
+            remaining: netRemainingPendingOnly,
+            desc: 'Zero-extracted districts requiring initial sequence baseline'
+          }}
+        ];
+
+        tbody.innerHTML = scopes.map(s => {{
+          const days = effectiveRpm > 0 ? (s.remaining / (effectiveRpm * 1440)) : null;
+          const durText = days !== null ? formatDurationReadable(days) : '-- (Idle)';
+          const finDate = days !== null ? formatFutureDate(days) : '--';
+          const yieldText = effectiveRpm > 0 ? `${{formatNumberCommas(dailyYield)}} / day` : '0 / day';
+
+          return `
+            <tr>
+              <td>
+                <div style="font-weight: 600; color: #fff;">${{s.name}}</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">${{s.desc}}</div>
+              </td>
+              <td style="font-family: var(--font-mono);">${{formatNumberCommas(s.target)}}</td>
+              <td style="font-family: var(--font-mono); color: #34d399;">${{formatNumberCommas(s.extracted)}}</td>
+              <td style="font-family: var(--font-mono); font-weight: 700; color: #f43f5e;">${{formatNumberCommas(s.remaining)}}</td>
+              <td style="font-family: var(--font-mono); color: #fbbf24;">${{yieldText}}</td>
+              <td><span class="pill-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 700;">${{durText}}</span></td>
+              <td style="font-family: var(--font-mono); color: #cbd5e1;">${{finDate}}</td>
+            </tr>
+          `;
+        }}).join('');
+      }}
     }}
 
     function setFleetFilter(filter) {{
@@ -2630,6 +3026,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
 
     // Initial render
     renderView();
+    updateEtaForecastUI();
     // Start background polling every 15s
     fetchFleetStatus();
     fleetPollingTimer = setInterval(fetchFleetStatus, 15000);
