@@ -1051,10 +1051,31 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
     }}
 
     .status-inprogress, .status-outdated-progress {{
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.4);
-      color: #fbbf24;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
       font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }}
+
+    @keyframes flashUpdate {{
+      0% {{ background-color: rgba(56, 189, 248, 0.35); }}
+      100% {{ background-color: transparent; }}
+    }}
+    .cell-updated {{
+      animation: flashUpdate 1.8s ease-out;
+    }}
+    .live-dot-cyan {{
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 8px #38bdf8;
+      animation: pulse 1.5s infinite;
+      display: inline-block;
+      vertical-align: middle;
     }}
 
     .status-pending, .status-outdated {{
@@ -1742,37 +1763,37 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
     <div class="kpi-grid">
       <div class="kpi-card" style="--card-accent: #00d2ff;">
         <div class="kpi-label">Total States / UTs</div>
-        <div class="kpi-value">{data['kpi']['total_states']}</div>
+        <div class="kpi-value" id="covKpiTotalStates">{data['kpi']['total_states']}</div>
         <div class="kpi-subtext">28 States + 8 UTs</div>
       </div>
       <div class="kpi-card" style="--card-accent: #3b82f6;">
         <div class="kpi-label">Total Districts</div>
-        <div class="kpi-value">{data['kpi']['total_districts']}</div>
+        <div class="kpi-value" id="covKpiTotalDistricts">{data['kpi']['total_districts']}</div>
         <div class="kpi-subtext">Active Fleet Universe</div>
       </div>
       <div class="kpi-card" style="--card-accent: #10b981;">
         <div class="kpi-label">Live Districts</div>
-        <div class="kpi-value">{data['kpi']['live_districts']} <span style="font-size: 1rem; color: #34d399;">({data['kpi']['live_pct']}%)</span></div>
+        <div class="kpi-value" id="covKpiLiveDistricts">{data['kpi']['live_districts']} <span style="font-size: 1rem; color: #34d399;" id="covKpiLivePct">({data['kpi']['live_pct']}%)</span></div>
         <div class="kpi-subtext">Current & Actively Fresh</div>
       </div>
       <div class="kpi-card" style="--card-accent: #f43f5e;">
         <div class="kpi-label">Outdated Districts</div>
-        <div class="kpi-value">{data['kpi']['outdated_districts']} <span style="font-size: 0.95rem; color: #fb7185;">({round(100 - data['kpi']['live_pct'], 1)}%)</span></div>
+        <div class="kpi-value" id="covKpiOutdatedDistricts">{data['kpi']['outdated_districts']} <span style="font-size: 0.95rem; color: #fb7185;" id="covKpiOutdatedPct">({round(100 - data['kpi']['live_pct'], 1)}%)</span></div>
         <div class="kpi-subtext">Stale / Pending Re-harvest</div>
       </div>
       <div class="kpi-card" style="--card-accent: #a855f7;">
         <div class="kpi-label">Total Extracted Records</div>
-        <div class="kpi-value">{format_indian_num(data['kpi']['total_extracted'])}</div>
+        <div class="kpi-value" id="covKpiTotalExtracted">{format_indian_num(data['kpi']['total_extracted'])}</div>
         <div class="kpi-subtext">Verified Harvested MSMEs</div>
       </div>
       <div class="kpi-card" style="--card-accent: #64748b;">
         <div class="kpi-label">Deregistered & Gaps</div>
-        <div class="kpi-value">{format_indian_num(data['kpi']['total_dereg_unreg'])}</div>
+        <div class="kpi-value" id="covKpiTotalDereg">{format_indian_num(data['kpi']['total_dereg_unreg'])}</div>
         <div class="kpi-subtext">Settled Records (No Rerun Needed)</div>
       </div>
       <div class="kpi-card" style="--card-accent: #f87171;">
         <div class="kpi-label">Failed (Timeouts)</div>
-        <div class="kpi-value">{format_indian_num(data['kpi']['total_failed'])}</div>
+        <div class="kpi-value" id="covKpiTotalFailed">{format_indian_num(data['kpi']['total_failed'])}</div>
         <div class="kpi-subtext">Transient Errors (Useful to Rerun)</div>
       </div>
     </div>
@@ -1793,9 +1814,9 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       </div>
       <div class="filter-chips">
         <span class="chip active" data-status="all" onclick="filterStatus('all')">All States & UTs ({data['kpi']['total_states']})</span>
-        <span class="chip" data-status="live" onclick="filterStatus('live')">🟢 Live ({data['kpi']['live_districts']})</span>
-        <span class="chip" data-status="outdated" onclick="filterStatus('outdated')">🔴 Outdated ({data['kpi']['outdated_districts']})</span>
-        <span class="chip" data-status="inprogress" onclick="filterStatus('inprogress')">⚡ In Progress ({data['kpi']['inprogress_districts']})</span>
+        <span class="chip" data-status="live" id="chipFilterLive" onclick="filterStatus('live')">🟢 Live ({data['kpi']['live_districts']})</span>
+        <span class="chip" data-status="outdated" id="chipFilterOutdated" onclick="filterStatus('outdated')">🔴 Outdated ({data['kpi']['outdated_districts']})</span>
+        <span class="chip" data-status="inprogress" id="chipFilterInProgress" onclick="filterStatus('inprogress')">⚡ In Progress ({data['kpi']['inprogress_districts']})</span>
       </div>
       <!-- Sort Selector Dropdown -->
       <div class="sort-control-wrapper" title="Change district and state sorting order">
@@ -1820,6 +1841,9 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       <div class="action-buttons">
         <button class="btn" onclick="toggleAllStates(true)">⬇️ Expand All</button>
         <button class="btn" onclick="toggleAllStates(false)">⬆️ Collapse All</button>
+        <span id="coverageSyncMsg" style="font-size: 0.78rem; color: var(--text-dim); display: inline-flex; align-items: center; gap: 6px; margin-left: 8px;">
+          <span class="live-dot-cyan"></span> Live overlay active (15s)
+        </span>
       </div>
     </div>
 
@@ -2422,7 +2446,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
           // Status filter
           if (currentFilter === 'live' && !d.is_live) return false;
           if (currentFilter === 'outdated' && d.is_live) return false;
-          if (currentFilter === 'inprogress' && (d.status || '').toLowerCase() !== 'in progress') return false;
+          if (currentFilter === 'inprogress' && (d.status || '').toLowerCase() !== 'in progress' && !d.is_active_live) return false;
 
           // Search query
           if (q) {{
@@ -2484,32 +2508,34 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
             dStatusClass = 'status-live';
             dStatusText = 'Live';
             dTooltip = `Verified live dataset. Latest registration: ${{d.harvest_date}}`;
-          }} else if ((d.status || '').toLowerCase() === 'in progress') {{
-            dStatusClass = 'status-outdated-progress';
-            dStatusText = 'Outdated (In Progress)';
-            dTooltip = 'Scraping is actively in progress. Complete snapshot not yet finalized.';
+          }} else if (d.is_active_live || (d.status || '').toLowerCase() === 'in progress') {{
+            dStatusClass = d.is_stalled ? 'status-outdated-progress' : 'status-inprogress';
+            dStatusText = d.is_active_live ? '⚡ In Progress' : 'In Progress';
+            dTooltip = `Scraping is actively in progress${{d.claimed_by ? ' on ' + d.claimed_by : ''}}.`;
           }} else if ((d.status || '').toLowerCase() === 'completed') {{
             dStatusClass = 'status-outdated';
             dStatusText = 'Outdated';
             dTooltip = `Harvested up to ${{d.harvest_date}}. Data is outdated pending fresh run.`;
           }}
 
+          const pulseSpan = (d.is_active_live && !d.is_stalled) ? '<span class="live-dot-cyan"></span> ' : '';
+
           distRowsHtml += `
-            <tr>
+            <tr id="dist-row-${{d.code}}" data-dist-code="${{d.code}}">
               <td class="dist-code">${{d.code}}</td>
               <td style="font-weight: 500;">${{d.name}}</td>
-              <td><span class="status-badge ${{dStatusClass}}" title="${{dTooltip}}">${{dStatusText}}</span></td>
-              <td class="mono-num" style="color: #34d399; font-weight: 600; font-size: 0.92rem;">
+              <td class="col-status"><span class="status-badge ${{dStatusClass}}" title="${{dTooltip}}">${{pulseSpan}}${{dStatusText}}</span></td>
+              <td class="mono-num col-extracted" style="color: #34d399; font-weight: 600; font-size: 0.92rem;">
                 ${{d.extracted ? d.extracted.toLocaleString('en-IN') : '0'}}
               </td>
-              <td class="mono-num" style="color: #94a3b8; font-size: 0.84rem;" title="Definitive government cancelled or gap numbers (settled, no rerun needed)">
+              <td class="mono-num col-dereg" style="color: #94a3b8; font-size: 0.84rem;" title="Definitive government cancelled or gap numbers (settled, no rerun needed)">
                 ${{d.dereg_unreg ? d.dereg_unreg.toLocaleString('en-IN') : '0'}}
               </td>
-              <td class="mono-num" style="font-size: 0.82rem; color: #93c5fd;">${{d.last_record || '-'}}</td>
-              <td style="font-size: 0.82rem; color: #fbbf24; font-weight: 500;">${{d.harvest_date || '-'}}</td>
-              <td class="mono-num" style="color: ${{d.failed ? '#f87171' : 'var(--text-dim)'}};" title="Records that timed out or failed due to network (useful to rerun)">${{d.failed || '0'}}</td>
-              <td style="font-size: 0.78rem; color: var(--text-dim);">${{d.claimed_by || '-'}}</td>
-              <td class="mono-num" style="font-size: 0.78rem; color: var(--text-dim);">${{d.speed ? d.speed + ' rpm' : '-'}}</td>
+              <td class="mono-num col-last-record" style="font-size: 0.82rem; color: #93c5fd;">${{d.last_record || '-'}}</td>
+              <td class="col-harvest-date" style="font-size: 0.82rem; color: #fbbf24; font-weight: 500;">${{d.harvest_date || '-'}}</td>
+              <td class="mono-num col-failed" style="color: ${{d.failed ? '#f87171' : 'var(--text-dim)'}};" title="Records that timed out or failed due to network (useful to rerun)">${{d.failed || '0'}}</td>
+              <td class="col-claimed-by" style="font-size: 0.78rem; color: var(--text-dim);">${{d.claimed_by || '-'}}</td>
+              <td class="mono-num col-speed" style="font-size: 0.78rem; color: var(--text-dim);">${{d.speed ? d.speed + ' rpm' : '-'}}</td>
             </tr>
           `;
         }});
@@ -2537,7 +2563,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
                 <div class="stat-sub">Ministry MSME Reg.</div>
               </div>
               <div class="stat-col">
-                <div class="stat-val" style="color: #34d399; font-size: 0.98rem;">${{state.extracted_total ? state.extracted_total.toLocaleString('en-IN') : '0'}}</div>
+                <div class="stat-val col-state-harvested" style="color: #34d399; font-size: 0.98rem;">${{state.extracted_total ? state.extracted_total.toLocaleString('en-IN') : '0'}}</div>
                 <div class="stat-sub">Harvested Records</div>
               </div>
               <div class="stat-col" title="Definitive government cancellations & sequence gaps (settled, no rerun needed)">
@@ -2550,7 +2576,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
               </div>
             </div>
 
-            <span class="status-badge ${{statusClass}}">${{statusText}}</span>
+            <span class="status-badge col-state-status ${{statusClass}}">${{statusText}}</span>
           </div>
 
           <div class="districts-table-wrapper">
@@ -2757,6 +2783,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
         if (data && data.status === 'ok') {{
           fleetRawData = data.active_workers || [];
           updateFleetUI(data);
+          applyLiveCoverageOverlay(data);
           if (msg) msg.textContent = `Last synced: ${{new Date().toLocaleTimeString()}} (auto-refresh 15s)`;
         }}
       }} catch (err) {{
@@ -2801,6 +2828,136 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       updateEtaForecastUI();
 
       renderFleetTable();
+    }}
+
+    function applyLiveCoverageOverlay(data) {{
+      if (!data || !RAW_DATA || !RAW_DATA.states) return;
+
+      const activeWorkers = data.active_workers || [];
+      const activeMap = new Map();
+      activeWorkers.forEach(w => {{
+        if (w.district) {{
+          activeMap.set(w.district.toUpperCase().trim(), w);
+        }}
+      }});
+
+      let inProgressCount = 0;
+      let totalExtractedCalculated = 0;
+
+      RAW_DATA.states.forEach(state => {{
+        let stateExtracted = 0;
+        let stateInProgress = 0;
+
+        state.districts.forEach(d => {{
+          const codeUpper = (d.code || '').toUpperCase().trim();
+          if (activeMap.has(codeUpper)) {{
+            const w = activeMap.get(codeUpper);
+            d.status = 'In Progress';
+            d.claimed_by = w.machine || d.claimed_by;
+            d.speed = w.speed !== undefined ? w.speed : d.speed;
+            d.last_record = w.lastRecord || d.last_record;
+            d.is_active_live = true;
+            d.is_stalled = Boolean(w.stalled);
+            d.live_status = 'Outdated (In Progress)';
+
+            // Parse numeric sequence from lastRecord (e.g. UDYAM-AP-02-0021680 -> 21680)
+            let seq = 0;
+            const seqMatch = (w.lastRecord || '').match(/(\\d+)$/);
+            if (seqMatch) {{
+              seq = parseInt(seqMatch[1], 10);
+            }}
+            if (seq > (d.extracted || 0)) {{
+              d.extracted = seq;
+            }}
+
+            stateInProgress++;
+            inProgressCount++;
+
+            // Live in-place update if this row is currently mounted in DOM
+            const row = document.getElementById('dist-row-' + d.code);
+            if (row) {{
+              const statusCell = row.querySelector('.col-status');
+              if (statusCell) {{
+                const badgeClass = d.is_stalled ? 'status-outdated-progress' : 'status-inprogress';
+                const pulse = !d.is_stalled ? '<span class="live-dot-cyan"></span> ' : '';
+                statusCell.innerHTML = `<span class="status-badge ${{badgeClass}}" title="Active daemon on ${{d.claimed_by}} (${{d.speed}} rpm)">${{pulse}}⚡ In Progress</span>`;
+              }}
+
+              const extCell = row.querySelector('.col-extracted');
+              if (extCell) {{
+                const newExtStr = d.extracted ? d.extracted.toLocaleString('en-IN') : '0';
+                if (extCell.textContent.trim() !== newExtStr) {{
+                  extCell.textContent = newExtStr;
+                  extCell.classList.remove('cell-updated');
+                  void extCell.offsetWidth;
+                  extCell.classList.add('cell-updated');
+                }}
+              }}
+
+              const recCell = row.querySelector('.col-last-record');
+              if (recCell && recCell.textContent.trim() !== (d.last_record || '-')) {{
+                recCell.textContent = d.last_record || '-';
+                recCell.classList.remove('cell-updated');
+                void recCell.offsetWidth;
+                recCell.classList.add('cell-updated');
+              }}
+
+              const nodeCell = row.querySelector('.col-claimed-by');
+              if (nodeCell) nodeCell.textContent = d.claimed_by || '-';
+
+              const speedCell = row.querySelector('.col-speed');
+              if (speedCell) speedCell.textContent = d.speed ? d.speed + ' rpm' : '-';
+            }}
+          }} else if (d.is_active_live) {{
+            d.is_active_live = false;
+          }}
+
+          stateExtracted += (d.extracted || 0);
+        }});
+
+        state.extracted_total = stateExtracted;
+        state.in_progress_count = stateInProgress;
+        totalExtractedCalculated += stateExtracted;
+
+        // In-place update of State card in DOM if mounted
+        const safeId = state.code.replace(/[^a-zA-Z0-9]/g, '_');
+        const stateCard = document.getElementById('state-' + safeId);
+        if (stateCard) {{
+          const stateExtCell = stateCard.querySelector('.col-state-harvested');
+          if (stateExtCell) {{
+            stateExtCell.textContent = state.extracted_total ? state.extracted_total.toLocaleString('en-IN') : '0';
+          }}
+          if (state.in_progress_count > 0 && state.live_count === 0) {{
+            const stateStatusCell = stateCard.querySelector('.col-state-status');
+            if (stateStatusCell) {{
+              stateStatusCell.className = 'status-badge col-state-status status-inprogress';
+              stateStatusCell.innerHTML = `<span class="live-dot-cyan"></span> ⚡ ${{state.in_progress_count}} In Progress`;
+            }}
+          }}
+        }}
+      }});
+
+      // Update Global Coverage KPIs
+      const kpiExtracted = document.getElementById('covKpiTotalExtracted');
+      if (kpiExtracted) {{
+        const finalTotal = data.total_extracted || totalExtractedCalculated;
+        kpiExtracted.textContent = formatNumberCommas(finalTotal);
+      }}
+
+      const chipInProg = document.getElementById('chipFilterInProgress');
+      if (chipInProg) {{
+        chipInProg.textContent = `⚡ In Progress (${{inProgressCount}})`;
+      }}
+
+      const covMsg = document.getElementById('coverageSyncMsg');
+      if (covMsg) {{
+        covMsg.innerHTML = `<span class="live-dot-cyan"></span> Live synced: ${{new Date().toLocaleTimeString()}} (${{inProgressCount}} active)`;
+      }}
+
+      // If user is currently filtered by 'inprogress', refresh view so newly claimed districts immediately show
+      if (currentFilter === 'inprogress') {{
+        renderView();
+      }}
     }}
 
     // ==========================================
