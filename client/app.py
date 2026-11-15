@@ -26,6 +26,44 @@ if env_path.is_file():
                 k, v = line.split("=", 1)
                 os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 
+# Auto-configure git local config with GITHUB_TOKEN to prevent interactive terminal prompts
+token = os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN")
+if token and Path(".git").is_dir():
+    try:
+        subprocess.run(
+            ["git", "config", "--local", f"url.https://x-access-token:{token}@github.com/.insteadOf", "https://github.com/"],
+            capture_output=True,
+            timeout=3
+        )
+    except Exception:
+        pass
+
+
+def get_git_auth_args() -> list[str]:
+    """
+    Returns ephemeral git CLI arguments (-c url...) to authenticate seamlessly
+    using GITHUB_TOKEN or GH_TOKEN from environment variables or .fleet_accounts.json,
+    completely preventing interactive Git Credential Manager / browser login prompts.
+    """
+    token = os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN")
+    if not token:
+        fleet_json = Path(".fleet_accounts.json")
+        if fleet_json.is_file():
+            try:
+                import json
+                data = json.loads(fleet_json.read_text(encoding="utf-8"))
+                for acc in data.get("accounts", []):
+                    if acc.get("token") and acc.get("enabled", True):
+                        token = acc["token"]
+                        break
+            except Exception:
+                pass
+
+    if token:
+        os.environ.setdefault("GITHUB_TOKEN", token)
+        return ["-c", f"url.https://x-access-token:{token}@github.com/.insteadOf=https://github.com/"]
+    return []
+
 
 def check_and_apply_git_update() -> bool:
     """
@@ -36,9 +74,11 @@ def check_and_apply_git_update() -> bool:
         if not Path(".git").is_dir():
             return False
 
-        # Fetch quietly from origin
+        auth_args = get_git_auth_args()
+
+        # Fetch quietly from origin without interactive prompts
         res = subprocess.run(
-            ["git", "fetch", "origin", "main", "--quiet"],
+            ["git"] + auth_args + ["fetch", "origin", "main", "--quiet"],
             capture_output=True,
             timeout=20
         )
@@ -51,7 +91,7 @@ def check_and_apply_git_update() -> bool:
         if local_head != remote_head:
             logging.info(f"🚀 [AUTO-UPDATE] Codebase update detected on origin/main ({local_head[:7]} -> {remote_head[:7]})!")
             pull_res = subprocess.run(
-                ["git", "pull", "--ff-only", "origin", "main"],
+                ["git"] + auth_args + ["pull", "--ff-only", "origin", "main"],
                 capture_output=True,
                 text=True,
                 timeout=30

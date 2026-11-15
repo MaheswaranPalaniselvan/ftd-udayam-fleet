@@ -7,6 +7,15 @@ export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PROJECT_ROOT"
 
+# Load GITHUB_TOKEN if in .env and configure git for seamless headless pulls
+if [ -f ".env" ]; then
+    GH_TOK=$(grep -E '^\s*GITHUB_TOKEN=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'" | tr -d ' ')
+    if [ -n "$GH_TOK" ]; then
+        export GITHUB_TOKEN="$GH_TOK"
+        git config --local url."https://x-access-token:${GH_TOK}@github.com/".insteadOf "https://github.com/" 2>/dev/null || true
+    fi
+fi
+
 # Auto-detect legacy GLIBC (e.g. Jetson Nano glibc 2.27 on Ubuntu 18.04)
 GLIBC_VER=$(ldd --version 2>/dev/null | head -n1 | grep -oE '[0-9]+\.[0-9]+' | head -n1)
 if [ -n "$GLIBC_VER" ] && [ "$(printf '%s\n' "2.28" "$GLIBC_VER" | sort -V | head -n1)" != "2.28" ]; then
