@@ -1,0 +1,18 @@
+[Unit]
+Description=FlawlessTech Udayam Extractor Fleet Worker (Jetson Nano)
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/mahesp93/udayam
+Environment="PATH=/home/mahesp93/.local/node-v16/bin:/home/mahesp93/.local/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/home/mahesp93/udayam/.venv/bin/python client/app.py --cli --machine "Jetson-Nano" --concurrency 1 --no-auto-update
+Restart=always
+RestartSec=10
+StandardOutput=append:/home/mahesp93/udayam/daemon.log
+StandardError=append:/home/mahesp93/udayam/daemon.log
+
+[Install]
+WantedBy=default.target
+

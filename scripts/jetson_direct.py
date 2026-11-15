@@ -105,6 +105,7 @@ def sync_files_to_jetson(client: paramiko.SSHClient):
     files_to_sync = [
         "deploy/setup_jetson_nano.sh",
         "deploy/run_pi_worker.sh",
+        "deploy/start_jetson_daemon.sh",
         "client/app.py",
         "client/core/scraper.py",
         "client/core/coordinator.py",
@@ -156,11 +157,59 @@ def run_remote_command(client: paramiko.SSHClient, command: str, sudo_password: 
     return exit_status
 
 
+def setup_systemd_daemon(client: paramiko.SSHClient):
+    """Starts the scraper as an immortal background daemon (no uv run, auto-restart loop, auto-boot via cron)."""
+    print("⚙️ Deploying background scraper daemon on Jetson Nano...")
+    setup_cmd = (
+        "chmod +x /home/mahesp93/udayam/deploy/start_jetson_daemon.sh; "
+        "pkill -9 -f 'uv run' 2>/dev/null || true; "
+        "pkill -9 -f 'client/app.py' 2>/dev/null || true; "
+        "pkill -9 -f 'start_jetson_daemon.sh' 2>/dev/null || true; "
+        "sleep 1; "
+        "nohup /home/mahesp93/udayam/deploy/start_jetson_daemon.sh > /dev/null 2>&1 & "
+        "sleep 2; "
+        "(crontab -l 2>/dev/null | grep -F 'start_jetson_daemon.sh') || "
+        "(crontab -l 2>/dev/null; echo '@reboot /home/mahesp93/udayam/deploy/start_jetson_daemon.sh > /dev/null 2>&1 &') | crontab -; "
+        "echo '✅ Scraper daemon launched in background! crontab @reboot registered.'; "
+        "ps aux | grep -E 'python.*client/app' | grep -v grep || echo 'Checking daemon startup...'"
+    )
+    run_remote_command(client, setup_cmd)
+
+
+def stop_jetson_daemon(client: paramiko.SSHClient):
+    """Stops the daemon and terminates any running scraper processes."""
+    print("🛑 Stopping Jetson Nano scraper...")
+    stop_cmd = (
+        "pkill -9 -f 'start_jetson_daemon.sh' 2>/dev/null || true; "
+        "pkill -9 -f 'client/app.py' 2>/dev/null || true; "
+        "pkill -9 -f 'uv run' 2>/dev/null || true; "
+        "echo 'Stopped all scraper processes on Jetson Nano.'"
+    )
+    run_remote_command(client, stop_cmd)
+
+
+def show_jetson_status(client: paramiko.SSHClient):
+    """Displays health, uptime, memory, and scraper daemon status."""
+    status_cmd = (
+        "echo '=== JETSON NANO STATUS ==='; "
+        "uptime; "
+        "echo '--- Running Scraper Processes ---'; "
+        "ps aux | grep -E 'start_jetson_daemon|python.*client/app' | grep -v grep || echo 'None running'; "
+        "echo '--- Recent Daemon Log (Tail 15) ---'; "
+        "tail -n 15 /home/mahesp93/udayam/daemon.log 2>/dev/null || echo 'No daemon.log found'"
+    )
+    run_remote_command(client, status_cmd)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Direct SSH connection to Jetson Nano")
-    parser.add_argument("--password", type=str, default=None, help="Password for mahesp93@jetson-nano (optional if key installed)")
-    parser.add_argument("--cmd", nargs="+", help="Specific command to run on Jetson Nano")
+    parser.add_argument("--password", type=str, default=None, help="Password for mahesp93@jetson-nano")
+    parser.add_argument("--daemon", action="store_true", help="Install and start background systemd daemon (no uv run)")
+    parser.add_argument("--status", action="store_true", help="Check Jetson worker service status and logs")
+    parser.add_argument("--stop", action="store_true", help="Stop Jetson worker daemon")
+    parser.add_argument("--logs", action="store_true", help="Tail daemon.log")
     parser.add_argument("--setup", action="store_true", help="Run deploy/setup_jetson_nano.sh")
+    parser.add_argument("--cmd", nargs=argparse.REMAINDER, help="Specific command to run on Jetson Nano")
     args = parser.parse_args()
 
     client = get_ssh_client(args.password)
@@ -169,13 +218,21 @@ def main():
         sync_files_to_jetson(client)
         patch_jetson_patchright_cli(client)
         
-        if args.setup:
+        if args.daemon:
+            setup_systemd_daemon(client)
+        elif args.stop:
+            stop_jetson_daemon(client)
+        elif args.status:
+            show_jetson_status(client)
+        elif args.logs:
+            run_remote_command(client, "tail -n 30 /home/mahesp93/udayam/daemon.log")
+        elif args.setup:
             run_remote_command(client, f"bash {JETSON_DIR}/deploy/setup_jetson_nano.sh", sudo_password=args.password)
         elif args.cmd:
             cmd_str = " ".join(args.cmd) if isinstance(args.cmd, list) else args.cmd
             run_remote_command(client, cmd_str)
         else:
-            run_remote_command(client, f"bash {JETSON_DIR}/deploy/setup_jetson_nano.sh", sudo_password=args.password)
+            show_jetson_status(client)
     finally:
         client.close()
 

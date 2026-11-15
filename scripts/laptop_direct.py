@@ -58,6 +58,7 @@ def sync_files_to_laptop(client: paramiko.SSHClient):
         ".env",
         "extract_list.py",
         "deploy/setup_machine.ps1",
+        "deploy/start_laptop_daemon.ps1",
         "scripts/audit_laptop_extracts.py",
     ]
 
@@ -214,7 +215,7 @@ def show_laptop_status(client: paramiko.SSHClient):
 
 
 def start_detached_daemon(client: paramiko.SSHClient, machine: str, concurrency: int, state: str = "", district: str = ""):
-    """Launches the scraper as a detached background process on the remote Windows laptop."""
+    """Launches the scraper via Windows Scheduled Task so it runs permanently detached from SSH sessions."""
     extra = []
     if state:
         extra.append(f"--state {state}")
@@ -222,11 +223,20 @@ def start_detached_daemon(client: paramiko.SSHClient, machine: str, concurrency:
         extra.append(f"--district {district}")
     extra_str = " ".join(extra)
 
-    ps_launch = f"Start-Process powershell.exe -WorkingDirectory 'C:\\Users\\ELCOT\\udayam' -WindowStyle Hidden -ArgumentList '-NoProfile -Command uv run python client/app.py --cli --machine {machine} --concurrency {concurrency} --no-auto-update {extra_str}'"
+    ps_launch = f"""
+    Unregister-ScheduledTask -TaskName 'UdyamFleetScraper' -Confirm:$false -ErrorAction SilentlyContinue;
+    $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File C:\\Users\\ELCOT\\udayam\\deploy\\start_laptop_daemon.ps1';
+    $principal = New-ScheduledTaskPrincipal -UserId 'ELCOT' -LogonType S4U -RunLevel Highest;
+    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Days 365);
+    Register-ScheduledTask -TaskName 'UdyamFleetScraper' -Action $action -Principal $principal -Settings $settings -Force | Out-Null;
+    Start-ScheduledTask -TaskName 'UdyamFleetScraper';
+    Start-Sleep -Seconds 2;
+    Get-ScheduledTask -TaskName 'UdyamFleetScraper' | Select-Object TaskName, State;
+    """
 
-    print(f"🚀 Starting background daemon on laptop: {machine} (Concurrency: {concurrency})...")
+    print(f"🚀 Registering & Starting Windows Scheduled Task on laptop: {machine} (Concurrency: {concurrency})...")
     run_remote_command(client, ps_launch)
-    print("✅ Background daemon launched detached! It will run continuously even if SSH disconnects.")
+    print("✅ Background daemon launched via Task Scheduler! It runs 24/7 independently of SSH.")
 
 
 def stop_worker_daemon(client: paramiko.SSHClient):
@@ -243,6 +253,44 @@ def stop_worker_daemon(client: paramiko.SSHClient):
     run_remote_command(client, ps_kill)
 
 
+def install_tightvnc(client: paramiko.SSHClient, vnc_password: str = "4810"):
+    """Downloads, silently installs, configures password, and enables TightVNC Server on the laptop."""
+    print(f"📺 Installing & Configuring TightVNC Server on laptop (Port 5900, Password: {vnc_password})...")
+
+    vnc_ps = f"""
+    $msiUrl = 'https://www.tightvnc.com/download/2.8.85/tightvnc-2.8.85-gpl-setup-64bit.msi'
+    $msiPath = 'C:\\Users\\ELCOT\\tightvnc-setup.msi'
+
+    Write-Host '1. Downloading TightVNC Server 64-bit...' -ForegroundColor Cyan
+    Invoke-WebRequest -Uri $msiUrl -OutFile $msiPath -UseBasicParsing
+
+    Write-Host '2. Running silent MSI installation with configured VNC password...' -ForegroundColor Cyan
+    $msiArgs = '/i C:\\Users\\ELCOT\\tightvnc-setup.msi /quiet /norestart ADDLOCAL="Server" SET_USEVNCAUTH=1 VALUE_OF_USEVNCAUTH=1 SET_PASSWORD=1 VALUE_OF_PASSWORD={vnc_password} SET_CONTROLPASSWORD=1 VALUE_OF_CONTROLPASSWORD={vnc_password}'
+    $p = Start-Process msiexec.exe -ArgumentList $msiArgs -Wait -PassThru
+    Write-Host "   MSI exit code: $($p.ExitCode)" -ForegroundColor Green
+
+    Write-Host '3. Configuring Windows Firewall for port 5900...' -ForegroundColor Cyan
+    Remove-NetFirewallRule -Name 'TightVNC-In-TCP-5900' -ErrorAction SilentlyContinue
+    New-NetFirewallRule -Name 'TightVNC-In-TCP-5900' -DisplayName 'TightVNC Server (TCP 5900)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 5900 -Profile Any | Out-Null
+
+    Write-Host '4. Starting TightVNC Service (tvnserver)...' -ForegroundColor Cyan
+    Set-Service -Name tvnserver -StartupType Automatic -ErrorAction SilentlyContinue
+    Restart-Service -Name tvnserver -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 2
+
+    $svc = Get-Service tvnserver -ErrorAction SilentlyContinue
+    Write-Host "   TightVNC Service Status: $($svc.Status)" -ForegroundColor Green
+
+    $conns = Get-NetTCPConnection -LocalPort 5900 -ErrorAction SilentlyContinue
+    if ($conns) {{
+        Write-Host '✅ TightVNC Server is ACTIVE and LISTENING on port 5900!' -ForegroundColor Green
+    }} else {{
+        Write-Host '⚠️ Warning: Port 5900 not yet detected as listening.' -ForegroundColor Yellow
+    }}
+    """
+    run_remote_command(client, vnc_ps)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Laptop Direct SSH & Fleet Orchestration")
     parser.add_argument("--status", action="store_true", help="Display laptop health, battery, and worker status")
@@ -250,6 +298,8 @@ def main():
     parser.add_argument("--sync", action="store_true", help="Synchronize workspace files to laptop")
     parser.add_argument("--setup-env", action="store_true", help="Run uv sync and install Chromium on laptop")
     parser.add_argument("--daemon", action="store_true", help="Start scraper as an independent background daemon")
+    parser.add_argument("--install-vnc", action="store_true", help="Download, install, and configure TightVNC Server on port 5900")
+    parser.add_argument("--vnc-password", type=str, default="4810", help="Password for TightVNC Server (default: 4810)")
     parser.add_argument("--kill", action="store_true", help="Stop running scraper processes on laptop")
     parser.add_argument("--worker", action="store_true", help="Launch foreground fleet worker on laptop")
     parser.add_argument("--machine", type=str, default="Laptop-Ryzen-ELCOT", help="Worker machine identifier")
@@ -280,6 +330,9 @@ def main():
 
         if args.daemon:
             start_detached_daemon(client, args.machine, args.concurrency, args.state, args.district)
+
+        if args.install_vnc:
+            install_tightvnc(client, args.vnc_password)
 
         if args.worker:
             extra_flags = []
