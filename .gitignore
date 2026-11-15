@@ -52,6 +52,11 @@ public/*.xlsx
 public/*.csv
 public/*.txt
 
+# Data directories
+data/
+*.parquet
+*.db
+
 # Local caches and legacy test directory
 gsheet_cache.json
 gsheet_live_backup.csv
