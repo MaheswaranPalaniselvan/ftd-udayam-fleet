@@ -209,24 +209,37 @@ class MCACDMExtractor:
 
     def wait_for_generation_start(self, form_label: str, target_path: Path, timeout_sec=180) -> bool:
         """
-        Waits specifically for 'Generating file, please wait...' (or 'Downloading Report...' / 'Preparing export...')
+        Waits specifically for 'Generating file, please wait...' or 'Preparing CSV...'
         to appear before moving on to the next form.
         """
         self.last_submitted_endpoint = None
         print(f"\n👉 [{form_label}]")
         print(f"   ⌨️  Please enter the 6-character CAPTCHA in the glowing cyan box and click Export (or press Enter).")
-        print(f"   ⏳ Waiting for 'Generating file, please wait...' before moving on...")
+        print(f"   ⏳ Waiting for 'Generating file, please wait...' or 'Preparing CSV...' before moving on...")
 
         start_time = time.time()
         while time.time() - start_time < timeout_sec:
             # Check generation status in the DOM
             status_info = self.page.evaluate("""() => {
                 const checkText = (el) => {
-                    if (!el || el.offsetParent === null) return null;
+                    if (!el) return null;
+                    const style = window.getComputedStyle(el);
+                    if (style.display === 'none' || style.visibility === 'hidden') return null;
                     return (el.innerText || el.textContent || '').trim();
                 };
 
+                // Check GDP specific loader button first
+                const csvLoader = document.getElementById('csvBtnLoader');
+                if (csvLoader) {
+                    const style = window.getComputedStyle(csvLoader);
+                    if (style.display !== 'none' && style.visibility !== 'hidden') {
+                        return { status: 'generating', message: 'Preparing CSV...' };
+                    }
+                }
+
                 const msgs = [
+                    document.querySelector('#csvBtnLoader'),
+                    document.querySelector('#downloadStatus'),
                     document.querySelector('#download-message'),
                     document.querySelector('#download-message-llp'),
                     document.querySelector('#download-message-foreign'),
@@ -236,7 +249,6 @@ class MCACDMExtractor:
                     document.querySelector('#download-message-psu'),
                     document.querySelector('#download-message-devsec'),
                     document.querySelector('#download-message-sub-devsec'),
-                    document.querySelector('#downloadStatus'),
                     document.querySelector('.alert-info')
                 ];
 
@@ -244,7 +256,7 @@ class MCACDMExtractor:
                     const txt = checkText(el);
                     if (txt) {
                         const lower = txt.toLowerCase();
-                        if (lower.includes('generating file') || lower.includes('downloading report') || lower.includes('preparing export')) {
+                        if (lower.includes('preparing csv') || lower.includes('generating file') || lower.includes('downloading report') || lower.includes('preparing export')) {
                             return { status: 'generating', message: txt };
                         }
                         if (lower.includes('invalid') || lower.includes('error') || lower.includes('please enter captcha') || lower.includes('failed')) {
@@ -256,7 +268,7 @@ class MCACDMExtractor:
                 // Check button disabled state during AJAX
                 const activeBtn = document.querySelector('button[type="submit"]:disabled, #csvDownloadBtn.disabled');
                 if (activeBtn) {
-                    return { status: 'generating', message: 'Generating file, please wait...' };
+                    return { status: 'generating', message: 'Preparing CSV / Export in progress...' };
                 }
 
                 return null;
