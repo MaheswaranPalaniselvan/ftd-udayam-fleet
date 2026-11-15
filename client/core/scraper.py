@@ -219,14 +219,17 @@ async def process_udyam_number(page: Page, udyam_number: str) -> tuple[str, str,
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             if "Udyam_Verify.aspx" not in page.url:
-                await page.goto(HOME_URL, wait_until="domcontentloaded", timeout=3000)
-                await page.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=3000)
+                try:
+                    await page.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=12000)
+                except Exception:
+                    await page.goto(HOME_URL, wait_until="domcontentloaded", timeout=12000)
+                    await page.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=12000)
 
             if "Default.aspx" in page.url:
                 menu_btn = page.locator('a:has-text("Print/Verify")').first
                 await menu_btn.hover()
                 await asyncio.sleep(0.2)
-                async with page.expect_navigation(wait_until="domcontentloaded", timeout=3000):
+                async with page.expect_navigation(wait_until="domcontentloaded", timeout=10000):
                     await page.locator('a:has-text("Verify Udyam Registration")').first.click()
 
             # Clean navbar to accelerate rendering
@@ -655,7 +658,7 @@ async def execute_district_extraction(
             p = await session.context.new_page()
             await p.route("**/*", abort_unnecessary_resources)
             try:
-                await p.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=4000)
+                await p.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=12000)
             except Exception:
                 pass
             pages.append(p)

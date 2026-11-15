@@ -14,6 +14,8 @@ import socket
 from pathlib import Path
 import httpx
 
+DEFAULT_COORDINATOR_URL = "https://script.google.com/macros/s/AKfycby3tmgH9PtjUhl6XfGrBfgRNZFQZaSLR0N4Dnff9tt9K5qjatyarJy_nnE0ulCtMNm2xA/exec"
+
 
 def get_default_machine_name() -> str:
     """Returns local hostname / computer name as the default machine identifier."""
@@ -25,8 +27,9 @@ def get_default_machine_name() -> str:
 
 
 class CentralCoordinator:
-    def __init__(self, web_app_url: str, machine_name: str = None):
-        self.web_app_url = web_app_url.strip() if web_app_url else ""
+    def __init__(self, web_app_url: str = None, machine_name: str = None):
+        raw_url = web_app_url or os.getenv("GOOGLE_APPS_SCRIPT_URL") or DEFAULT_COORDINATOR_URL
+        self.web_app_url = raw_url.strip() if raw_url else ""
         self.machine_name = machine_name or get_default_machine_name()
         self.client = httpx.AsyncClient(timeout=30.0, follow_redirects=True)
 

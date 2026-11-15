@@ -149,13 +149,12 @@ async def run_stage1_web_scraping(
 
             # Pre-navigate to Udyam_Verify.aspx once per worker
             try:
-                await page.goto(HOME_URL, wait_until="domcontentloaded", timeout=4000)
-                await page.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=4000)
+                await page.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=12000)
                 if "Default.aspx" in page.url:
                     menu_btn = page.locator('a:has-text("Print/Verify")').first
                     await menu_btn.hover()
                     await asyncio.sleep(0.2)
-                    async with page.expect_navigation(wait_until="domcontentloaded", timeout=4000):
+                    async with page.expect_navigation(wait_until="domcontentloaded", timeout=10000):
                         await page.locator('a:has-text("Verify Udyam Registration")').first.click()
                 await page.evaluate("document.querySelectorAll('header, #header, .navbar, #navmenu, .navmenu').forEach(el => el.remove());")
             except Exception as e:
