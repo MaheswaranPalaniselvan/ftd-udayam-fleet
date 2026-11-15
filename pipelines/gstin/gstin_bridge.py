@@ -105,3 +105,4 @@ if __name__ == "__main__":
     derived = derive_gstin("33", "AABCT1332L", 1)
     print(f"Derived GSTIN for PAN AABCT1332L in Tamil Nadu (33): {derived}")
     print(f"Validation: {validate_gstin(derived)}")
+

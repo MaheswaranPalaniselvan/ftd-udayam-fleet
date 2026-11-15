@@ -69,3 +69,4 @@ def lookup_director_companies(din: str):
 
 if __name__ == "__main__":
     init_din_tables()
+
