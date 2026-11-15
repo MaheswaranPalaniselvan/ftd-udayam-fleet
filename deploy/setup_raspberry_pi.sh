@@ -81,7 +81,8 @@ echo ""
 
 # 4. Sync Python virtual environment & dependencies
 echo "[4/5] Synchronizing Python environment and dependencies..."
-cd "$(dirname "$0")"
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$PROJECT_ROOT"
 uv sync
 
 echo "      [OK] Python dependencies synchronized."

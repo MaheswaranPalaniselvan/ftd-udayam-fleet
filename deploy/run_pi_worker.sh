@@ -4,7 +4,8 @@
 # =============================================================================
 
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
-cd "$(dirname "$0")"
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$PROJECT_ROOT"
 
 echo "====================================================================="
 echo "   FlawlessTech Data - Raspberry Pi Worker Launcher                 "
