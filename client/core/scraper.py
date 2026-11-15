@@ -21,6 +21,7 @@ import time
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from typing import Optional, Tuple, Dict, List, Set
 from playwright.async_api import Page, TimeoutError as PlaywrightTimeoutError
 from scrapling.fetchers import AsyncStealthySession
 
@@ -47,6 +48,39 @@ def get_7z_binary() -> str | None:
         if p.is_file():
             return str(p)
     return None
+
+
+def get_browser_session_kwargs(headless: bool = True) -> dict:
+    """
+    Builds session parameters for Scrapling / Playwright.
+    Auto-detects custom Node.js and system Chromium on legacy systems
+    (such as NVIDIA Jetson Nano running Ubuntu 18.04 with glibc 2.27).
+    """
+    # 1. Auto-detect compatible Node for legacy glibc if PLAYWRIGHT_NODEJS_PATH is not set
+    if "PLAYWRIGHT_NODEJS_PATH" not in os.environ:
+        home = Path.home()
+        node_candidates = [
+            home / ".local" / "node-v16" / "bin" / "node",
+            home / ".local" / "bin" / "node",
+            Path("/usr/bin/node"),
+            Path("/usr/local/bin/node")
+        ]
+        for candidate in node_candidates:
+            if candidate.is_file() and os.access(candidate, os.X_OK):
+                os.environ["PLAYWRIGHT_NODEJS_PATH"] = str(candidate)
+                break
+
+    kwargs = {"headless": headless}
+    # 2. Check for custom or system Chromium
+    exec_path = os.environ.get("PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH") or os.environ.get("CHROME_BIN")
+    if not exec_path:
+        for candidate in ("/usr/bin/chromium-browser", "/usr/bin/chromium", "/snap/bin/chromium"):
+            if Path(candidate).is_file():
+                exec_path = candidate
+                break
+    if exec_path and Path(exec_path).is_file():
+        kwargs["executable_path"] = str(exec_path)
+    return kwargs
 
 
 def get_latest_valid_business_day() -> date:
@@ -615,7 +649,7 @@ async def execute_district_extraction(
                         speed_rpm=speed_rpm
                     )
 
-    async with AsyncStealthySession(headless=True) as session:
+    async with AsyncStealthySession(**get_browser_session_kwargs(headless=True)) as session:
         pages = []
         for _ in range(num_workers):
             p = await session.context.new_page()
@@ -679,7 +713,9 @@ def is_transient_failure(status_or_reason: str) -> bool:
 def get_district_failed_and_missing(
     prefix: str,
     results_dir: Path = Path("results"),
-    failed_dir: Path = Path("failed")
+    failed_dir: Path = Path("failed"),
+    gdrive_dir: Optional[Path] = None,
+    min_seq_num: int = 1
 ) -> dict:
     """
     Scans a district's results and failures to identify:
@@ -687,7 +723,7 @@ def get_district_failed_and_missing(
        - Separates records into:
          a) Deregistered & Unregistered (terminal states - no rerun needed).
          b) Transient Failed / Timeouts (timed out or connection error - useful to rerun).
-    2. All sequence gap records missing between 1 and max_record_num.
+    2. All sequence gap records missing between min_seq_num and max_record_num.
     3. The complete set of numbers missing from verified results.
     """
     clean_prefix = prefix.replace("UDYAM-", "").strip().upper()
@@ -696,30 +732,45 @@ def get_district_failed_and_missing(
     success_numbers = set()
     max_record_num = 0
 
-    # 1. Inspect Results from .7z archive (if present)
-    archive_path = results_dir / f"{clean_prefix}.7z"
-    if archive_path.is_file() and seven_zip:
-        try:
-            proc = subprocess.run(
-                [seven_zip, "e", str(archive_path), "-r", f"results_{clean_prefix}.csv", "-so"],
-                capture_output=True,
-                text=True,
-                errors="replace"
-            )
-            if proc.stdout:
-                reader = csv.reader(io.StringIO(proc.stdout))
-                next(reader, None)
-                for row in reader:
-                    if row and row[0].strip():
-                        num_id = row[0].strip()
-                        m = re.search(r"-(\d+)$", num_id)
-                        if m:
-                            val = int(m.group(1))
-                            success_numbers.add(val)
-                            if val > max_record_num:
-                                max_record_num = val
-        except Exception:
-            pass
+    # Discover archive paths: first local results_dir, then Google Drive if accessible
+    archive_paths = []
+    local_7z = results_dir / f"{clean_prefix}.7z"
+    if local_7z.is_file():
+        archive_paths.append(local_7z)
+    
+    g_dir = gdrive_dir or Path(os.environ.get("GDRIVE_ARCHIVE_DIR", r"g:\My Drive\Udyam_Archives"))
+    if g_dir.is_dir():
+        g_single = g_dir / f"{clean_prefix}.7z"
+        if g_single.is_file() and g_single not in archive_paths:
+            archive_paths.append(g_single)
+        for part in sorted(g_dir.glob(f"{clean_prefix}.part*.7z")):
+            if part not in archive_paths:
+                archive_paths.append(part)
+
+    # 1. Inspect Results from .7z archive(s) (if present)
+    if seven_zip and archive_paths:
+        for arch in archive_paths:
+            try:
+                proc = subprocess.run(
+                    [seven_zip, "e", str(arch), "-r", f"results_{clean_prefix}.csv", "-so"],
+                    capture_output=True,
+                    text=True,
+                    errors="replace"
+                )
+                if proc.stdout:
+                    reader = csv.reader(io.StringIO(proc.stdout))
+                    next(reader, None)
+                    for row in reader:
+                        if row and row[0].strip():
+                            num_id = row[0].strip()
+                            m = re.search(r"-(\d+)$", num_id)
+                            if m:
+                                val = int(m.group(1))
+                                success_numbers.add(val)
+                                if val > max_record_num:
+                                    max_record_num = val
+            except Exception:
+                pass
 
     # 1b. Inspect Results from active folder (unioning any newly harvested records)
     res_csv = results_dir / clean_prefix / f"results_{clean_prefix}.csv"
@@ -762,18 +813,19 @@ def get_district_failed_and_missing(
                     else:
                         transient_failed_records[val] = row
 
-    if archive_path.is_file() and seven_zip:
-        try:
-            proc = subprocess.run(
-                [seven_zip, "e", str(archive_path), "-r", f"failed_{clean_prefix}.csv", "-so"],
-                capture_output=True,
-                text=True,
-                errors="replace"
-            )
-            if proc.stdout:
-                parse_fail_stream(proc.stdout)
-        except Exception:
-            pass
+    if seven_zip and archive_paths:
+        for arch in archive_paths:
+            try:
+                proc = subprocess.run(
+                    [seven_zip, "e", str(arch), "-r", f"failed_{clean_prefix}.csv", "-so"],
+                    capture_output=True,
+                    text=True,
+                    errors="replace"
+                )
+                if proc.stdout:
+                    parse_fail_stream(proc.stdout)
+            except Exception:
+                pass
 
     fail_csv = failed_dir / clean_prefix / f"failed_{clean_prefix}.csv"
     if fail_csv.is_file():
@@ -789,12 +841,16 @@ def get_district_failed_and_missing(
 
     failed_set = set(all_logged_failed_numbers)
 
-    # 3. Calculate sequence gaps in range 1..max_record_num
-    all_sequence = set(range(1, max_record_num + 1)) if max_record_num > 0 else set()
+    # 3. Calculate sequence gaps in range min_seq_num..max_record_num
+    effective_min = max(1, min_seq_num)
+    if max_record_num >= effective_min:
+        all_sequence = set(range(effective_min, max_record_num + 1))
+    else:
+        all_sequence = set()
     missing_gaps = sorted(list(all_sequence - success_numbers - failed_set))
     all_missing_from_results = sorted(list(all_sequence - success_numbers))
 
-    has_archive = (results_dir / f"{clean_prefix}.7z").is_file()
+    has_archive = bool(archive_paths)
 
     return {
         "district_code": clean_prefix,
@@ -824,7 +880,9 @@ async def execute_district_rerun(
     failed_dir: Path = Path("failed"),
     heartbeat_callback = None,
     stop_event: asyncio.Event = None,
-    update_archive: bool = True
+    update_archive: bool = True,
+    min_seq_num: int = 1,
+    gdrive_dir: Optional[Path] = None
 ) -> dict:
     """
     Reruns failed or missing records for a district, capturing the exact failure reason
@@ -833,13 +891,19 @@ async def execute_district_rerun(
     Rerun types:
     - 'failed': Targets records that timed out or had transient network/captcha errors.
                 Deregistered and Unregistered records are considered settled and skipped!
-    - 'missing': Targets sequence gap numbers (between 1 and max_record) that were skipped.
+    - 'missing': Targets sequence gap numbers (between min_seq_num and max_record) that were skipped.
     - 'all': Targets timed-out/transient failed records and sequence gaps.
     """
     clean_prefix = prefix.replace("UDYAM-", "").strip().upper()
     logging.info(f"[{clean_prefix}] Initializing rerun task (Mode: {rerun_type.upper()})...")
 
-    audit = get_district_failed_and_missing(clean_prefix, results_dir, failed_dir)
+    audit = get_district_failed_and_missing(
+        clean_prefix,
+        results_dir=results_dir,
+        failed_dir=failed_dir,
+        gdrive_dir=gdrive_dir,
+        min_seq_num=min_seq_num
+    )
 
     if rerun_type == "failed":
         # Target ONLY transient failures / timeouts!
@@ -982,7 +1046,7 @@ async def execute_district_rerun(
             if should_flush:
                 flush_results_batch(results_dir, failed_dir, flush_res, [], flush_html)
 
-    async with AsyncStealthySession(headless=True) as session:
+    async with AsyncStealthySession(**get_browser_session_kwargs(headless=True)) as session:
         pages = []
         for _ in range(num_workers):
             p = await session.context.new_page()

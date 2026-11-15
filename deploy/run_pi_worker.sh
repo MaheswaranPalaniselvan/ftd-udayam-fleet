@@ -7,6 +7,29 @@ export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PROJECT_ROOT"
 
+# Auto-detect legacy GLIBC (e.g. Jetson Nano glibc 2.27 on Ubuntu 18.04)
+GLIBC_VER=$(ldd --version 2>/dev/null | head -n1 | grep -oE '[0-9]+\.[0-9]+' | head -n1)
+if [ -n "$GLIBC_VER" ] && [ "$(printf '%s\n' "2.28" "$GLIBC_VER" | sort -V | head -n1)" != "2.28" ]; then
+    if [ -f "$HOME/.local/node-v16/bin/node" ]; then
+        export PLAYWRIGHT_NODEJS_PATH="$HOME/.local/node-v16/bin/node"
+        export PATH="$HOME/.local/node-v16/bin:$PATH"
+    elif command -v node &>/dev/null; then
+        export PLAYWRIGHT_NODEJS_PATH="$(command -v node)"
+    fi
+    if [ -f "/usr/bin/chromium-browser" ]; then
+        export PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH="/usr/bin/chromium-browser"
+    fi
+fi
+
+# Load auto-tuned concurrency if available from optimal_config.json
+DEFAULT_CONCURRENCY=2
+if [ -f "optimal_config.json" ]; then
+    CONF_CONC=$(grep -oE '"recommended_concurrency":\s*[0-9]+' optimal_config.json | grep -oE '[0-9]+' | head -n1)
+    if [ -n "$CONF_CONC" ] && [ "$CONF_CONC" -gt 0 ]; then
+        DEFAULT_CONCURRENCY=$CONF_CONC
+    fi
+fi
+
 echo "====================================================================="
 echo "   FlawlessTech Data - Raspberry Pi Worker Launcher                 "
 echo "====================================================================="
@@ -32,9 +55,13 @@ case $CHOICE in
         ;;
     2)
         HOSTNAME=$(hostname)
+        MACHINE_PREFIX="Pi"
+        if [[ "$HOSTNAME" =~ [Jj]etson ]] || [ -f "/etc/nv_tegra_release" ]; then
+            MACHINE_PREFIX="Jetson"
+        fi
         read -p "Enter Target State (e.g. TN, KL, MP, UP, or Enter for auto): " ST
         read -p "Enter Target District (e.g. TN-02, or Enter for auto): " DIST
-        CMD="uv run python client/app.py --cli --machine \"Pi-$HOSTNAME\" --concurrency 2"
+        CMD="uv run python client/app.py --cli --machine \"${MACHINE_PREFIX}-$HOSTNAME\" --concurrency $DEFAULT_CONCURRENCY"
         if [ -n "$ST" ]; then
             CMD="$CMD --state $ST"
         fi

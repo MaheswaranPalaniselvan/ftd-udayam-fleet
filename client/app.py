@@ -301,43 +301,52 @@ def run_headless_cli(args):
                 existing_last_dor=last_dor
             )
 
-            # Automatic Cleanup & Recovery Pass: Rerun any timed-out or sequence gap records before archiving
+            # Automatic Cleanup & Recovery Pass: Rerun ONLY timed-out / transient failed records from this session
             if not getattr(args, "no_auto_rerun", False):
                 from client.core.scraper import get_district_failed_and_missing, execute_district_rerun
-                audit = get_district_failed_and_missing(dist_code)
-                target_count = audit.get("failed_count", 0) + audit.get("missing_gaps_count", 0)
-                if target_count > 0:
-                    logging.info(f"[{dist_code}] 🔍 Initiating auto-recovery pass on {target_count} records ({audit.get('failed_count', 0)} timeouts/failures, {audit.get('missing_gaps_count', 0)} sequence gaps; skipping {audit.get('dereg_unreg_count', 0)} settled deregistered/unregistered)...")
+                audit = get_district_failed_and_missing(dist_code, min_seq_num=start_num)
+                failed_count = audit.get("failed_count", 0)
+                if failed_count > 0:
+                    logging.info(
+                        f"[{dist_code}] 🔍 Initiating auto-recovery pass on {failed_count} transient timeout/failed records "
+                        f"(skipping sequence gaps & {audit.get('dereg_unreg_count', 0)} settled deregistered/unregistered)..."
+                    )
                     try:
                         rerun_res = await execute_district_rerun(
                             prefix=dist_code,
-                            rerun_type="all",
+                            rerun_type="failed",
                             concurrency=args.concurrency,
-                            update_archive=False
+                            update_archive=False,
+                            min_seq_num=start_num
                         )
                         recovered = rerun_res.get("recovered", 0)
                         if recovered > 0:
                             logging.info(f"[{dist_code}] 🎉 Auto-recovery recovered {recovered} records!")
-                        updated_audit = get_district_failed_and_missing(dist_code)
-                        res["total_extracted"] = updated_audit["total_extracted"]
+                        updated_audit = get_district_failed_and_missing(dist_code, min_seq_num=start_num)
+                        res["total_extracted"] = res.get("total_extracted", 0) + recovered
                         res["total_failed"] = updated_audit["failed_count"]
                         res["total_dereg_unreg"] = updated_audit["dereg_unreg_count"]
                     except Exception as e:
                         logging.warning(f"[{dist_code}] Auto-recovery pass encountered error: {e}")
                 else:
-                    res["total_failed"] = audit.get("failed_count", 0)
+                    logging.info(f"[{dist_code}] Clean run! 0 transient failures to recover.")
+                    res["total_failed"] = 0
                     res["total_dereg_unreg"] = audit.get("dereg_unreg_count", 0)
 
             final_record = res.get("last_record") or last_record
             final_dor = res.get("last_dor") or last_dor
             
-            # Ensure total_extracted takes the union of archive + local folder results
-            final_audit = get_district_failed_and_missing(dist_code)
-            total_extracted = max(
-                final_audit.get("total_extracted", 0),
-                res.get("total_extracted", 0),
-                int(prev_extracted or 0)
-            )
+            # Ensure total_extracted reflects true nationwide ground truth (archive or accumulated)
+            final_audit = get_district_failed_and_missing(dist_code, min_seq_num=start_num)
+            archived_count = final_audit.get("total_extracted", 0)
+            base_count = int(prev_extracted or 0)
+            session_extracted = res.get("total_extracted", 0)
+
+            if archived_count > base_count:
+                total_extracted = archived_count
+            else:
+                total_extracted = base_count + session_extracted
+
             total_failed = final_audit.get("failed_count", 0)
 
             logging.info(f"District {dist_code} complete. Finalizing in Google Sheet (Total: {total_extracted}, Failures: {total_failed}, DOR: {final_dor})...")

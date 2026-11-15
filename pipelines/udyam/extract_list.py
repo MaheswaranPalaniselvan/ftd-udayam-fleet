@@ -52,6 +52,7 @@ from client.core.district_manager import (
     save_or_update_records_file,
     normalize_district_code
 )
+from client.core.scraper import get_browser_session_kwargs
 from scrapling.fetchers import AsyncStealthySession
 
 CSV_FIELDS = [
@@ -142,7 +143,7 @@ async def run_stage1_web_scraping(
 
     async def worker_task(worker_id: int):
         nonlocal processed_count
-        async with AsyncStealthySession(headless=True) as session:
+        async with AsyncStealthySession(**get_browser_session_kwargs(headless=True)) as session:
             page = await session.context.new_page()
             await page.route("**/*", abort_unnecessary_resources)
 
