@@ -58,6 +58,7 @@ def sync_files_to_laptop(client: paramiko.SSHClient):
         ".env",
         "extract_list.py",
         "deploy/setup_machine.ps1",
+        "scripts/audit_laptop_extracts.py",
     ]
 
     for p in Path("client").rglob("*.py"):

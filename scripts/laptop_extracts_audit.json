@@ -1,0 +1,390 @@
+{
+  "total_archives": 19,
+  "archives": [
+    {
+      "name": "DD-01.7z",
+      "size_mb": 19.62,
+      "mtime": "1789042058.0617487"
+    },
+    {
+      "name": "DD-02.7z",
+      "size_mb": 2.48,
+      "mtime": "1789041304.8698573"
+    },
+    {
+      "name": "DN-01.7z",
+      "size_mb": 16.92,
+      "mtime": "1789041943.3554575"
+    },
+    {
+      "name": "PY-04.7z",
+      "size_mb": 1.55,
+      "mtime": "1789041224.101943"
+    },
+    {
+      "name": "SK-01.7z",
+      "size_mb": 19.63,
+      "mtime": "1789018337.0168073"
+    },
+    {
+      "name": "TN-02.7z",
+      "size_mb": 449.43,
+      "mtime": "1788785732.528483"
+    },
+    {
+      "name": "TN-03 (2).7z",
+      "size_mb": 563.29,
+      "mtime": "1788786336.4541428"
+    },
+    {
+      "name": "TN-03.7z",
+      "size_mb": 71.88,
+      "mtime": "1789020414.6071014"
+    },
+    {
+      "name": "TN-18.7z",
+      "size_mb": 205.84,
+      "mtime": "1791403309.924938"
+    },
+    {
+      "name": "TN-19.7z",
+      "size_mb": 115.65,
+      "mtime": "1791397931.952555"
+    },
+    {
+      "name": "TN-24.7z",
+      "size_mb": 375.99,
+      "mtime": "1790154467.7725103"
+    },
+    {
+      "name": "TR-01.7z",
+      "size_mb": 20.92,
+      "mtime": "1789449791.6649666"
+    },
+    {
+      "name": "TR-02.7z",
+      "size_mb": 32.06,
+      "mtime": "1790088740.8001332"
+    },
+    {
+      "name": "TR-03.7z",
+      "size_mb": 21.28,
+      "mtime": "1790093799.653511"
+    },
+    {
+      "name": "TR-04.7z",
+      "size_mb": 35.33,
+      "mtime": "1790094985.6542246"
+    },
+    {
+      "name": "TR-05.7z",
+      "size_mb": 28.48,
+      "mtime": "1790095026.640727"
+    },
+    {
+      "name": "TR-06.7z",
+      "size_mb": 26.25,
+      "mtime": "1790094503.0570908"
+    },
+    {
+      "name": "TR-07.7z",
+      "size_mb": 19.14,
+      "mtime": "1790094145.9940891"
+    },
+    {
+      "name": "TR-08.7z",
+      "size_mb": 76.07,
+      "mtime": "1790096841.4607618"
+    }
+  ],
+  "total_folders": 41,
+  "folders": [
+    {
+      "district": "DD-01",
+      "html_count": 9140,
+      "xlsx_files": [],
+      "min_seq": 2,
+      "max_seq": 9967
+    },
+    {
+      "district": "DD-02",
+      "html_count": 1202,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 1298
+    },
+    {
+      "district": "DN-01",
+      "html_count": 7346,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 8021
+    },
+    {
+      "district": "OD-01",
+      "html_count": 51861,
+      "xlsx_files": [],
+      "min_seq": 2,
+      "max_seq": 55668
+    },
+    {
+      "district": "OD-02",
+      "html_count": 53835,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 57719
+    },
+    {
+      "district": "OD-03",
+      "html_count": 104875,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 111574
+    },
+    {
+      "district": "OD-04",
+      "html_count": 57926,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 61680
+    },
+    {
+      "district": "OD-05",
+      "html_count": 74984,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 79951
+    },
+    {
+      "district": "OD-06",
+      "html_count": 14567,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 16011
+    },
+    {
+      "district": "OD-07",
+      "html_count": 139686,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 147755
+    },
+    {
+      "district": "OD-08",
+      "html_count": 10308,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 11174
+    },
+    {
+      "district": "OD-09",
+      "html_count": 48107,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 50760
+    },
+    {
+      "district": "OD-10",
+      "html_count": 14984,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 16000
+    },
+    {
+      "district": "OD-11",
+      "html_count": 127536,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 134596
+    },
+    {
+      "district": "OD-12",
+      "html_count": 49077,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 51982
+    },
+    {
+      "district": "OD-13",
+      "html_count": 73577,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 77781
+    },
+    {
+      "district": "OD-14",
+      "html_count": 24769,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 26400
+    },
+    {
+      "district": "OD-15",
+      "html_count": 43766,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 46270
+    },
+    {
+      "district": "OD-16",
+      "html_count": 18602,
+      "xlsx_files": [],
+      "min_seq": 2,
+      "max_seq": 19739
+    },
+    {
+      "district": "OD-17",
+      "html_count": 53893,
+      "xlsx_files": [],
+      "min_seq": 2,
+      "max_seq": 57228
+    },
+    {
+      "district": "OD-18",
+      "html_count": 1849,
+      "xlsx_files": [],
+      "min_seq": 3,
+      "max_seq": 2022
+    },
+    {
+      "district": "OD-19",
+      "html_count": 1,
+      "xlsx_files": [],
+      "min_seq": 38,
+      "max_seq": 38
+    },
+    {
+      "district": "OD-28",
+      "html_count": 328,
+      "xlsx_files": [],
+      "min_seq": 18,
+      "max_seq": 392
+    },
+    {
+      "district": "PY-02",
+      "html_count": 710,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 768
+    },
+    {
+      "district": "PY-04",
+      "html_count": 759,
+      "xlsx_files": [],
+      "min_seq": 3,
+      "max_seq": 839
+    },
+    {
+      "district": "SK-01",
+      "html_count": 10131,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 11011
+    },
+    {
+      "district": "TN-02",
+      "html_count": 275862,
+      "xlsx_files": [],
+      "min_seq": 339,
+      "max_seq": 501304
+    },
+    {
+      "district": "TN-03",
+      "html_count": 34620,
+      "xlsx_files": [],
+      "min_seq": 297065,
+      "max_seq": 348932
+    },
+    {
+      "district": "TN-11",
+      "html_count": 124107,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 132800
+    },
+    {
+      "district": "TN-18",
+      "html_count": 102405,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 111138
+    },
+    {
+      "district": "TN-19",
+      "html_count": 58814,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 65546
+    },
+    {
+      "district": "TN-24",
+      "html_count": 183905,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 194973
+    },
+    {
+      "district": "TN-30",
+      "html_count": 110263,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 123016
+    },
+    {
+      "district": "TR-01",
+      "html_count": 10870,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 11392
+    },
+    {
+      "district": "TR-02",
+      "html_count": 17149,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 17999
+    },
+    {
+      "district": "TR-03",
+      "html_count": 11309,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 11896
+    },
+    {
+      "district": "TR-04",
+      "html_count": 18439,
+      "xlsx_files": [],
+      "min_seq": 4,
+      "max_seq": 19510
+    },
+    {
+      "district": "TR-05",
+      "html_count": 15082,
+      "xlsx_files": [],
+      "min_seq": 1,
+      "max_seq": 15829
+    },
+    {
+      "district": "TR-06",
+      "html_count": 13682,
+      "xlsx_files": [],
+      "min_seq": 2,
+      "max_seq": 14450
+    },
+    {
+      "district": "TR-07",
+      "html_count": 10111,
+      "xlsx_files": [],
+      "min_seq": 2,
+      "max_seq": 11826
+    },
+    {
+      "district": "TR-08",
+      "html_count": 38535,
+      "xlsx_files": [],
+      "min_seq": 4,
+      "max_seq": 40807
+    }
+  ]
+}
