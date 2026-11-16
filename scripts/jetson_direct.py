@@ -109,6 +109,9 @@ def sync_files_to_jetson(client: paramiko.SSHClient):
         "client/app.py",
         "client/core/scraper.py",
         "client/core/coordinator.py",
+        "client/core/district_manager.py",
+        "client/core/districts_universe.json",
+        "client/core/archiver.py",
         "extract_list.py",
     ]
     

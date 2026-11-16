@@ -57,6 +57,7 @@ def sync_files_to_laptop(client: paramiko.SSHClient):
         ".python-version",
         ".env",
         "extract_list.py",
+        "client/core/districts_universe.json",
         "deploy/setup_machine.ps1",
         "deploy/start_laptop_daemon.ps1",
         "scripts/audit_laptop_extracts.py",

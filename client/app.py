@@ -256,30 +256,50 @@ def run_headless_cli(args):
                 logging.info(f"Target districts ({args.max_districts}) completed. Worker stopping gracefully.")
                 break
 
-            logging.info("Claiming next task from central coordinator (least pending priority)...")
-            claim_res = await coordinator.claim_task(preferred_state=preferred_state_arg, preferred_district=args.district)
-
             dist_code = None
             start_num = 1
             limit = 500000
             prev_extracted = 0
             last_record = ""
             last_dor = ""
+            claim_succeeded = False
 
-            if claim_res.get("success"):
-                dist_code = claim_res.get("district_code")
-                start_num = claim_res.get("start_num", 1)
-                limit = claim_res.get("limit", 500000)
-                prev_extracted = int(claim_res.get("prev_extracted") or 0)
-                last_record = claim_res.get("last_record", "")
-                last_dor = claim_res.get("last_dor", "")
-                pending_count = claim_res.get("pending", "N/A")
-                claim_attempts = 0
-                logging.info(f"Coordinator Assigned Task: {dist_code} (Pending: {pending_count}, Resuming #{start_num})")
-            else:
+            # Attempt to claim with coordinator in order of least pending
+            while state_queue or args.district:
+                target_cand = args.district or (state_queue[0] if state_queue else None)
+                logging.info(f"Requesting task lease from central coordinator: {target_cand or preferred_state_arg or 'any'} (least pending priority)...")
+                claim_res = await coordinator.claim_task(
+                    preferred_state=(None if target_cand else preferred_state_arg),
+                    preferred_district=target_cand
+                )
+                if claim_res.get("success"):
+                    dist_code = claim_res.get("district_code")
+                    start_num = claim_res.get("start_num", 1)
+                    limit = claim_res.get("limit", 500000)
+                    prev_extracted = int(claim_res.get("prev_extracted") or 0)
+                    last_record = claim_res.get("last_record", "")
+                    last_dor = claim_res.get("last_dor", "")
+                    pending_count = claim_res.get("pending", "N/A")
+                    claim_attempts = 0
+                    claim_succeeded = True
+                    if state_queue and state_queue[0] == dist_code:
+                        state_queue.pop(0)
+                    logging.info(f"Coordinator Assigned Task: {dist_code} (Pending: {pending_count}, Resuming #{start_num})")
+                    break
+                else:
+                    msg = claim_res.get("message", "No available districts matching criteria.")
+                    logging.warning(f"Coordinator claim rejected for {target_cand}: {msg}")
+                    if args.district:
+                        break  # User requested specific district, don't fallback to another district
+                    if state_queue:
+                        skipped = state_queue.pop(0)
+                        logging.info(f"Skipping already leased/unavailable {skipped}, checking next least-pending candidate...")
+                    else:
+                        break
+
+            if not claim_succeeded:
                 claim_attempts += 1
-                msg = claim_res.get("message", "No available districts matching criteria.")
-                logging.warning(f"Coordinator claim: {msg}. (Attempt {claim_attempts})")
+                logging.warning(f"Coordinator could not grant lease. Attempt {claim_attempts}")
 
                 if args.district:
                     # DIRECT DISTRICT OVERRIDE:
@@ -292,7 +312,6 @@ def run_headless_cli(args):
                     logging.info(f"Direct District Override: Proceeding with {dist_code} (Resuming from #{start_num}, Last DOR: {last_dor or 'None'}).")
                 elif state_queue:
                     # LOCAL LEAST-PENDING PRIORITY QUEUE:
-                    # Advance through districts ordered by least pending
                     dist_code = state_queue.pop(0)
                     last_info = find_district_last_number(dist_code)
                     start_num = max(1, last_info.get("max_number", 0) + 1)
@@ -302,7 +321,6 @@ def run_headless_cli(args):
                     logging.info(f"Local Least-Pending Sequence: Claiming {dist_code} ({len(state_queue)} remaining in queue, Resuming from #{start_num}).")
                 else:
                     # FLEET AUTONOMOUS FALLBACK:
-                    # Pick from least pending districts across India
                     uncompleted = [d for d in get_districts_by_least_pending() if d.get("status", "").lower() != "completed" and d.get("pending", 0) > 0]
                     if uncompleted:
                         import hashlib

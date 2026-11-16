@@ -107,6 +107,7 @@ def sync_files_to_pi(client: paramiko.SSHClient):
         "client/core/scraper.py",
         "client/core/coordinator.py",
         "client/core/district_manager.py",
+        "client/core/districts_universe.json",
         "client/core/ocr.py",
         "client/core/parser.py",
         "client/core/archiver.py",
