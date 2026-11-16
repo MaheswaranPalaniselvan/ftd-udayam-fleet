@@ -259,7 +259,10 @@ async def process_udyam_number(page: Page, udyam_number: str) -> tuple[str, str,
 
             if not image_bytes:
                 captcha_img = page.locator('#ctl00_ContentPlaceHolder1_imgCaptcha')
-                await page.wait_for_function("document.getElementById('ctl00_ContentPlaceHolder1_imgCaptcha')?.complete", timeout=2000)
+                try:
+                    await page.wait_for_function("document.getElementById('ctl00_ContentPlaceHolder1_imgCaptcha')?.complete", timeout=6000)
+                except Exception:
+                    pass
                 image_bytes = await captcha_img.screenshot()
 
             captcha_text = await solve_captcha(image_bytes)
