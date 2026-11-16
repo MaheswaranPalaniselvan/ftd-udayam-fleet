@@ -2781,7 +2781,9 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
         const resp = await fetch(`${{FLEET_API_URL}}?action=fleet_status`);
         const data = await resp.json();
         if (data && data.status === 'ok') {{
-          fleetRawData = data.active_workers || [];
+          // Filter out deprecated GitHub workers as fleet is 100% local hardware now
+          fleetRawData = (data.active_workers || []).filter(w => !((w.machine || '').toLowerCase().startsWith('github-worker')));
+          data.active_workers = fleetRawData;
           updateFleetUI(data);
           applyLiveCoverageOverlay(data);
           if (msg) msg.textContent = `Last synced: ${{new Date().toLocaleTimeString()}} (auto-refresh 15s)`;
@@ -2836,7 +2838,7 @@ def generate_drilldown_html(data: dict, logo_b64: str, output_path: Path):
       const activeWorkers = data.active_workers || [];
       const activeMap = new Map();
       activeWorkers.forEach(w => {{
-        if (w.district) {{
+        if (w.district && (w.minutesAgo || 0) <= 30) {{
           activeMap.set(w.district.toUpperCase().trim(), w);
         }}
       }});

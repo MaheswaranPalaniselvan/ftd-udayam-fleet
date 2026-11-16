@@ -62,3 +62,6 @@ gsheet_cache.json
 gsheet_live_backup.csv
 github-pages/
 .wrangler/
+
+staging/
+

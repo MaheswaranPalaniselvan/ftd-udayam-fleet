@@ -10,6 +10,7 @@ Handles:
 
 import csv
 import io
+import json
 import os
 import re
 import shutil
@@ -128,78 +129,200 @@ def discover_all_districts(workspace_dir: Path = Path(".")) -> list[str]:
     return sorted(list(districts))
 
 
-def get_districts_for_state(state_prefix: str, workspace_dir: Path = Path(".")) -> list[str]:
+def clean_int(val) -> int:
+    """Safely parses integer counts, handling commas, floats, and strings."""
+    if val is None or val == "":
+        return 0
+    if isinstance(val, (int, float)):
+        return int(val)
+    cleaned = str(val).replace(",", "").strip()
+    try:
+        return int(float(cleaned))
+    except ValueError:
+        digits = re.sub(r"[^\d]", "", cleaned.split(".")[0])
+        return int(digits) if digits else 0
+
+
+def load_universe_districts(workspace_dir: Path = Path(".")) -> list[dict]:
     """
-    Returns the ordered list of all district codes for a given state prefix (e.g. 'TN' -> ['TN-01', ..., 'TN-38']).
-    Sources from public/column_B_all_districts.csv if present.
+    Loads all known districts across India with total universe and current progress.
+    Sources from client/core/districts_universe.json, public/udayam_latest.xlsx,
+    or public/column_B_all_districts.csv, and merges latest sync_report.csv data.
     """
-    st = state_prefix.strip().upper()
-    csv_path = workspace_dir / "public" / "column_B_all_districts.csv"
-    districts = []
-    if csv_path.is_file():
+    workspace_dir = Path(workspace_dir)
+    data = []
+
+    # 1. Primary: districts_universe.json
+    json_path = Path(__file__).resolve().parent / "districts_universe.json"
+    if not json_path.is_file():
+        json_path = workspace_dir / "client" / "core" / "districts_universe.json"
+
+    if json_path.is_file():
         try:
-            with open(csv_path, "r", encoding="utf-8", errors="replace") as f:
-                reader = csv.DictReader(f)
-                for r in reader:
-                    if r.get("Level") == "District":
-                        code = r.get("Assigned District Code", "").strip().upper()
-                        if code.startswith(f"{st}-") and code not in districts:
-                            districts.append(code)
+            with open(json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            data = []
+
+    # 2. Secondary: udayam_latest.xlsx if json wasn't available
+    if not data:
+        xlsx_path = workspace_dir / "public" / "udayam_latest.xlsx"
+        if xlsx_path.is_file():
+            try:
+                wb = openpyxl.load_workbook(xlsx_path, data_only=True)
+                ws = wb["Universe"]
+                for r in ws.iter_rows(min_row=2, values_only=True):
+                    if r[0] != "District":
+                        continue
+                    code = (r[1] or "").strip().upper()
+                    if not code or "-" not in code:
+                        continue
+                    st_code = code.split("-")[0]
+                    st_name = (r[2] or "").strip()
+                    dist_name = (r[3] or "").strip()
+                    total = clean_int(r[7])
+                    extracted = clean_int(r[11])
+                    status = (r[13] or "Pending").strip()
+                    pending = max(0, total - extracted)
+                    data.append({
+                        "code": code,
+                        "state_code": st_code,
+                        "state_name": st_name,
+                        "district_name": dist_name,
+                        "total": total,
+                        "extracted": extracted,
+                        "pending": pending,
+                        "status": status
+                    })
+                wb.close()
+            except Exception:
+                data = []
+
+    # 3. Tertiary fallback: column_B_all_districts.csv
+    if not data:
+        col_b = workspace_dir / "public" / "column_B_all_districts.csv"
+        if col_b.is_file():
+            try:
+                with open(col_b, "r", encoding="utf-8", errors="replace") as f:
+                    for r in csv.DictReader(f):
+                        if r.get("Level") == "District":
+                            code = r.get("Assigned District Code", "").strip().upper()
+                            name = r.get("District Name", "").strip()
+                            state = r.get("State/UT", "").strip()
+                            st_code = code.split("-")[0] if "-" in code else ""
+                            if code:
+                                data.append({
+                                    "code": code,
+                                    "state_code": st_code,
+                                    "state_name": state,
+                                    "district_name": name,
+                                    "total": 0,
+                                    "extracted": 0,
+                                    "pending": 0,
+                                    "status": "Pending"
+                                })
+            except Exception:
+                data = []
+
+    # Merge latest local sync_report.csv
+    sync_csv = workspace_dir / "sync_report.csv"
+    if sync_csv.is_file():
+        try:
+            with open(sync_csv, "r", encoding="utf-8", errors="replace") as f:
+                sync_map = {}
+                for r in csv.DictReader(f):
+                    c = r.get("District Code", "").strip().upper()
+                    if c:
+                        sync_map[c] = {
+                            "extracted": clean_int(r.get("Total Extracted", 0)),
+                            "dor": r.get("Last Recorded Date", "").strip(),
+                            "status": r.get("Status", "").strip()
+                        }
+                for item in data:
+                    c = item["code"]
+                    if c in sync_map:
+                        ext = sync_map[c]["extracted"]
+                        if ext > item["extracted"]:
+                            item["extracted"] = ext
+                            item["pending"] = max(0, item["total"] - ext)
+                        if sync_map[c]["status"]:
+                            item["status"] = sync_map[c]["status"]
+                        if sync_map[c]["dor"]:
+                            item["dor"] = sync_map[c]["dor"]
         except Exception:
             pass
-    if not districts:
-        for i in range(1, 45):
-            districts.append(f"{st}-{i:02d}")
-    return districts
+
+    return data
+
+
+def get_districts_by_least_pending(workspace_dir: Path = Path("."), state: Optional[str] = None) -> list[dict]:
+    """
+    Returns districts sorted by minimum pending records to be extracted next.
+    Incomplete districts (pending > 0 or status != 'Completed') come first,
+    sorted by pending ASC.
+    If state is provided, filters to that state.
+    """
+    districts = load_universe_districts(workspace_dir)
+    if state and state.strip().lower() != "least_pending":
+        st = state.strip().upper()
+        districts = [
+            d for d in districts
+            if d.get("state_code", "").upper() == st or d.get("code", "").upper().startswith(f"{st}-")
+        ]
+
+    def sort_key(d):
+        is_completed = (d.get("status", "").lower() == "completed" or (d.get("total", 0) > 0 and d.get("pending", 0) == 0))
+        # Uncompleted first (0), then by pending ASC, total ASC, code
+        return (1 if is_completed else 0, d.get("pending", 0), d.get("total", 0), d.get("code", ""))
+
+    return sorted(districts, key=sort_key)
+
+
+def get_states_by_least_pending(workspace_dir: Path = Path(".")) -> list[str]:
+    """
+    Returns list of state codes ordered by lowest total remaining pending records.
+    States with remaining incomplete districts come first, sorted by total pending ASC.
+    """
+    districts = load_universe_districts(workspace_dir)
+    state_agg = {}
+    for d in districts:
+        st = d.get("state_code", "").upper()
+        if not st:
+            continue
+        if st not in state_agg:
+            state_agg[st] = {"pending": 0, "completed": 0, "total_dist": 0}
+        state_agg[st]["total_dist"] += 1
+        is_completed = (d.get("status", "").lower() == "completed" or (d.get("total", 0) > 0 and d.get("pending", 0) == 0))
+        if is_completed:
+            state_agg[st]["completed"] += 1
+        else:
+            state_agg[st]["pending"] += d.get("pending", 0)
+
+    sorted_states = sorted(
+        state_agg.items(),
+        key=lambda x: (1 if x[1]["completed"] == x[1]["total_dist"] else 0, x[1]["pending"])
+    )
+    return [s[0] for s in sorted_states]
+
+
+def get_districts_for_state(state_prefix: str, workspace_dir: Path = Path(".")) -> list[str]:
+    """
+    Returns the ordered list of all district codes for a given state prefix,
+    sorted by minimum number of pending records to be extracted next!
+    """
+    sorted_dists = get_districts_by_least_pending(workspace_dir=workspace_dir, state=state_prefix)
+    if sorted_dists:
+        return [d["code"] for d in sorted_dists]
+    st = state_prefix.strip().upper()
+    return [f"{st}-{i:02d}" for i in range(1, 45)]
 
 
 def discover_stale_or_unstarted_districts(workspace_dir: Path = Path(".")) -> list[dict]:
     """
     Returns an indexed list of districts across India, prioritizing unstarted
-    and oldest-harvested districts for autonomous fleet worker distribution.
+    and lowest-pending districts for autonomous fleet worker distribution.
     """
-    all_districts = []
-    col_b = workspace_dir / "public" / "column_B_all_districts.csv"
-    if col_b.is_file():
-        try:
-            with open(col_b, "r", encoding="utf-8", errors="replace") as f:
-                for r in csv.DictReader(f):
-                    if r.get("Level") == "District":
-                        code = r.get("Assigned District Code", "").strip().upper()
-                        name = r.get("District Name", "").strip()
-                        state = r.get("State/UT", "").strip()
-                        if "-" in code:
-                            all_districts.append({
-                                "code": code,
-                                "name": name,
-                                "state": state,
-                                "dor": "None",
-                                "extracted": 0
-                            })
-        except Exception:
-            pass
-
-    known = {}
-    sync_csv = workspace_dir / "sync_report.csv"
-    if sync_csv.is_file():
-        try:
-            with open(sync_csv, "r", encoding="utf-8", errors="replace") as f:
-                for r in csv.DictReader(f):
-                    c = r.get("District Code", "").strip().upper()
-                    known[c] = {
-                        "dor": r.get("Last Recorded Date", "").strip(),
-                        "extracted": int(r.get("Total Extracted", 0) or 0)
-                    }
-        except Exception:
-            pass
-
-    for d in all_districts:
-        c = d["code"]
-        if c in known:
-            d["dor"] = known[c]["dor"]
-            d["extracted"] = known[c]["extracted"]
-
-    return all_districts
+    return get_districts_by_least_pending(workspace_dir=workspace_dir)
 
 
 def find_district_last_number(district: str, workspace_dir: Path = Path(".")) -> dict:

@@ -1,0 +1,7852 @@
+[
+  {
+    "code": "AN-01",
+    "state_code": "AN",
+    "state_name": "Andaman and Nicobar Islands",
+    "district_name": "South Andamans",
+    "total": 15185,
+    "extracted": 256,
+    "pending": 14929,
+    "status": "Completed"
+  },
+  {
+    "code": "AN-02",
+    "state_code": "AN",
+    "state_name": "Andaman and Nicobar Islands",
+    "district_name": "Nikobars",
+    "total": 707,
+    "extracted": 1,
+    "pending": 706,
+    "status": "Completed"
+  },
+  {
+    "code": "AN-03",
+    "state_code": "AN",
+    "state_name": "Andaman and Nicobar Islands",
+    "district_name": "North and Middle Andaman",
+    "total": 2883,
+    "extracted": 3233,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "AP-01",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Alluri Sitharama Raju",
+    "total": 8998,
+    "extracted": 5044,
+    "pending": 3954,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-02",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Anakapalli",
+    "total": 41694,
+    "extracted": 1540,
+    "pending": 40154,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-03",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Ananthapur",
+    "total": 126244,
+    "extracted": 11190,
+    "pending": 115054,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-04",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Annamayya",
+    "total": 61913,
+    "extracted": 5,
+    "pending": 61908,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-05",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Bapatla",
+    "total": 43690,
+    "extracted": 1743,
+    "pending": 41947,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-06",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Chitoor",
+    "total": 102388,
+    "extracted": 1777,
+    "pending": 100611,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-07",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "East Godavari",
+    "total": 110727,
+    "extracted": 1672,
+    "pending": 109055,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-08",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Eluru",
+    "total": 64079,
+    "extracted": 1534,
+    "pending": 62545,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-09",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Guntur",
+    "total": 128097,
+    "extracted": 1594,
+    "pending": 126503,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-10",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Kakinada",
+    "total": 74647,
+    "extracted": 1743,
+    "pending": 72904,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-11",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Konaseema",
+    "total": 49701,
+    "extracted": 2469,
+    "pending": 47232,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-12",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Krishna",
+    "total": 115163,
+    "extracted": 4356,
+    "pending": 110807,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-13",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Kurnool",
+    "total": 115048,
+    "extracted": 3858,
+    "pending": 111190,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-14",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Nandyal",
+    "total": 63159,
+    "extracted": 21,
+    "pending": 63138,
+    "status": "Completed"
+  },
+  {
+    "code": "AP-15",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Ntr",
+    "total": 94409,
+    "extracted": 1379,
+    "pending": 93030,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-16",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Palnadu",
+    "total": 61203,
+    "extracted": 2306,
+    "pending": 58897,
+    "status": "Completed"
+  },
+  {
+    "code": "AP-17",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Parvathipuram Manyam",
+    "total": 14289,
+    "extracted": 3263,
+    "pending": 11026,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-18",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Prakasam",
+    "total": 86489,
+    "extracted": 3532,
+    "pending": 82957,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-19",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Spsr Nellore",
+    "total": 111823,
+    "extracted": 3854,
+    "pending": 107969,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-20",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Sri Sathya Sai",
+    "total": 57227,
+    "extracted": 3845,
+    "pending": 53382,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-21",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Srikakulam",
+    "total": 65147,
+    "extracted": 3919,
+    "pending": 61228,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-22",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Tirupati",
+    "total": 80916,
+    "extracted": 2868,
+    "pending": 78048,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-23",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Visakhapatnam",
+    "total": 127315,
+    "extracted": 3749,
+    "pending": 123566,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-24",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Vizianagaram",
+    "total": 58322,
+    "extracted": 4253,
+    "pending": 54069,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-25",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "West Godavari",
+    "total": 113053,
+    "extracted": 4132,
+    "pending": 108921,
+    "status": "In Progress"
+  },
+  {
+    "code": "AP-26",
+    "state_code": "AP",
+    "state_name": "Andhra Pradesh",
+    "district_name": "Y.S.R",
+    "total": 108917,
+    "extracted": 2913,
+    "pending": 106004,
+    "status": "In Progress"
+  },
+  {
+    "code": "AR-01",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Anjaw",
+    "total": 242,
+    "extracted": 292,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-02",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Lower Dibang Valley",
+    "total": 1413,
+    "extracted": 1615,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-03",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Changlang",
+    "total": 1725,
+    "extracted": 1986,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-04",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Longding",
+    "total": 438,
+    "extracted": 584,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-05",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Dibang Valley",
+    "total": 181,
+    "extracted": 205,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-06",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "East Kameng",
+    "total": 901,
+    "extracted": 443,
+    "pending": 458,
+    "status": "Completed"
+  },
+  {
+    "code": "AR-07",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "East Siang",
+    "total": 2113,
+    "extracted": 1279,
+    "pending": 834,
+    "status": "Completed"
+  },
+  {
+    "code": "AR-08",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Lohit",
+    "total": 1334,
+    "extracted": 661,
+    "pending": 673,
+    "status": "Completed"
+  },
+  {
+    "code": "AR-09",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Lower Subansiri",
+    "total": 1606,
+    "extracted": 804,
+    "pending": 802,
+    "status": "Completed"
+  },
+  {
+    "code": "AR-10",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Papum Pare",
+    "total": 9731,
+    "extracted": 11827,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-11",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Tawang",
+    "total": 872,
+    "extracted": 1083,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-12",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Tirap",
+    "total": 490,
+    "extracted": 583,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-13",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Upper Siang",
+    "total": 365,
+    "extracted": 434,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-14",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Upper Subansiri",
+    "total": 870,
+    "extracted": 1089,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-15",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "West Kameng",
+    "total": 2081,
+    "extracted": 2495,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-16",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "West Siang",
+    "total": 1156,
+    "extracted": 1447,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-17",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Kurung Kumey",
+    "total": 344,
+    "extracted": 521,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-18",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Kra Daadi",
+    "total": 365,
+    "extracted": 490,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-19",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Namsai",
+    "total": 2513,
+    "extracted": 2952,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-20",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Siang",
+    "total": 324,
+    "extracted": 411,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-21",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Kamle",
+    "total": 264,
+    "extracted": 305,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-22",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Lower Siang",
+    "total": 501,
+    "extracted": 617,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-23",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Leparada",
+    "total": 436,
+    "extracted": 494,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-24",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Pakke Kessang",
+    "total": 182,
+    "extracted": 261,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "AR-25",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Shi Yomi",
+    "total": 144,
+    "extracted": 188,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-26",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Keyi Panyor",
+    "total": 204,
+    "extracted": 333,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AR-27",
+    "state_code": "AR",
+    "state_name": "Arunachal Pradesh",
+    "district_name": "Bichom",
+    "total": 24,
+    "extracted": 75,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-01",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Bajali",
+    "total": 5358,
+    "extracted": 23947,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "AS-02",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Baksa",
+    "total": 18876,
+    "extracted": 639,
+    "pending": 18237,
+    "status": "In Progress"
+  },
+  {
+    "code": "AS-03",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Barpeta",
+    "total": 51692,
+    "extracted": 2258,
+    "pending": 49434,
+    "status": "In Progress"
+  },
+  {
+    "code": "AS-04",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Biswanath",
+    "total": 20646,
+    "extracted": 745,
+    "pending": 19901,
+    "status": "In Progress"
+  },
+  {
+    "code": "AS-05",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Bongaigaon",
+    "total": 25092,
+    "extracted": 87767,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "AS-06",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Cachar",
+    "total": 70945,
+    "extracted": 16985,
+    "pending": 53960,
+    "status": "Completed"
+  },
+  {
+    "code": "AS-07",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Charaideo",
+    "total": 12814,
+    "extracted": 52581,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "AS-08",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Chirang",
+    "total": 13641,
+    "extracted": 27666,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "AS-09",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Darrang",
+    "total": 39894,
+    "extracted": 1259,
+    "pending": 38635,
+    "status": "In Progress"
+  },
+  {
+    "code": "AS-10",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Dhemaji",
+    "total": 22692,
+    "extracted": 716,
+    "pending": 21976,
+    "status": "In Progress"
+  },
+  {
+    "code": "AS-11",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Dhubri",
+    "total": 44679,
+    "extracted": 3020,
+    "pending": 41659,
+    "status": "Completed"
+  },
+  {
+    "code": "AS-12",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Dibrugarh",
+    "total": 48145,
+    "extracted": 2977,
+    "pending": 45168,
+    "status": "In Progress"
+  },
+  {
+    "code": "AS-13",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Dima Hasao",
+    "total": 4980,
+    "extracted": 58,
+    "pending": 4922,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-14",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Goalpara",
+    "total": 29587,
+    "extracted": 20,
+    "pending": 29567,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-15",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Golaghat",
+    "total": 36788,
+    "extracted": 38,
+    "pending": 36750,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-16",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Hailakandi",
+    "total": 20199,
+    "extracted": 16,
+    "pending": 20183,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-17",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Hojai",
+    "total": 27543,
+    "extracted": 0,
+    "pending": 27543,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-18",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Jorhat",
+    "total": 33596,
+    "extracted": 28,
+    "pending": 33568,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-19",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Kamrup",
+    "total": 65986,
+    "extracted": 180,
+    "pending": 65806,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-20",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Kamrup Metro",
+    "total": 86439,
+    "extracted": 7,
+    "pending": 86432,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-21",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Karbi-Angelong",
+    "total": 14752,
+    "extracted": 55,
+    "pending": 14697,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-22",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Karimganj",
+    "total": 32311,
+    "extracted": 18,
+    "pending": 32293,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-23",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Kokrajhar",
+    "total": 26164,
+    "extracted": 52,
+    "pending": 26112,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-24",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Lakhimpur",
+    "total": 49916,
+    "extracted": 107,
+    "pending": 49809,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-25",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Majuli",
+    "total": 5031,
+    "extracted": 13,
+    "pending": 5018,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-26",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Marigaon",
+    "total": 29766,
+    "extracted": 26,
+    "pending": 29740,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-27",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Nagaon",
+    "total": 58396,
+    "extracted": 223,
+    "pending": 58173,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-28",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Nalbari",
+    "total": 37627,
+    "extracted": 63,
+    "pending": 37564,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-29",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Sivasagar",
+    "total": 29412,
+    "extracted": 12,
+    "pending": 29400,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-30",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Sonitpur",
+    "total": 39946,
+    "extracted": 68,
+    "pending": 39878,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-31",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "South Salmara Mancachar",
+    "total": 10605,
+    "extracted": 292,
+    "pending": 10313,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-32",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Tamulpur",
+    "total": 5498,
+    "extracted": 14,
+    "pending": 5484,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-33",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Tinsukia",
+    "total": 44843,
+    "extracted": 426,
+    "pending": 44417,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-34",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "Udalguri",
+    "total": 20047,
+    "extracted": 59,
+    "pending": 19988,
+    "status": "Pending"
+  },
+  {
+    "code": "AS-35",
+    "state_code": "AS",
+    "state_name": "Assam",
+    "district_name": "West Karbi Anglong",
+    "total": 4919,
+    "extracted": 40,
+    "pending": 4879,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-01",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Araria",
+    "total": 52795,
+    "extracted": 179,
+    "pending": 52616,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-02",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Arwal",
+    "total": 10341,
+    "extracted": 30,
+    "pending": 10311,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-03",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Aurangabad",
+    "total": 43178,
+    "extracted": 61,
+    "pending": 43117,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-04",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Banka",
+    "total": 33211,
+    "extracted": 59,
+    "pending": 33152,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-05",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Begusarai",
+    "total": 61268,
+    "extracted": 57,
+    "pending": 61211,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-06",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Bhagalpur",
+    "total": 75203,
+    "extracted": 13,
+    "pending": 75190,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-07",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Bhojpur",
+    "total": 39868,
+    "extracted": 81,
+    "pending": 39787,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-08",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Buxar",
+    "total": 26460,
+    "extracted": 19,
+    "pending": 26441,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-09",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Darbhanga",
+    "total": 68580,
+    "extracted": 199,
+    "pending": 68381,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-10",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Gaya",
+    "total": 88448,
+    "extracted": 108,
+    "pending": 88340,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-11",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Gopalganj",
+    "total": 41806,
+    "extracted": 34,
+    "pending": 41772,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-12",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Jamui",
+    "total": 28871,
+    "extracted": 45,
+    "pending": 28826,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-13",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Jehanabad",
+    "total": 17008,
+    "extracted": 41,
+    "pending": 16967,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-14",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Kaimur (Bhabua)",
+    "total": 21799,
+    "extracted": 46,
+    "pending": 21753,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-15",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Katihar",
+    "total": 60045,
+    "extracted": 416,
+    "pending": 59629,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-16",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Khagaria",
+    "total": 29326,
+    "extracted": 111,
+    "pending": 29215,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-17",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Kishanganj",
+    "total": 27711,
+    "extracted": 49,
+    "pending": 27662,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-18",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Lakhisarai",
+    "total": 15263,
+    "extracted": 27,
+    "pending": 15236,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-19",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Madhepura",
+    "total": 35474,
+    "extracted": 91,
+    "pending": 35383,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-20",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Madhubani",
+    "total": 69721,
+    "extracted": 40,
+    "pending": 69681,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-21",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Munger",
+    "total": 25983,
+    "extracted": 93,
+    "pending": 25890,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-22",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Muzaffarpur",
+    "total": 117970,
+    "extracted": 193,
+    "pending": 117777,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-23",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Nalanda",
+    "total": 51755,
+    "extracted": 15,
+    "pending": 51740,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-24",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Nawada",
+    "total": 35467,
+    "extracted": 89,
+    "pending": 35378,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-25",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Pashchim Champaran",
+    "total": 64929,
+    "extracted": 389,
+    "pending": 64540,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-26",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Patna",
+    "total": 220102,
+    "extracted": 104,
+    "pending": 219998,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-27",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Purbi Champaran",
+    "total": 105485,
+    "extracted": 27,
+    "pending": 105458,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-28",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Purnia",
+    "total": 80590,
+    "extracted": 7,
+    "pending": 80583,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-29",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Rohtas",
+    "total": 50356,
+    "extracted": 49,
+    "pending": 50307,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-30",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Saharsa",
+    "total": 35685,
+    "extracted": 183,
+    "pending": 35502,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-31",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Samastipur",
+    "total": 84022,
+    "extracted": 105,
+    "pending": 83917,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-32",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Saran",
+    "total": 58860,
+    "extracted": 5,
+    "pending": 58855,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-33",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Sheikhpura",
+    "total": 11381,
+    "extracted": 32,
+    "pending": 11349,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-34",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Sheohar",
+    "total": 11008,
+    "extracted": 1279,
+    "pending": 9729,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-35",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Sitamarhi",
+    "total": 57603,
+    "extracted": 35,
+    "pending": 57568,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-36",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Siwan",
+    "total": 50368,
+    "extracted": 244,
+    "pending": 50124,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-37",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Supaul",
+    "total": 46338,
+    "extracted": 22,
+    "pending": 46316,
+    "status": "Pending"
+  },
+  {
+    "code": "BR-38",
+    "state_code": "BR",
+    "state_name": "Bihar",
+    "district_name": "Vaishali",
+    "total": 76789,
+    "extracted": 28,
+    "pending": 76761,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-01",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Balod",
+    "total": 18256,
+    "extracted": 78,
+    "pending": 18178,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-02",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Balod Bazar",
+    "total": 25105,
+    "extracted": 2764,
+    "pending": 22341,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-03",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Balrampur",
+    "total": 9667,
+    "extracted": 118,
+    "pending": 9549,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-04",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Bastar",
+    "total": 19310,
+    "extracted": 654,
+    "pending": 18656,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-05",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Bemetara",
+    "total": 16024,
+    "extracted": 195,
+    "pending": 15829,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-06",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Bijapur",
+    "total": 3101,
+    "extracted": 14,
+    "pending": 3087,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-07",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Bilaspur",
+    "total": 65264,
+    "extracted": 1329,
+    "pending": 63935,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-08",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Dantewada",
+    "total": 5302,
+    "extracted": 9,
+    "pending": 5293,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-09",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Dhamtari",
+    "total": 21927,
+    "extracted": 1720,
+    "pending": 20207,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-10",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Durg",
+    "total": 71927,
+    "extracted": 706,
+    "pending": 71221,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-11",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Gariaband",
+    "total": 13302,
+    "extracted": 269,
+    "pending": 13033,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-12",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Gaurella Pendra Marwahi",
+    "total": 5299,
+    "extracted": 205,
+    "pending": 5094,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-13",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Janjgir-Champa",
+    "total": 34695,
+    "extracted": 34,
+    "pending": 34661,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-14",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Jashpur",
+    "total": 14288,
+    "extracted": 1,
+    "pending": 14287,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-15",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Kabirdham",
+    "total": 17349,
+    "extracted": 156,
+    "pending": 17193,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-16",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Kanker",
+    "total": 16438,
+    "extracted": 32,
+    "pending": 16406,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-17",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Khairgarh Chhuikhadan Gandai",
+    "total": 5371,
+    "extracted": 40,
+    "pending": 5331,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-18",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Kondagaon",
+    "total": 11057,
+    "extracted": 136,
+    "pending": 10921,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-19",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Korba",
+    "total": 33514,
+    "extracted": 1589,
+    "pending": 31925,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-20",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Korea",
+    "total": 10055,
+    "extracted": 27,
+    "pending": 10028,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-21",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Mahasamund",
+    "total": 25912,
+    "extracted": 2058,
+    "pending": 23854,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-22",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Manendragarh Chirimiri Bharatpur",
+    "total": 5186,
+    "extracted": 79,
+    "pending": 5107,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-23",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Mohla Manpur Ambagarh Chouki",
+    "total": 3102,
+    "extracted": 62,
+    "pending": 3040,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-24",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Mungeli",
+    "total": 13120,
+    "extracted": 99,
+    "pending": 13021,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-25",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Narayanpur",
+    "total": 2449,
+    "extracted": 126,
+    "pending": 2323,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-26",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Raigarh",
+    "total": 36128,
+    "extracted": 2163,
+    "pending": 33965,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-27",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Raipur",
+    "total": 133316,
+    "extracted": 35,
+    "pending": 133281,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-28",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Rajnandagaon",
+    "total": 35047,
+    "extracted": 2602,
+    "pending": 32445,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-29",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Sakti",
+    "total": 8318,
+    "extracted": 58,
+    "pending": 8260,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-30",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Sarangarh Bilaigarh",
+    "total": 7004,
+    "extracted": 232,
+    "pending": 6772,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-31",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Sukma",
+    "total": 2564,
+    "extracted": 77,
+    "pending": 2487,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-32",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Surajpur",
+    "total": 12516,
+    "extracted": 118,
+    "pending": 12398,
+    "status": "Pending"
+  },
+  {
+    "code": "CG-33",
+    "state_code": "CG",
+    "state_name": "Chhattisgarh",
+    "district_name": "Surguja",
+    "total": 23090,
+    "extracted": 283,
+    "pending": 22807,
+    "status": "Pending"
+  },
+  {
+    "code": "CH-01",
+    "state_code": "CH",
+    "state_name": "Chandigarh",
+    "district_name": "Chandigarh",
+    "total": 63269,
+    "extracted": 70829,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "DL-01",
+    "state_code": "DL",
+    "state_name": "Delhi",
+    "district_name": "Central",
+    "total": 76620,
+    "extracted": 177,
+    "pending": 76443,
+    "status": "Pending"
+  },
+  {
+    "code": "DL-02",
+    "state_code": "DL",
+    "state_name": "Delhi",
+    "district_name": "East",
+    "total": 112530,
+    "extracted": 67346,
+    "pending": 45184,
+    "status": "Pending"
+  },
+  {
+    "code": "DL-03",
+    "state_code": "DL",
+    "state_name": "Delhi",
+    "district_name": "New Delhi",
+    "total": 76698,
+    "extracted": 103,
+    "pending": 76595,
+    "status": "Pending"
+  },
+  {
+    "code": "DL-04",
+    "state_code": "DL",
+    "state_name": "Delhi",
+    "district_name": "North",
+    "total": 72330,
+    "extracted": 232,
+    "pending": 72098,
+    "status": "Pending"
+  },
+  {
+    "code": "DL-05",
+    "state_code": "DL",
+    "state_name": "Delhi",
+    "district_name": "North East",
+    "total": 79884,
+    "extracted": 223,
+    "pending": 79661,
+    "status": "Pending"
+  },
+  {
+    "code": "DL-06",
+    "state_code": "DL",
+    "state_name": "Delhi",
+    "district_name": "North West",
+    "total": 198877,
+    "extracted": 22,
+    "pending": 198855,
+    "status": "Pending"
+  },
+  {
+    "code": "DL-07",
+    "state_code": "DL",
+    "state_name": "Delhi",
+    "district_name": "Shahdara",
+    "total": 22806,
+    "extracted": 205,
+    "pending": 22601,
+    "status": "Pending"
+  },
+  {
+    "code": "DL-08",
+    "state_code": "DL",
+    "state_name": "Delhi",
+    "district_name": "South",
+    "total": 120899,
+    "extracted": 126,
+    "pending": 120773,
+    "status": "Pending"
+  },
+  {
+    "code": "DL-09",
+    "state_code": "DL",
+    "state_name": "Delhi",
+    "district_name": "South East",
+    "total": 46148,
+    "extracted": 147,
+    "pending": 46001,
+    "status": "Pending"
+  },
+  {
+    "code": "DL-10",
+    "state_code": "DL",
+    "state_name": "Delhi",
+    "district_name": "South West",
+    "total": 113857,
+    "extracted": 28,
+    "pending": 113829,
+    "status": "Pending"
+  },
+  {
+    "code": "DL-11",
+    "state_code": "DL",
+    "state_name": "Delhi",
+    "district_name": "West",
+    "total": 152858,
+    "extracted": 37,
+    "pending": 152821,
+    "status": "Pending"
+  },
+  {
+    "code": "GA-01",
+    "state_code": "GA",
+    "state_name": "Goa",
+    "district_name": "North Goa",
+    "total": 54346,
+    "extracted": 62323,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "GA-02",
+    "state_code": "GA",
+    "state_name": "Goa",
+    "district_name": "South Goa",
+    "total": 35893,
+    "extracted": 40873,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "GJ-01",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Ahmadabad",
+    "total": 603761,
+    "extracted": 78,
+    "pending": 603683,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-02",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Amreli",
+    "total": 34164,
+    "extracted": 92,
+    "pending": 34072,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-03",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Anand",
+    "total": 75337,
+    "extracted": 154,
+    "pending": 75183,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-04",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Arvalli",
+    "total": 22183,
+    "extracted": 59,
+    "pending": 22124,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-05",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Banas Kantha",
+    "total": 80328,
+    "extracted": 103,
+    "pending": 80225,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-06",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Bharuch",
+    "total": 69724,
+    "extracted": 71,
+    "pending": 69653,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-07",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Bhavnagar",
+    "total": 87636,
+    "extracted": 54,
+    "pending": 87582,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-08",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Botad",
+    "total": 17481,
+    "extracted": 128,
+    "pending": 17353,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-09",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Chhotaudepur",
+    "total": 12112,
+    "extracted": 107,
+    "pending": 12005,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-10",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Dang",
+    "total": 2404,
+    "extracted": 118,
+    "pending": 2286,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-11",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Devbhoomi Dwarka",
+    "total": 17888,
+    "extracted": 656,
+    "pending": 17232,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-12",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Dohad",
+    "total": 36097,
+    "extracted": 417,
+    "pending": 35680,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-13",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Gandhinagar",
+    "total": 70029,
+    "extracted": 241,
+    "pending": 69788,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-14",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Gir Somnath",
+    "total": 31289,
+    "extracted": 34,
+    "pending": 31255,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-15",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Jamnagar",
+    "total": 75610,
+    "extracted": 17,
+    "pending": 75593,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-16",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Junagadh",
+    "total": 55932,
+    "extracted": 44,
+    "pending": 55888,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-17",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Kachchh",
+    "total": 114561,
+    "extracted": 89,
+    "pending": 114472,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-18",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Kheda",
+    "total": 56120,
+    "extracted": 1868,
+    "pending": 54252,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-19",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Mahesana",
+    "total": 69012,
+    "extracted": 91,
+    "pending": 68921,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-20",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Mahisagar",
+    "total": 14040,
+    "extracted": 120,
+    "pending": 13920,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-21",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Morbi",
+    "total": 58176,
+    "extracted": 34,
+    "pending": 58142,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-22",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Narmada",
+    "total": 8596,
+    "extracted": 11,
+    "pending": 8585,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-23",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Navsari",
+    "total": 43988,
+    "extracted": 74,
+    "pending": 43914,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-24",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Panch Mahals",
+    "total": 36453,
+    "extracted": 50,
+    "pending": 36403,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-25",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Patan",
+    "total": 31638,
+    "extracted": 101,
+    "pending": 31537,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-26",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Porbandar",
+    "total": 20411,
+    "extracted": 83,
+    "pending": 20328,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-27",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Rajkot",
+    "total": 280662,
+    "extracted": 28,
+    "pending": 280634,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-28",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Sabar Kantha",
+    "total": 42076,
+    "extracted": 52,
+    "pending": 42024,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-29",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Surat",
+    "total": 588856,
+    "extracted": 10,
+    "pending": 588846,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-30",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Surendranagar",
+    "total": 46576,
+    "extracted": 31,
+    "pending": 46545,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-31",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Tapi",
+    "total": 13715,
+    "extracted": 191,
+    "pending": 13524,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-32",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Vadodara",
+    "total": 223028,
+    "extracted": 23,
+    "pending": 223005,
+    "status": "Pending"
+  },
+  {
+    "code": "GJ-33",
+    "state_code": "GJ",
+    "state_name": "Gujarat",
+    "district_name": "Valsad",
+    "total": 88384,
+    "extracted": 9,
+    "pending": 88375,
+    "status": "Pending"
+  },
+  {
+    "code": "HP-01",
+    "state_code": "HP",
+    "state_name": "Himachal Pradesh",
+    "district_name": "Bilaspur",
+    "total": 13612,
+    "extracted": 13,
+    "pending": 13599,
+    "status": "Pending"
+  },
+  {
+    "code": "HP-02",
+    "state_code": "HP",
+    "state_name": "Himachal Pradesh",
+    "district_name": "Chamba",
+    "total": 12398,
+    "extracted": 20,
+    "pending": 12378,
+    "status": "Pending"
+  },
+  {
+    "code": "HP-03",
+    "state_code": "HP",
+    "state_name": "Himachal Pradesh",
+    "district_name": "Hamirpur",
+    "total": 15937,
+    "extracted": 7,
+    "pending": 15930,
+    "status": "Pending"
+  },
+  {
+    "code": "HP-04",
+    "state_code": "HP",
+    "state_name": "Himachal Pradesh",
+    "district_name": "Kangra",
+    "total": 44564,
+    "extracted": 14,
+    "pending": 44550,
+    "status": "Pending"
+  },
+  {
+    "code": "HP-05",
+    "state_code": "HP",
+    "state_name": "Himachal Pradesh",
+    "district_name": "Kinnaur",
+    "total": 3932,
+    "extracted": 9,
+    "pending": 3923,
+    "status": "Pending"
+  },
+  {
+    "code": "HP-06",
+    "state_code": "HP",
+    "state_name": "Himachal Pradesh",
+    "district_name": "Kullu",
+    "total": 25876,
+    "extracted": 7,
+    "pending": 25869,
+    "status": "Pending"
+  },
+  {
+    "code": "HP-07",
+    "state_code": "HP",
+    "state_name": "Himachal Pradesh",
+    "district_name": "Lahul and Spiti",
+    "total": 1177,
+    "extracted": 1419,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "HP-08",
+    "state_code": "HP",
+    "state_name": "Himachal Pradesh",
+    "district_name": "Mandi",
+    "total": 33144,
+    "extracted": 400,
+    "pending": 32744,
+    "status": "Pending"
+  },
+  {
+    "code": "HP-09",
+    "state_code": "HP",
+    "state_name": "Himachal Pradesh",
+    "district_name": "Shimla",
+    "total": 36400,
+    "extracted": 731,
+    "pending": 35669,
+    "status": "Pending"
+  },
+  {
+    "code": "HP-10",
+    "state_code": "HP",
+    "state_name": "Himachal Pradesh",
+    "district_name": "Sirmaur",
+    "total": 19793,
+    "extracted": 1,
+    "pending": 19792,
+    "status": "Pending"
+  },
+  {
+    "code": "HP-11",
+    "state_code": "HP",
+    "state_name": "Himachal Pradesh",
+    "district_name": "Solan",
+    "total": 43582,
+    "extracted": 132,
+    "pending": 43450,
+    "status": "Pending"
+  },
+  {
+    "code": "HP-12",
+    "state_code": "HP",
+    "state_name": "Himachal Pradesh",
+    "district_name": "Una",
+    "total": 19523,
+    "extracted": 45,
+    "pending": 19478,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-01",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Ambala",
+    "total": 66131,
+    "extracted": 3810,
+    "pending": 62321,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-02",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Bhiwani",
+    "total": 49423,
+    "extracted": 234,
+    "pending": 49189,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-03",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Charki Dadri",
+    "total": 11674,
+    "extracted": 142,
+    "pending": 11532,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-04",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Faridabad",
+    "total": 149084,
+    "extracted": 3836,
+    "pending": 145248,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-05",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Fatehabad",
+    "total": 45137,
+    "extracted": 15,
+    "pending": 45122,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-06",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Gurugram",
+    "total": 181073,
+    "extracted": 10,
+    "pending": 181063,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-07",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Hisar",
+    "total": 86068,
+    "extracted": 3752,
+    "pending": 82316,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-08",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Jhajjar",
+    "total": 37476,
+    "extracted": 10,
+    "pending": 37466,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-09",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Jind",
+    "total": 56213,
+    "extracted": 22,
+    "pending": 56191,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-10",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Kaithal",
+    "total": 59134,
+    "extracted": 35,
+    "pending": 59099,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-11",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Karnal",
+    "total": 102945,
+    "extracted": 3673,
+    "pending": 99272,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-12",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Kurukshetra",
+    "total": 67235,
+    "extracted": 4011,
+    "pending": 63224,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-13",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Mahendragarh",
+    "total": 31550,
+    "extracted": 228,
+    "pending": 31322,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-14",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Nuh",
+    "total": 36031,
+    "extracted": 410,
+    "pending": 35621,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-15",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Palwal",
+    "total": 38032,
+    "extracted": 40,
+    "pending": 37992,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-16",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Panchkula",
+    "total": 36221,
+    "extracted": 209,
+    "pending": 36012,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-17",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Panipat",
+    "total": 87359,
+    "extracted": 4068,
+    "pending": 83291,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-18",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Rewari",
+    "total": 37392,
+    "extracted": 54,
+    "pending": 37338,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-19",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Rohtak",
+    "total": 47476,
+    "extracted": 14,
+    "pending": 47462,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-20",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Sirsa",
+    "total": 61773,
+    "extracted": 3688,
+    "pending": 58085,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-21",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Sonipat",
+    "total": 67756,
+    "extracted": 101,
+    "pending": 67655,
+    "status": "Pending"
+  },
+  {
+    "code": "HR-22",
+    "state_code": "HR",
+    "state_name": "Haryana",
+    "district_name": "Yamunanagar",
+    "total": 69082,
+    "extracted": 3441,
+    "pending": 65641,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-01",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Bokaro",
+    "total": 61764,
+    "extracted": 95,
+    "pending": 61669,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-02",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Chatra",
+    "total": 22599,
+    "extracted": 20,
+    "pending": 22579,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-03",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Deoghar",
+    "total": 36301,
+    "extracted": 96,
+    "pending": 36205,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-04",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Dhanbad",
+    "total": 82246,
+    "extracted": 19,
+    "pending": 82227,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-05",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Dumka",
+    "total": 20550,
+    "extracted": 15,
+    "pending": 20535,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-06",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "East Singhbhum",
+    "total": 79610,
+    "extracted": 22,
+    "pending": 79588,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-07",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Garhwa",
+    "total": 18986,
+    "extracted": 68,
+    "pending": 18918,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-08",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Giridih",
+    "total": 53056,
+    "extracted": 9,
+    "pending": 53047,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-09",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Godda",
+    "total": 20596,
+    "extracted": 281,
+    "pending": 20315,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-10",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Gumla",
+    "total": 12315,
+    "extracted": 27,
+    "pending": 12288,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-11",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Hazaribag",
+    "total": 55923,
+    "extracted": 31,
+    "pending": 55892,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-12",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Jamtara",
+    "total": 11376,
+    "extracted": 127,
+    "pending": 11249,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-13",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Khunti",
+    "total": 7508,
+    "extracted": 94,
+    "pending": 7414,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-14",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Koderma",
+    "total": 22534,
+    "extracted": 49,
+    "pending": 22485,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-15",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Latehar",
+    "total": 11606,
+    "extracted": 31,
+    "pending": 11575,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-16",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Lohardaga",
+    "total": 11086,
+    "extracted": 41,
+    "pending": 11045,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-17",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Pakur",
+    "total": 11374,
+    "extracted": 162,
+    "pending": 11212,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-18",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Palamu",
+    "total": 30288,
+    "extracted": 20,
+    "pending": 30268,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-19",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Ramgarh",
+    "total": 31445,
+    "extracted": 40,
+    "pending": 31405,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-20",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Ranchi",
+    "total": 129071,
+    "extracted": 160,
+    "pending": 128911,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-21",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Sahebganj",
+    "total": 16511,
+    "extracted": 19,
+    "pending": 16492,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-22",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Seraikela-Kharsawan",
+    "total": 26326,
+    "extracted": 85,
+    "pending": 26241,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-23",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "Simdega",
+    "total": 7524,
+    "extracted": 18,
+    "pending": 7506,
+    "status": "Pending"
+  },
+  {
+    "code": "JH-24",
+    "state_code": "JH",
+    "state_name": "Jharkhand",
+    "district_name": "West Singhbhum",
+    "total": 23423,
+    "extracted": 19,
+    "pending": 23404,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-01",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Anantnag",
+    "total": 55198,
+    "extracted": 91,
+    "pending": 55107,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-02",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Bandipora",
+    "total": 18607,
+    "extracted": 63,
+    "pending": 18544,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-03",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Baramulla",
+    "total": 51209,
+    "extracted": 39,
+    "pending": 51170,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-04",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Budgam",
+    "total": 49867,
+    "extracted": 2854,
+    "pending": 47013,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-05",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Doda",
+    "total": 15943,
+    "extracted": 76,
+    "pending": 15867,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-06",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Ganderbal",
+    "total": 25976,
+    "extracted": 3796,
+    "pending": 22180,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-07",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Jammu",
+    "total": 84694,
+    "extracted": 62,
+    "pending": 84632,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-08",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Kathua",
+    "total": 26116,
+    "extracted": 0,
+    "pending": 26116,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-09",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Kishtwar",
+    "total": 9015,
+    "extracted": 51,
+    "pending": 8964,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-10",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Kulgam",
+    "total": 21253,
+    "extracted": 3091,
+    "pending": 18162,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-11",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Kupwara",
+    "total": 29836,
+    "extracted": 3036,
+    "pending": 26800,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-12",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Poonch",
+    "total": 12509,
+    "extracted": 48,
+    "pending": 12461,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-13",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Pulwama",
+    "total": 36008,
+    "extracted": 0,
+    "pending": 36008,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-14",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Rajouri",
+    "total": 17001,
+    "extracted": 179,
+    "pending": 16822,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-15",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Ramban",
+    "total": 11818,
+    "extracted": 97,
+    "pending": 11721,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-16",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Reasi",
+    "total": 11116,
+    "extracted": 70,
+    "pending": 11046,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-17",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Samba",
+    "total": 16233,
+    "extracted": 57,
+    "pending": 16176,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-18",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Shopian",
+    "total": 15452,
+    "extracted": 139,
+    "pending": 15313,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-19",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Srinagar",
+    "total": 90754,
+    "extracted": 135,
+    "pending": 90619,
+    "status": "Pending"
+  },
+  {
+    "code": "JK-20",
+    "state_code": "JK",
+    "state_name": "Jammu and Kashmir",
+    "district_name": "Udhampur",
+    "total": 17500,
+    "extracted": 3643,
+    "pending": 13857,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-01",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Bagalkot",
+    "total": 60834,
+    "extracted": 0,
+    "pending": 60834,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-02",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Ballari",
+    "total": 59844,
+    "extracted": 0,
+    "pending": 59844,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-03",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Belagavi",
+    "total": 177837,
+    "extracted": 0,
+    "pending": 177837,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-04",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Bengaluru (Rural)",
+    "total": 119152,
+    "extracted": 0,
+    "pending": 119152,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-05",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Bengaluru (Urban)",
+    "total": 664069,
+    "extracted": 0,
+    "pending": 664069,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-06",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Bidar",
+    "total": 49827,
+    "extracted": 0,
+    "pending": 49827,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-07",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Chamarajanagar",
+    "total": 28298,
+    "extracted": 0,
+    "pending": 28298,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-08",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Chikballapur",
+    "total": 46633,
+    "extracted": 0,
+    "pending": 46633,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-09",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Chikkamagaluru",
+    "total": 40693,
+    "extracted": 0,
+    "pending": 40693,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-10",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Chitradurga",
+    "total": 49451,
+    "extracted": 0,
+    "pending": 49451,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-11",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Dakshina Kannada",
+    "total": 99854,
+    "extracted": 0,
+    "pending": 99854,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-12",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Davangere",
+    "total": 67883,
+    "extracted": 0,
+    "pending": 67883,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-13",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Dharwad",
+    "total": 94114,
+    "extracted": 0,
+    "pending": 94114,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-14",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Gadag",
+    "total": 34500,
+    "extracted": 0,
+    "pending": 34500,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-15",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Hassan",
+    "total": 68143,
+    "extracted": 0,
+    "pending": 68143,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-16",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Haveri",
+    "total": 54490,
+    "extracted": 0,
+    "pending": 54490,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-17",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Kalaburagi",
+    "total": 65529,
+    "extracted": 0,
+    "pending": 65529,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-18",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Kodagu",
+    "total": 21475,
+    "extracted": 0,
+    "pending": 21475,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-19",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Kolar",
+    "total": 55390,
+    "extracted": 0,
+    "pending": 55390,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-20",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Koppal",
+    "total": 37579,
+    "extracted": 0,
+    "pending": 37579,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-21",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Mandya",
+    "total": 60335,
+    "extracted": 0,
+    "pending": 60335,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-22",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Mysuru",
+    "total": 147732,
+    "extracted": 0,
+    "pending": 147732,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-23",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Raichur",
+    "total": 48524,
+    "extracted": 0,
+    "pending": 48524,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-24",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Ramanagara",
+    "total": 46391,
+    "extracted": 0,
+    "pending": 46391,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-25",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Shivamogga",
+    "total": 71908,
+    "extracted": 0,
+    "pending": 71908,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-26",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Tumakuru",
+    "total": 100999,
+    "extracted": 0,
+    "pending": 100999,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-27",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Udupi",
+    "total": 58873,
+    "extracted": 0,
+    "pending": 58873,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-28",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Uttara Kannada",
+    "total": 54964,
+    "extracted": 0,
+    "pending": 54964,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-29",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Vijayanagara",
+    "total": 25986,
+    "extracted": 0,
+    "pending": 25986,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-30",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Vijayapura",
+    "total": 66243,
+    "extracted": 0,
+    "pending": 66243,
+    "status": "Pending"
+  },
+  {
+    "code": "KA-31",
+    "state_code": "KA",
+    "state_name": "Karnataka",
+    "district_name": "Yadgir",
+    "total": 28132,
+    "extracted": 0,
+    "pending": 28132,
+    "status": "Pending"
+  },
+  {
+    "code": "KL-01",
+    "state_code": "KL",
+    "state_name": "Kerala",
+    "district_name": "Alappuzha",
+    "total": 63657,
+    "extracted": 72456,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "KL-02",
+    "state_code": "KL",
+    "state_name": "Kerala",
+    "district_name": "Ernakulam",
+    "total": 148682,
+    "extracted": 170948,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "KL-03",
+    "state_code": "KL",
+    "state_name": "Kerala",
+    "district_name": "Idukki",
+    "total": 37697,
+    "extracted": 41217,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "KL-04",
+    "state_code": "KL",
+    "state_name": "Kerala",
+    "district_name": "Kannur",
+    "total": 79549,
+    "extracted": 86282,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "KL-05",
+    "state_code": "KL",
+    "state_name": "Kerala",
+    "district_name": "Kasaragod",
+    "total": 38830,
+    "extracted": 691,
+    "pending": 38139,
+    "status": "In Progress"
+  },
+  {
+    "code": "KL-06",
+    "state_code": "KL",
+    "state_name": "Kerala",
+    "district_name": "Kollam",
+    "total": 74798,
+    "extracted": 83225,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "KL-07",
+    "state_code": "KL",
+    "state_name": "Kerala",
+    "district_name": "Kottayam",
+    "total": 60378,
+    "extracted": 65374,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "KL-08",
+    "state_code": "KL",
+    "state_name": "Kerala",
+    "district_name": "Kozhikode",
+    "total": 105296,
+    "extracted": 112364,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "KL-09",
+    "state_code": "KL",
+    "state_name": "Kerala",
+    "district_name": "Malappuram",
+    "total": 101497,
+    "extracted": 111757,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "KL-10",
+    "state_code": "KL",
+    "state_name": "Kerala",
+    "district_name": "Palakkad",
+    "total": 90703,
+    "extracted": 96944,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "KL-11",
+    "state_code": "KL",
+    "state_name": "Kerala",
+    "district_name": "Pathanamthipta",
+    "total": 36007,
+    "extracted": 39667,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "KL-12",
+    "state_code": "KL",
+    "state_name": "Kerala",
+    "district_name": "Thiruvananthapuram",
+    "total": 131926,
+    "extracted": 65598,
+    "pending": 66328,
+    "status": "Pending"
+  },
+  {
+    "code": "KL-13",
+    "state_code": "KL",
+    "state_name": "Kerala",
+    "district_name": "Thrissur",
+    "total": 105622,
+    "extracted": 9,
+    "pending": 105613,
+    "status": "Pending"
+  },
+  {
+    "code": "KL-14",
+    "state_code": "KL",
+    "state_name": "Kerala",
+    "district_name": "Wayanad",
+    "total": 29659,
+    "extracted": 117,
+    "pending": 29542,
+    "status": "Pending"
+  },
+  {
+    "code": "LA-01",
+    "state_code": "LA",
+    "state_name": "Ladakh",
+    "district_name": "Kargil",
+    "total": 5510,
+    "extracted": 6512,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "LA-02",
+    "state_code": "LA",
+    "state_name": "Ladakh",
+    "district_name": "Leh Ladakh",
+    "total": 9201,
+    "extracted": 10043,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "LD-01",
+    "state_code": "LD",
+    "state_name": "Lakshadweep",
+    "district_name": "Lakshadweep District",
+    "total": 1552,
+    "extracted": 1783,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "MH-01",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Ahmednagar",
+    "total": 286002,
+    "extracted": 71,
+    "pending": 285931,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-02",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Akola",
+    "total": 90171,
+    "extracted": 10,
+    "pending": 90161,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-03",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Amravati",
+    "total": 133860,
+    "extracted": 55,
+    "pending": 133805,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-04",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Aurangabad",
+    "total": 285325,
+    "extracted": 13,
+    "pending": 285312,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-05",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Beed",
+    "total": 119407,
+    "extracted": 8,
+    "pending": 119399,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-06",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Bhandara",
+    "total": 64652,
+    "extracted": 91,
+    "pending": 64561,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-07",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Buldhana",
+    "total": 116680,
+    "extracted": 10,
+    "pending": 116670,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-08",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Chandrapur",
+    "total": 86778,
+    "extracted": 77,
+    "pending": 86701,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-09",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Dhule",
+    "total": 72736,
+    "extracted": 47,
+    "pending": 72689,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-10",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Gadchiroli",
+    "total": 27584,
+    "extracted": 48,
+    "pending": 27536,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-11",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Gondia",
+    "total": 57722,
+    "extracted": 31,
+    "pending": 57691,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-12",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Hingoli",
+    "total": 42917,
+    "extracted": 40,
+    "pending": 42877,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-13",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Jalgaon",
+    "total": 189465,
+    "extracted": 22,
+    "pending": 189443,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-14",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Jalna",
+    "total": 104573,
+    "extracted": 34,
+    "pending": 104539,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-15",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Kolhapur",
+    "total": 286012,
+    "extracted": 10,
+    "pending": 286002,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-16",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Latur",
+    "total": 122920,
+    "extracted": 5,
+    "pending": 122915,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-17",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Mumbai",
+    "total": 412015,
+    "extracted": 11,
+    "pending": 412004,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-18",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Mumbai Suburban",
+    "total": 520351,
+    "extracted": 8,
+    "pending": 520343,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-19",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Nagpur",
+    "total": 327633,
+    "extracted": 45,
+    "pending": 327588,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-20",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Nanded",
+    "total": 124582,
+    "extracted": 26,
+    "pending": 124556,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-21",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Nandurbar",
+    "total": 39566,
+    "extracted": 41,
+    "pending": 39525,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-22",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Nashik",
+    "total": 381769,
+    "extracted": 13,
+    "pending": 381756,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-23",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Osmanabad",
+    "total": 86974,
+    "extracted": 26,
+    "pending": 86948,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-24",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Palghar",
+    "total": 226440,
+    "extracted": 3,
+    "pending": 226437,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-25",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Parbhani",
+    "total": 73509,
+    "extracted": 41,
+    "pending": 73468,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-26",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Pune",
+    "total": 1086885,
+    "extracted": 47,
+    "pending": 1086838,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-27",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Raigad",
+    "total": 247144,
+    "extracted": 23,
+    "pending": 247121,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-28",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Ratnagiri",
+    "total": 87938,
+    "extracted": 5,
+    "pending": 87933,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-29",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Sangli",
+    "total": 176923,
+    "extracted": 30,
+    "pending": 176893,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-30",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Satara",
+    "total": 185420,
+    "extracted": 69,
+    "pending": 185351,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-31",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Sindhudurg",
+    "total": 57216,
+    "extracted": 25,
+    "pending": 57191,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-32",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Solapur",
+    "total": 269881,
+    "extracted": 25,
+    "pending": 269856,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-33",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Thane",
+    "total": 734608,
+    "extracted": 7,
+    "pending": 734601,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-34",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Wardha",
+    "total": 71217,
+    "extracted": 71,
+    "pending": 71146,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-35",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Washim",
+    "total": 45961,
+    "extracted": 29,
+    "pending": 45932,
+    "status": "Pending"
+  },
+  {
+    "code": "MH-36",
+    "state_code": "MH",
+    "state_name": "Maharashtra",
+    "district_name": "Yavatmal",
+    "total": 93527,
+    "extracted": 10,
+    "pending": 93517,
+    "status": "Pending"
+  },
+  {
+    "code": "ML-01",
+    "state_code": "ML",
+    "state_name": "Meghalaya",
+    "district_name": "East Garo Hills",
+    "total": 2970,
+    "extracted": 4,
+    "pending": 2966,
+    "status": "Pending"
+  },
+  {
+    "code": "ML-02",
+    "state_code": "ML",
+    "state_name": "Meghalaya",
+    "district_name": "East Jaintia Hills",
+    "total": 3940,
+    "extracted": 29,
+    "pending": 3911,
+    "status": "Pending"
+  },
+  {
+    "code": "ML-03",
+    "state_code": "ML",
+    "state_name": "Meghalaya",
+    "district_name": "East Khasi Hills",
+    "total": 17249,
+    "extracted": 3,
+    "pending": 17246,
+    "status": "Pending"
+  },
+  {
+    "code": "ML-04",
+    "state_code": "ML",
+    "state_name": "Meghalaya",
+    "district_name": "Eastern West Khasi Hills",
+    "total": 1075,
+    "extracted": 6,
+    "pending": 1069,
+    "status": "Pending"
+  },
+  {
+    "code": "ML-05",
+    "state_code": "ML",
+    "state_name": "Meghalaya",
+    "district_name": "North Garo Hills",
+    "total": 2349,
+    "extracted": 71,
+    "pending": 2278,
+    "status": "Pending"
+  },
+  {
+    "code": "ML-06",
+    "state_code": "ML",
+    "state_name": "Meghalaya",
+    "district_name": "Ri Bhoi",
+    "total": 4965,
+    "extracted": 0,
+    "pending": 4965,
+    "status": "Pending"
+  },
+  {
+    "code": "ML-07",
+    "state_code": "ML",
+    "state_name": "Meghalaya",
+    "district_name": "South Garo Hills",
+    "total": 2511,
+    "extracted": 11,
+    "pending": 2500,
+    "status": "Pending"
+  },
+  {
+    "code": "ML-08",
+    "state_code": "ML",
+    "state_name": "Meghalaya",
+    "district_name": "South West Garo Hills",
+    "total": 2506,
+    "extracted": 24,
+    "pending": 2482,
+    "status": "Pending"
+  },
+  {
+    "code": "ML-09",
+    "state_code": "ML",
+    "state_name": "Meghalaya",
+    "district_name": "South West Khasi Hills",
+    "total": 1835,
+    "extracted": 24,
+    "pending": 1811,
+    "status": "Pending"
+  },
+  {
+    "code": "ML-10",
+    "state_code": "ML",
+    "state_name": "Meghalaya",
+    "district_name": "West Garo Hills",
+    "total": 10419,
+    "extracted": 119,
+    "pending": 10300,
+    "status": "Pending"
+  },
+  {
+    "code": "ML-11",
+    "state_code": "ML",
+    "state_name": "Meghalaya",
+    "district_name": "West Jaintia Hills",
+    "total": 5340,
+    "extracted": 80,
+    "pending": 5260,
+    "status": "Pending"
+  },
+  {
+    "code": "ML-12",
+    "state_code": "ML",
+    "state_name": "Meghalaya",
+    "district_name": "West Khasi Hills",
+    "total": 2614,
+    "extracted": 15,
+    "pending": 2599,
+    "status": "Pending"
+  },
+  {
+    "code": "MN-01",
+    "state_code": "MN",
+    "state_name": "Manipur",
+    "district_name": "Bishnupur",
+    "total": 15038,
+    "extracted": 17187,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "MN-02",
+    "state_code": "MN",
+    "state_name": "Manipur",
+    "district_name": "Chandel",
+    "total": 2098,
+    "extracted": 2618,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "MN-03",
+    "state_code": "MN",
+    "state_name": "Manipur",
+    "district_name": "Churachandpur",
+    "total": 6033,
+    "extracted": 6610,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "MN-04",
+    "state_code": "MN",
+    "state_name": "Manipur",
+    "district_name": "Imphal East",
+    "total": 29570,
+    "extracted": 33628,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "MN-05",
+    "state_code": "MN",
+    "state_name": "Manipur",
+    "district_name": "Imphal West",
+    "total": 35510,
+    "extracted": 11331,
+    "pending": 24179,
+    "status": "Pending"
+  },
+  {
+    "code": "MN-06",
+    "state_code": "MN",
+    "state_name": "Manipur",
+    "district_name": "Jiribam",
+    "total": 602,
+    "extracted": 171,
+    "pending": 431,
+    "status": "Pending"
+  },
+  {
+    "code": "MN-07",
+    "state_code": "MN",
+    "state_name": "Manipur",
+    "district_name": "Kakching",
+    "total": 6482,
+    "extracted": 71,
+    "pending": 6411,
+    "status": "Pending"
+  },
+  {
+    "code": "MN-08",
+    "state_code": "MN",
+    "state_name": "Manipur",
+    "district_name": "Kamjong",
+    "total": 728,
+    "extracted": 3469,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "MN-09",
+    "state_code": "MN",
+    "state_name": "Manipur",
+    "district_name": "Kangpokpi",
+    "total": 3094,
+    "extracted": 2,
+    "pending": 3092,
+    "status": "Pending"
+  },
+  {
+    "code": "MN-10",
+    "state_code": "MN",
+    "state_name": "Manipur",
+    "district_name": "Noney",
+    "total": 1373,
+    "extracted": 1,
+    "pending": 1372,
+    "status": "Pending"
+  },
+  {
+    "code": "MN-11",
+    "state_code": "MN",
+    "state_name": "Manipur",
+    "district_name": "Pherzawl",
+    "total": 256,
+    "extracted": 8,
+    "pending": 248,
+    "status": "Pending"
+  },
+  {
+    "code": "MN-12",
+    "state_code": "MN",
+    "state_name": "Manipur",
+    "district_name": "Senapati",
+    "total": 5423,
+    "extracted": 1,
+    "pending": 5422,
+    "status": "Pending"
+  },
+  {
+    "code": "MN-13",
+    "state_code": "MN",
+    "state_name": "Manipur",
+    "district_name": "Tamenglong",
+    "total": 1793,
+    "extracted": 74,
+    "pending": 1719,
+    "status": "Pending"
+  },
+  {
+    "code": "MN-14",
+    "state_code": "MN",
+    "state_name": "Manipur",
+    "district_name": "Tengnoupal",
+    "total": 1435,
+    "extracted": 0,
+    "pending": 1435,
+    "status": "Pending"
+  },
+  {
+    "code": "MN-15",
+    "state_code": "MN",
+    "state_name": "Manipur",
+    "district_name": "Thoubal",
+    "total": 15368,
+    "extracted": 20,
+    "pending": 15348,
+    "status": "Pending"
+  },
+  {
+    "code": "MN-16",
+    "state_code": "MN",
+    "state_name": "Manipur",
+    "district_name": "Ukhrul",
+    "total": 3184,
+    "extracted": 4,
+    "pending": 3180,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-01",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Agar Malwa",
+    "total": 27787,
+    "extracted": 23,
+    "pending": 27764,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-02",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Alirajpur",
+    "total": 10410,
+    "extracted": 53,
+    "pending": 10357,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-03",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Anuppur",
+    "total": 14195,
+    "extracted": 91,
+    "pending": 14104,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-04",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Ashoknagar",
+    "total": 25428,
+    "extracted": 51,
+    "pending": 25377,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-05",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Balaghat",
+    "total": 42014,
+    "extracted": 143,
+    "pending": 41871,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-06",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Barwani",
+    "total": 31819,
+    "extracted": 24,
+    "pending": 31795,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-07",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Betul",
+    "total": 42762,
+    "extracted": 2,
+    "pending": 42760,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-08",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Bhind",
+    "total": 28634,
+    "extracted": 27,
+    "pending": 28607,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-09",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Bhopal",
+    "total": 156004,
+    "extracted": 37,
+    "pending": 155967,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-10",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Burhanpur",
+    "total": 24420,
+    "extracted": 46,
+    "pending": 24374,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-11",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Chhatarpur",
+    "total": 36264,
+    "extracted": 8,
+    "pending": 36256,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-12",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Chhindwara",
+    "total": 63811,
+    "extracted": 50,
+    "pending": 63761,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-13",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Damoh",
+    "total": 24656,
+    "extracted": 111,
+    "pending": 24545,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-14",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Datia",
+    "total": 19315,
+    "extracted": 68,
+    "pending": 19247,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-15",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Dewas",
+    "total": 67333,
+    "extracted": 37,
+    "pending": 67296,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-16",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Dhar",
+    "total": 74448,
+    "extracted": 9,
+    "pending": 74439,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-17",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Dindori",
+    "total": 10540,
+    "extracted": 95,
+    "pending": 10445,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-18",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "East Nimar",
+    "total": 34797,
+    "extracted": 40,
+    "pending": 34757,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-19",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Guna",
+    "total": 48152,
+    "extracted": 10,
+    "pending": 48142,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-20",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Gwalior",
+    "total": 105376,
+    "extracted": 7,
+    "pending": 105369,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-21",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Harda",
+    "total": 17860,
+    "extracted": 168,
+    "pending": 17692,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-22",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Hoshangabad",
+    "total": 37743,
+    "extracted": 11,
+    "pending": 37732,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-23",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Indore",
+    "total": 269575,
+    "extracted": 4,
+    "pending": 269571,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-24",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Jabalpur",
+    "total": 94153,
+    "extracted": 3,
+    "pending": 94150,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-25",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Jhabua",
+    "total": 23901,
+    "extracted": 3,
+    "pending": 23898,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-26",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Katni",
+    "total": 30851,
+    "extracted": 45,
+    "pending": 30806,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-27",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Khargone",
+    "total": 54609,
+    "extracted": 103,
+    "pending": 54506,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-28",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Maihar",
+    "total": 3263,
+    "extracted": 5,
+    "pending": 3258,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-29",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Mandla",
+    "total": 19979,
+    "extracted": 52,
+    "pending": 19927,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-30",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Mandsaur",
+    "total": 67779,
+    "extracted": 7,
+    "pending": 67772,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-31",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Mauganj",
+    "total": 2921,
+    "extracted": 24,
+    "pending": 2897,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-32",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Morena",
+    "total": 43996,
+    "extracted": 326,
+    "pending": 43670,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-33",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Narsinghpur",
+    "total": 30603,
+    "extracted": 59,
+    "pending": 30544,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-34",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Neemuch",
+    "total": 36861,
+    "extracted": 94,
+    "pending": 36767,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-35",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Niwari",
+    "total": 5495,
+    "extracted": 37,
+    "pending": 5458,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-36",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Pandhurna",
+    "total": 3283,
+    "extracted": 8,
+    "pending": 3275,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-37",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Panna",
+    "total": 16882,
+    "extracted": 32,
+    "pending": 16850,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-38",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Raisen",
+    "total": 37276,
+    "extracted": 55,
+    "pending": 37221,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-39",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Rajgarh",
+    "total": 68118,
+    "extracted": 8,
+    "pending": 68110,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-40",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Ratlam",
+    "total": 65928,
+    "extracted": 8,
+    "pending": 65920,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-41",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Rewa",
+    "total": 52156,
+    "extracted": 27,
+    "pending": 52129,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-42",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Sagar",
+    "total": 64000,
+    "extracted": 65,
+    "pending": 63935,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-43",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Satna",
+    "total": 46295,
+    "extracted": 26,
+    "pending": 46269,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-44",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Sehore",
+    "total": 52913,
+    "extracted": 7,
+    "pending": 52906,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-45",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Seoni",
+    "total": 31805,
+    "extracted": 95,
+    "pending": 31710,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-46",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Shahdol",
+    "total": 22942,
+    "extracted": 41,
+    "pending": 22901,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-47",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Shajapur",
+    "total": 43714,
+    "extracted": 56,
+    "pending": 43658,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-48",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Sheopur",
+    "total": 9850,
+    "extracted": 36,
+    "pending": 9814,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-49",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Shivpuri",
+    "total": 36180,
+    "extracted": 75,
+    "pending": 36105,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-50",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Sidhi",
+    "total": 18953,
+    "extracted": 41,
+    "pending": 18912,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-51",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Singrauli",
+    "total": 24881,
+    "extracted": 132,
+    "pending": 24749,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-52",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Tikamgarh",
+    "total": 19531,
+    "extracted": 27,
+    "pending": 19504,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-53",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Ujjain",
+    "total": 103013,
+    "extracted": 63,
+    "pending": 102950,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-54",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Umaria",
+    "total": 9606,
+    "extracted": 8,
+    "pending": 9598,
+    "status": "Pending"
+  },
+  {
+    "code": "MP-55",
+    "state_code": "MP",
+    "state_name": "Madhya Pradesh",
+    "district_name": "Vidisha",
+    "total": 48752,
+    "extracted": 59,
+    "pending": 48693,
+    "status": "Pending"
+  },
+  {
+    "code": "MZ-01",
+    "state_code": "MZ",
+    "state_name": "Mizoram",
+    "district_name": "Aizawl",
+    "total": 20147,
+    "extracted": 19443,
+    "pending": 704,
+    "status": "Pending"
+  },
+  {
+    "code": "MZ-02",
+    "state_code": "MZ",
+    "state_name": "Mizoram",
+    "district_name": "Champhai",
+    "total": 2692,
+    "extracted": 144,
+    "pending": 2548,
+    "status": "Pending"
+  },
+  {
+    "code": "MZ-03",
+    "state_code": "MZ",
+    "state_name": "Mizoram",
+    "district_name": "Hnahthial",
+    "total": 487,
+    "extracted": 80,
+    "pending": 407,
+    "status": "Pending"
+  },
+  {
+    "code": "MZ-04",
+    "state_code": "MZ",
+    "state_name": "Mizoram",
+    "district_name": "Khawzawl",
+    "total": 575,
+    "extracted": 165,
+    "pending": 410,
+    "status": "Pending"
+  },
+  {
+    "code": "MZ-05",
+    "state_code": "MZ",
+    "state_name": "Mizoram",
+    "district_name": "Kolasib",
+    "total": 3074,
+    "extracted": 18,
+    "pending": 3056,
+    "status": "Pending"
+  },
+  {
+    "code": "MZ-06",
+    "state_code": "MZ",
+    "state_name": "Mizoram",
+    "district_name": "Lawngtlai",
+    "total": 1363,
+    "extracted": 149,
+    "pending": 1214,
+    "status": "Pending"
+  },
+  {
+    "code": "MZ-07",
+    "state_code": "MZ",
+    "state_name": "Mizoram",
+    "district_name": "Lunglei",
+    "total": 3497,
+    "extracted": 251,
+    "pending": 3246,
+    "status": "Pending"
+  },
+  {
+    "code": "MZ-08",
+    "state_code": "MZ",
+    "state_name": "Mizoram",
+    "district_name": "Mamit",
+    "total": 1414,
+    "extracted": 956,
+    "pending": 458,
+    "status": "Pending"
+  },
+  {
+    "code": "MZ-09",
+    "state_code": "MZ",
+    "state_name": "Mizoram",
+    "district_name": "Saiha",
+    "total": 638,
+    "extracted": 8,
+    "pending": 630,
+    "status": "Pending"
+  },
+  {
+    "code": "MZ-10",
+    "state_code": "MZ",
+    "state_name": "Mizoram",
+    "district_name": "Saitual",
+    "total": 899,
+    "extracted": 6,
+    "pending": 893,
+    "status": "Pending"
+  },
+  {
+    "code": "MZ-11",
+    "state_code": "MZ",
+    "state_name": "Mizoram",
+    "district_name": "Serchhip",
+    "total": 2523,
+    "extracted": 622,
+    "pending": 1901,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-01",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Chumoukedima",
+    "total": 3421,
+    "extracted": 16,
+    "pending": 3405,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-02",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Dimapur",
+    "total": 14185,
+    "extracted": 60,
+    "pending": 14125,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-03",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Kiphrie",
+    "total": 1442,
+    "extracted": 9,
+    "pending": 1433,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-04",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Kohima",
+    "total": 7614,
+    "extracted": 43,
+    "pending": 7571,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-05",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Longleng",
+    "total": 1226,
+    "extracted": 2,
+    "pending": 1224,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-06",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Meluri",
+    "total": 89,
+    "extracted": 0,
+    "pending": 89,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-07",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Mokokchung",
+    "total": 3509,
+    "extracted": 6,
+    "pending": 3503,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-08",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Mon",
+    "total": 3241,
+    "extracted": 82,
+    "pending": 3159,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-09",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Niuland",
+    "total": 1033,
+    "extracted": 57,
+    "pending": 976,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-10",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Noklak",
+    "total": 618,
+    "extracted": 10,
+    "pending": 608,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-11",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Peren",
+    "total": 1688,
+    "extracted": 2,
+    "pending": 1686,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-12",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Phek",
+    "total": 2462,
+    "extracted": 40,
+    "pending": 2422,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-13",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Shamator",
+    "total": 581,
+    "extracted": 115,
+    "pending": 466,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-14",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Tseminyu",
+    "total": 582,
+    "extracted": 16,
+    "pending": 566,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-15",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Tuensang",
+    "total": 2098,
+    "extracted": 26,
+    "pending": 2072,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-16",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Wokha",
+    "total": 3013,
+    "extracted": 11,
+    "pending": 3002,
+    "status": "Pending"
+  },
+  {
+    "code": "NL-17",
+    "state_code": "NL",
+    "state_name": "Nagaland",
+    "district_name": "Zunheboto",
+    "total": 2119,
+    "extracted": 6,
+    "pending": 2113,
+    "status": "Pending"
+  },
+  {
+    "code": "OR-01",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Angul",
+    "total": 44904,
+    "extracted": 51861,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-02",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Balangir",
+    "total": 44943,
+    "extracted": 53835,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-03",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Baleshwar",
+    "total": 88571,
+    "extracted": 104875,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-04",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Bargarh",
+    "total": 50953,
+    "extracted": 57926,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-05",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Bhadrak",
+    "total": 58285,
+    "extracted": 74984,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-06",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Boudh",
+    "total": 12298,
+    "extracted": 14567,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-07",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Cuttack",
+    "total": 117684,
+    "extracted": 139686,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-08",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Deogarh",
+    "total": 8989,
+    "extracted": 10308,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-09",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Dhenkanal",
+    "total": 39018,
+    "extracted": 48107,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-10",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Gajapati",
+    "total": 12179,
+    "extracted": 14984,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-11",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Ganjam",
+    "total": 110460,
+    "extracted": 127536,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-12",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Jagatsinghpur",
+    "total": 41672,
+    "extracted": 49077,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-13",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Jajapur",
+    "total": 58674,
+    "extracted": 73577,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-14",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Jharsuguda",
+    "total": 22225,
+    "extracted": 24769,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-15",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Kalahandi",
+    "total": 34885,
+    "extracted": 43766,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-16",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Kandhamal",
+    "total": 16082,
+    "extracted": 18602,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-17",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Kendrapara",
+    "total": 46814,
+    "extracted": 53893,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-18",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Kendujhar",
+    "total": 51248,
+    "extracted": 1849,
+    "pending": 49399,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-19",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Khordha",
+    "total": 155119,
+    "extracted": 1,
+    "pending": 155118,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-20",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Koraput",
+    "total": 34733,
+    "extracted": 0,
+    "pending": 34733,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-21",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Malkangiri",
+    "total": 15489,
+    "extracted": 0,
+    "pending": 15489,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-22",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Mayurbhanj",
+    "total": 56855,
+    "extracted": 0,
+    "pending": 56855,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-23",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Nabarangpur",
+    "total": 19596,
+    "extracted": 0,
+    "pending": 19596,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-24",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Nayagarh",
+    "total": 36068,
+    "extracted": 0,
+    "pending": 36068,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-25",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Nuapada",
+    "total": 16166,
+    "extracted": 0,
+    "pending": 16166,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-26",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Puri",
+    "total": 77750,
+    "extracted": 0,
+    "pending": 77750,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-27",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Rayagada",
+    "total": 20436,
+    "extracted": 0,
+    "pending": 20436,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-28",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Sambalpur",
+    "total": 35688,
+    "extracted": 328,
+    "pending": 35360,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-29",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Sonepur",
+    "total": 23011,
+    "extracted": 0,
+    "pending": 23011,
+    "status": "Completed"
+  },
+  {
+    "code": "OR-30",
+    "state_code": "OR",
+    "state_name": "Odisha",
+    "district_name": "Sundargarh",
+    "total": 60639,
+    "extracted": 0,
+    "pending": 60639,
+    "status": "Completed"
+  },
+  {
+    "code": "PB-01",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Amritsar",
+    "total": 137322,
+    "extracted": 46,
+    "pending": 137276,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-02",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Barnala",
+    "total": 34457,
+    "extracted": 326,
+    "pending": 34131,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-03",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Bathinda",
+    "total": 74582,
+    "extracted": 20,
+    "pending": 74562,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-04",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Faridkot",
+    "total": 33976,
+    "extracted": 71,
+    "pending": 33905,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-05",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Fatehgarh Sahib",
+    "total": 34240,
+    "extracted": 104,
+    "pending": 34136,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-06",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Fazilka",
+    "total": 43881,
+    "extracted": 40,
+    "pending": 43841,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-07",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Firozepur",
+    "total": 48114,
+    "extracted": 7,
+    "pending": 48107,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-08",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Gurdaspur",
+    "total": 61583,
+    "extracted": 39,
+    "pending": 61544,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-09",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Hoshiarpur",
+    "total": 69274,
+    "extracted": 14,
+    "pending": 69260,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-10",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Jalandhar",
+    "total": 156104,
+    "extracted": 14,
+    "pending": 156090,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-11",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Kapurthala",
+    "total": 49538,
+    "extracted": 44,
+    "pending": 49494,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-12",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Ludhiana",
+    "total": 287543,
+    "extracted": 67,
+    "pending": 287476,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-13",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Malerkotla",
+    "total": 16092,
+    "extracted": 63,
+    "pending": 16029,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-14",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Mansa",
+    "total": 31801,
+    "extracted": 33,
+    "pending": 31768,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-15",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Moga",
+    "total": 58005,
+    "extracted": 25,
+    "pending": 57980,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-16",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Pathankot",
+    "total": 26077,
+    "extracted": 76,
+    "pending": 26001,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-17",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Patiala",
+    "total": 125106,
+    "extracted": 28,
+    "pending": 125078,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-18",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Rupnagar",
+    "total": 31984,
+    "extracted": 59,
+    "pending": 31925,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-19",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Sangrur",
+    "total": 69026,
+    "extracted": 41,
+    "pending": 68985,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-20",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Sas Nagar",
+    "total": 123602,
+    "extracted": 29,
+    "pending": 123573,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-21",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Shahid Bhagat Singh Nagar",
+    "total": 32293,
+    "extracted": 429,
+    "pending": 31864,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-22",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Sri Muktsar Sahib",
+    "total": 40346,
+    "extracted": 12,
+    "pending": 40334,
+    "status": "Pending"
+  },
+  {
+    "code": "PB-23",
+    "state_code": "PB",
+    "state_name": "Punjab",
+    "district_name": "Tarn Taran",
+    "total": 38440,
+    "extracted": 11,
+    "pending": 38429,
+    "status": "Pending"
+  },
+  {
+    "code": "PY-01",
+    "state_code": "PY",
+    "state_name": "Puducherry",
+    "district_name": "Karaikal",
+    "total": 10147,
+    "extracted": 10797,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "PY-02",
+    "state_code": "PY",
+    "state_name": "Puducherry",
+    "district_name": "Mahe",
+    "total": 754,
+    "extracted": 750,
+    "pending": 4,
+    "status": "Pending"
+  },
+  {
+    "code": "PY-03",
+    "state_code": "PY",
+    "state_name": "Puducherry",
+    "district_name": "Pondicherry",
+    "total": 51727,
+    "extracted": 38982,
+    "pending": 12745,
+    "status": "Pending"
+  },
+  {
+    "code": "PY-04",
+    "state_code": "PY",
+    "state_name": "Puducherry",
+    "district_name": "Yanam",
+    "total": 823,
+    "extracted": 759,
+    "pending": 64,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-01",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Ajmer",
+    "total": 154103,
+    "extracted": 4,
+    "pending": 154099,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-02",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Alwar",
+    "total": 144667,
+    "extracted": 42,
+    "pending": 144625,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-03",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Anoopgarh",
+    "total": 4155,
+    "extracted": 10,
+    "pending": 4145,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-04",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Balotra",
+    "total": 10154,
+    "extracted": 22,
+    "pending": 10132,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-05",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Banswara",
+    "total": 41301,
+    "extracted": 42,
+    "pending": 41259,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-06",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Baran",
+    "total": 34096,
+    "extracted": 25,
+    "pending": 34071,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-07",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Barmer",
+    "total": 73651,
+    "extracted": 47,
+    "pending": 73604,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-08",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Beawar",
+    "total": 13350,
+    "extracted": 14,
+    "pending": 13336,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-09",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Bharatpur",
+    "total": 56860,
+    "extracted": 58,
+    "pending": 56802,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-10",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Bhilwara",
+    "total": 136137,
+    "extracted": 1,
+    "pending": 136136,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-11",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Bikaner",
+    "total": 124419,
+    "extracted": 25,
+    "pending": 124394,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-12",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Bundi",
+    "total": 37558,
+    "extracted": 36,
+    "pending": 37522,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-13",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Chittorgarh",
+    "total": 74448,
+    "extracted": 1,
+    "pending": 74447,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-14",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Churu",
+    "total": 79489,
+    "extracted": 26,
+    "pending": 79463,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-15",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Dausa",
+    "total": 56139,
+    "extracted": 87,
+    "pending": 56052,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-16",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Deeg",
+    "total": 7831,
+    "extracted": 14,
+    "pending": 7817,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-17",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Dholpur",
+    "total": 23609,
+    "extracted": 43,
+    "pending": 23566,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-18",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Didwana Kuchaman",
+    "total": 18758,
+    "extracted": 2,
+    "pending": 18756,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-19",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Dudu",
+    "total": 1249,
+    "extracted": 53,
+    "pending": 1196,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-20",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Dungarpur",
+    "total": 33003,
+    "extracted": 39,
+    "pending": 32964,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-21",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Ganganagar",
+    "total": 109289,
+    "extracted": 23,
+    "pending": 109266,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-22",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Gangapurcity",
+    "total": 2238,
+    "extracted": 32,
+    "pending": 2206,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-23",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Hanumangarh",
+    "total": 80219,
+    "extracted": 45,
+    "pending": 80174,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-24",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Jaipur",
+    "total": 585477,
+    "extracted": 3,
+    "pending": 585474,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-25",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Jaipur Gramin",
+    "total": 20473,
+    "extracted": 45,
+    "pending": 20428,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-26",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Jaisalmer",
+    "total": 26131,
+    "extracted": 115,
+    "pending": 26016,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-27",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Jalore",
+    "total": 44425,
+    "extracted": 44,
+    "pending": 44381,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-28",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Jhalawar",
+    "total": 48593,
+    "extracted": 59,
+    "pending": 48534,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-29",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Jhunjhunu",
+    "total": 87881,
+    "extracted": 71,
+    "pending": 87810,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-30",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Jodhpur",
+    "total": 193600,
+    "extracted": 191,
+    "pending": 193409,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-31",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Jodhpur Gramin",
+    "total": 6174,
+    "extracted": 18,
+    "pending": 6156,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-32",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Karauli",
+    "total": 27525,
+    "extracted": 114,
+    "pending": 27411,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-33",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Kekri",
+    "total": 1728,
+    "extracted": 427,
+    "pending": 1301,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-34",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Khairthal-Tijara",
+    "total": 9837,
+    "extracted": 20,
+    "pending": 9817,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-35",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Kota",
+    "total": 103289,
+    "extracted": 58,
+    "pending": 103231,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-36",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Kotputli-Behror",
+    "total": 14660,
+    "extracted": 32,
+    "pending": 14628,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-37",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Nagaur",
+    "total": 110992,
+    "extracted": 82,
+    "pending": 110910,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-38",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Neem Ka Thana",
+    "total": 3449,
+    "extracted": 3,
+    "pending": 3446,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-39",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Pali",
+    "total": 83119,
+    "extracted": 23,
+    "pending": 83096,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-40",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Phalodi",
+    "total": 8122,
+    "extracted": 6,
+    "pending": 8116,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-41",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Pratapgarh",
+    "total": 25300,
+    "extracted": 64,
+    "pending": 25236,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-42",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Rajsamand",
+    "total": 55825,
+    "extracted": 63,
+    "pending": 55762,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-43",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Salumbar",
+    "total": 2901,
+    "extracted": 389,
+    "pending": 2512,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-44",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Sanchor",
+    "total": 2001,
+    "extracted": 11,
+    "pending": 1990,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-45",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Sawai Madhopur",
+    "total": 35758,
+    "extracted": 29,
+    "pending": 35729,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-46",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Shahpura",
+    "total": 1389,
+    "extracted": 50,
+    "pending": 1339,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-47",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Sikar",
+    "total": 126850,
+    "extracted": 18,
+    "pending": 126832,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-48",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Sirohi",
+    "total": 36315,
+    "extracted": 26,
+    "pending": 36289,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-49",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Tonk",
+    "total": 51455,
+    "extracted": 40,
+    "pending": 51415,
+    "status": "Pending"
+  },
+  {
+    "code": "RJ-50",
+    "state_code": "RJ",
+    "state_name": "Rajasthan",
+    "district_name": "Udaipur",
+    "total": 127385,
+    "extracted": 7,
+    "pending": 127378,
+    "status": "Pending"
+  },
+  {
+    "code": "SK-01",
+    "state_code": "SK",
+    "state_name": "Sikkim",
+    "district_name": "Gangtok",
+    "total": 9512,
+    "extracted": 10417,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "SK-02",
+    "state_code": "SK",
+    "state_name": "Sikkim",
+    "district_name": "Gyalshing",
+    "total": 2255,
+    "extracted": 1618,
+    "pending": 637,
+    "status": "Completed"
+  },
+  {
+    "code": "SK-03",
+    "state_code": "SK",
+    "state_name": "Sikkim",
+    "district_name": "Mangan",
+    "total": 1303,
+    "extracted": 5916,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "SK-04",
+    "state_code": "SK",
+    "state_name": "Sikkim",
+    "district_name": "Namchi",
+    "total": 4918,
+    "extracted": 2862,
+    "pending": 2056,
+    "status": "Completed"
+  },
+  {
+    "code": "SK-05",
+    "state_code": "SK",
+    "state_name": "Sikkim",
+    "district_name": "Pakyong",
+    "total": 2287,
+    "extracted": 2892,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "SK-06",
+    "state_code": "SK",
+    "state_name": "Sikkim",
+    "district_name": "Soreng",
+    "total": 1568,
+    "extracted": 1992,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "TN-01",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Ariyalur",
+    "total": 33565,
+    "extracted": 37123,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-02",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Chennai",
+    "total": 451575,
+    "extracted": 202648,
+    "pending": 248927,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-03",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Coimbatore",
+    "total": 311048,
+    "extracted": 300244,
+    "pending": 10804,
+    "status": "Completed"
+  },
+  {
+    "code": "TN-04",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Cuddalore",
+    "total": 121778,
+    "extracted": 132818,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-05",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Dharmapuri",
+    "total": 91053,
+    "extracted": 97661,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-06",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Dindigul",
+    "total": 113238,
+    "extracted": 123085,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-07",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Erode",
+    "total": 139795,
+    "extracted": 151016,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-08",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Kanchipuram",
+    "total": 132133,
+    "extracted": 143022,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-09",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Kanniyakumari",
+    "total": 108674,
+    "extracted": 120447,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-10",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Karur",
+    "total": 51796,
+    "extracted": 57457,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-11",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Krishnagiri",
+    "total": 118751,
+    "extracted": 124107,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "TN-12",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Madurai",
+    "total": 178780,
+    "extracted": 181259,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "TN-13",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Nagapattinam",
+    "total": 37667,
+    "extracted": 39312,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-14",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Namakkal",
+    "total": 104473,
+    "extracted": 22,
+    "pending": 104451,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-15",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "The Nilgiris",
+    "total": 37368,
+    "extracted": 38961,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-16",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Perambalur",
+    "total": 22353,
+    "extracted": 23201,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-17",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Pudukkottai",
+    "total": 73041,
+    "extracted": 78932,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "TN-18",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Tirunelveli",
+    "total": 97795,
+    "extracted": 102405,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-19",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Ramanathapuram",
+    "total": 57312,
+    "extracted": 58814,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-20",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Salem",
+    "total": 223395,
+    "extracted": 239326,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-21",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Sivaganga",
+    "total": 58817,
+    "extracted": 62535,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-22",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Thanjavur",
+    "total": 114463,
+    "extracted": 121789,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "TN-23",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Theni",
+    "total": 67019,
+    "extracted": 71079,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-24",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Thiruvallur",
+    "total": 171129,
+    "extracted": 183905,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-25",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Thiruvarur",
+    "total": 54531,
+    "extracted": 56243,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-26",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Tuticorin",
+    "total": 90264,
+    "extracted": 97909,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-27",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Tiruchirappalli",
+    "total": 138007,
+    "extracted": 18,
+    "pending": 137989,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-28",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Tiruppur",
+    "total": 202160,
+    "extracted": 56,
+    "pending": 202104,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-29",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Tiruvannamalai",
+    "total": 98794,
+    "extracted": 106631,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-30",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Vellore",
+    "total": 110540,
+    "extracted": 110263,
+    "pending": 277,
+    "status": "Completed"
+  },
+  {
+    "code": "TN-31",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Villupuram",
+    "total": 99701,
+    "extracted": 106989,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-32",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Virudhunagar",
+    "total": 100340,
+    "extracted": 108197,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-33",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Kallakurichi",
+    "total": 40480,
+    "extracted": 43503,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-34",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Chengalpattu",
+    "total": 107481,
+    "extracted": 114656,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-35",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Ranipet",
+    "total": 50840,
+    "extracted": 53416,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-36",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Tirupathur",
+    "total": 57367,
+    "extracted": 60826,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-37",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Tenkasi",
+    "total": 53467,
+    "extracted": 58461,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TN-38",
+    "state_code": "TN",
+    "state_name": "Tamil Nadu",
+    "district_name": "Mayiladuthurai",
+    "total": 34786,
+    "extracted": 36829,
+    "pending": 0,
+    "status": "Pending"
+  },
+  {
+    "code": "TR-01",
+    "state_code": "TR",
+    "state_name": "Tripura",
+    "district_name": "Dhalai",
+    "total": 9222,
+    "extracted": 10870,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "TR-02",
+    "state_code": "TR",
+    "state_name": "Tripura",
+    "district_name": "Gomati",
+    "total": 14544,
+    "extracted": 17149,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "TR-03",
+    "state_code": "TR",
+    "state_name": "Tripura",
+    "district_name": "Khowai",
+    "total": 9881,
+    "extracted": 11309,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "TR-04",
+    "state_code": "TR",
+    "state_name": "Tripura",
+    "district_name": "North Tripura",
+    "total": 15859,
+    "extracted": 18439,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "TR-05",
+    "state_code": "TR",
+    "state_name": "Tripura",
+    "district_name": "Sepahijala",
+    "total": 13411,
+    "extracted": 15082,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "TR-06",
+    "state_code": "TR",
+    "state_name": "Tripura",
+    "district_name": "South Tripura",
+    "total": 12347,
+    "extracted": 13682,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "TR-07",
+    "state_code": "TR",
+    "state_name": "Tripura",
+    "district_name": "Unakoti",
+    "total": 10144,
+    "extracted": 10111,
+    "pending": 33,
+    "status": "Completed"
+  },
+  {
+    "code": "TR-08",
+    "state_code": "TR",
+    "state_name": "Tripura",
+    "district_name": "West Tripura",
+    "total": 34806,
+    "extracted": 38535,
+    "pending": 0,
+    "status": "Completed"
+  },
+  {
+    "code": "TS-01",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Adilabad",
+    "total": 29900,
+    "extracted": 122,
+    "pending": 29778,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-02",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Bhadradri Kothagudem",
+    "total": 39733,
+    "extracted": 10,
+    "pending": 39723,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-03",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Hanumakonda",
+    "total": 48081,
+    "extracted": 1,
+    "pending": 48080,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-04",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Hyderabad",
+    "total": 319552,
+    "extracted": 46,
+    "pending": 319506,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-05",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Jagitial",
+    "total": 39405,
+    "extracted": 37,
+    "pending": 39368,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-06",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Jangoan",
+    "total": 20636,
+    "extracted": 30,
+    "pending": 20606,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-07",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Jayashankar Bhupalapally",
+    "total": 12737,
+    "extracted": 22,
+    "pending": 12715,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-08",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Jogulamba Gadwal",
+    "total": 19144,
+    "extracted": 41,
+    "pending": 19103,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-09",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Kamareddy",
+    "total": 34163,
+    "extracted": 133,
+    "pending": 34030,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-10",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Karimnagar",
+    "total": 70278,
+    "extracted": 0,
+    "pending": 70278,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-11",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Khammam",
+    "total": 66016,
+    "extracted": 2,
+    "pending": 66014,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-12",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Komaram Bheem Asifabad",
+    "total": 14905,
+    "extracted": 143,
+    "pending": 14762,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-13",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Mahabubabad",
+    "total": 26448,
+    "extracted": 16,
+    "pending": 26432,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-14",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Mahabubnagar",
+    "total": 50451,
+    "extracted": 11,
+    "pending": 50440,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-15",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Mancherial",
+    "total": 40459,
+    "extracted": 15,
+    "pending": 40444,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-16",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Medak",
+    "total": 33026,
+    "extracted": 22,
+    "pending": 33004,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-17",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Medchal Malkajgiri",
+    "total": 180543,
+    "extracted": 42,
+    "pending": 180501,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-18",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Mulugu",
+    "total": 7914,
+    "extracted": 52,
+    "pending": 7862,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-19",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Nagarkurnool",
+    "total": 28073,
+    "extracted": 67,
+    "pending": 28006,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-20",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Nalgonda",
+    "total": 88280,
+    "extracted": 17,
+    "pending": 88263,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-21",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Narayanpet",
+    "total": 12978,
+    "extracted": 18,
+    "pending": 12960,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-22",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Nirmal",
+    "total": 30638,
+    "extracted": 4,
+    "pending": 30634,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-23",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Nizamabad",
+    "total": 77860,
+    "extracted": 36,
+    "pending": 77824,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-24",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Peddapalli",
+    "total": 31931,
+    "extracted": 83,
+    "pending": 31848,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-25",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Rajanna Sircilla",
+    "total": 28518,
+    "extracted": 7,
+    "pending": 28511,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-26",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Ranga Reddi",
+    "total": 219689,
+    "extracted": 4,
+    "pending": 219685,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-27",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Sangareddy",
+    "total": 66912,
+    "extracted": 4,
+    "pending": 66908,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-28",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Siddipet",
+    "total": 51651,
+    "extracted": 5,
+    "pending": 51646,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-29",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Suryapet",
+    "total": 48495,
+    "extracted": 5,
+    "pending": 48490,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-30",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Vikarabad",
+    "total": 31879,
+    "extracted": 155,
+    "pending": 31724,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-31",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Wanaparthy",
+    "total": 22038,
+    "extracted": 29,
+    "pending": 22009,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-32",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Warangal",
+    "total": 47921,
+    "extracted": 16,
+    "pending": 47905,
+    "status": "Pending"
+  },
+  {
+    "code": "TS-33",
+    "state_code": "TS",
+    "state_name": "Telangana",
+    "district_name": "Yadadri Bhuvanagiri",
+    "total": 39549,
+    "extracted": 7,
+    "pending": 39542,
+    "status": "Pending"
+  },
+  {
+    "code": "UK-01",
+    "state_code": "UK",
+    "state_name": "Uttarakhand",
+    "district_name": "Almora",
+    "total": 15051,
+    "extracted": 59,
+    "pending": 14992,
+    "status": "Pending"
+  },
+  {
+    "code": "UK-02",
+    "state_code": "UK",
+    "state_name": "Uttarakhand",
+    "district_name": "Bageshwar",
+    "total": 6047,
+    "extracted": 75,
+    "pending": 5972,
+    "status": "Pending"
+  },
+  {
+    "code": "UK-03",
+    "state_code": "UK",
+    "state_name": "Uttarakhand",
+    "district_name": "Chamoli",
+    "total": 11977,
+    "extracted": 60,
+    "pending": 11917,
+    "status": "Pending"
+  },
+  {
+    "code": "UK-04",
+    "state_code": "UK",
+    "state_name": "Uttarakhand",
+    "district_name": "Champawat",
+    "total": 7906,
+    "extracted": 4,
+    "pending": 7902,
+    "status": "Pending"
+  },
+  {
+    "code": "UK-05",
+    "state_code": "UK",
+    "state_name": "Uttarakhand",
+    "district_name": "Dehradun",
+    "total": 126406,
+    "extracted": 132,
+    "pending": 126274,
+    "status": "Pending"
+  },
+  {
+    "code": "UK-06",
+    "state_code": "UK",
+    "state_name": "Uttarakhand",
+    "district_name": "Haridwar",
+    "total": 88824,
+    "extracted": 9,
+    "pending": 88815,
+    "status": "Pending"
+  },
+  {
+    "code": "UK-07",
+    "state_code": "UK",
+    "state_name": "Uttarakhand",
+    "district_name": "Nainital",
+    "total": 45747,
+    "extracted": 50,
+    "pending": 45697,
+    "status": "Pending"
+  },
+  {
+    "code": "UK-08",
+    "state_code": "UK",
+    "state_name": "Uttarakhand",
+    "district_name": "Pauri Garhwal",
+    "total": 16466,
+    "extracted": 21,
+    "pending": 16445,
+    "status": "Pending"
+  },
+  {
+    "code": "UK-09",
+    "state_code": "UK",
+    "state_name": "Uttarakhand",
+    "district_name": "Pithoragarh",
+    "total": 12562,
+    "extracted": 47,
+    "pending": 12515,
+    "status": "Pending"
+  },
+  {
+    "code": "UK-10",
+    "state_code": "UK",
+    "state_name": "Uttarakhand",
+    "district_name": "Rudra Prayag",
+    "total": 7114,
+    "extracted": 59,
+    "pending": 7055,
+    "status": "Pending"
+  },
+  {
+    "code": "UK-11",
+    "state_code": "UK",
+    "state_name": "Uttarakhand",
+    "district_name": "Tehri Garhwal",
+    "total": 14713,
+    "extracted": 5,
+    "pending": 14708,
+    "status": "Pending"
+  },
+  {
+    "code": "UK-12",
+    "state_code": "UK",
+    "state_name": "Uttarakhand",
+    "district_name": "Udham Singh Nagar",
+    "total": 90122,
+    "extracted": 22,
+    "pending": 90100,
+    "status": "Pending"
+  },
+  {
+    "code": "UK-13",
+    "state_code": "UK",
+    "state_name": "Uttarakhand",
+    "district_name": "Uttarkashi",
+    "total": 9901,
+    "extracted": 32,
+    "pending": 9869,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-01",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Agra",
+    "total": 184695,
+    "extracted": 29,
+    "pending": 184666,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-02",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Aligarh",
+    "total": 110940,
+    "extracted": 28,
+    "pending": 110912,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-03",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Ambedkar Nagar",
+    "total": 48523,
+    "extracted": 70,
+    "pending": 48453,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-04",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Amethi",
+    "total": 34483,
+    "extracted": 13,
+    "pending": 34470,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-05",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Amroha",
+    "total": 38876,
+    "extracted": 7,
+    "pending": 38869,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-06",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Auraiya",
+    "total": 25043,
+    "extracted": 12,
+    "pending": 25031,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-07",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Ayodhya",
+    "total": 55896,
+    "extracted": 59,
+    "pending": 55837,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-08",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Azamgarh",
+    "total": 105628,
+    "extracted": 26,
+    "pending": 105602,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-09",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Baghpat",
+    "total": 42896,
+    "extracted": 83,
+    "pending": 42813,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-10",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Bahraich",
+    "total": 46365,
+    "extracted": 1,
+    "pending": 46364,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-11",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Ballia",
+    "total": 49279,
+    "extracted": 41,
+    "pending": 49238,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-12",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Balrampur",
+    "total": 22998,
+    "extracted": 83,
+    "pending": 22915,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-13",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Banda",
+    "total": 23298,
+    "extracted": 61,
+    "pending": 23237,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-14",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Barabanki",
+    "total": 55168,
+    "extracted": 43,
+    "pending": 55125,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-15",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Bareilly",
+    "total": 125638,
+    "extracted": 46,
+    "pending": 125592,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-16",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Basti",
+    "total": 45157,
+    "extracted": 309,
+    "pending": 44848,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-17",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Bhadohi",
+    "total": 40089,
+    "extracted": 89,
+    "pending": 40000,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-18",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Bijnor",
+    "total": 65199,
+    "extracted": 89,
+    "pending": 65110,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-19",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Budaun",
+    "total": 46849,
+    "extracted": 109,
+    "pending": 46740,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-20",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Bulandshahr",
+    "total": 82518,
+    "extracted": 22,
+    "pending": 82496,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-21",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Chandauli",
+    "total": 39887,
+    "extracted": 50,
+    "pending": 39837,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-22",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Chitrakoot",
+    "total": 15319,
+    "extracted": 100,
+    "pending": 15219,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-23",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Deoria",
+    "total": 56945,
+    "extracted": 158,
+    "pending": 56787,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-24",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Etah",
+    "total": 32968,
+    "extracted": 33,
+    "pending": 32935,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-25",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Etawah",
+    "total": 35583,
+    "extracted": 52,
+    "pending": 35531,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-26",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Farrukhabad",
+    "total": 32035,
+    "extracted": 65,
+    "pending": 31970,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-27",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Fatehpur",
+    "total": 36943,
+    "extracted": 21,
+    "pending": 36922,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-28",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Firozabad",
+    "total": 64946,
+    "extracted": 15,
+    "pending": 64931,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-29",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Gautam Buddha Nagar",
+    "total": 208448,
+    "extracted": 23,
+    "pending": 208425,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-30",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Ghaziabad",
+    "total": 225397,
+    "extracted": 34,
+    "pending": 225363,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-31",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Ghazipur",
+    "total": 71818,
+    "extracted": 17,
+    "pending": 71801,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-32",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Gonda",
+    "total": 55482,
+    "extracted": 101,
+    "pending": 55381,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-33",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Gorakhpur",
+    "total": 115308,
+    "extracted": 37,
+    "pending": 115271,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-34",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Hamirpur",
+    "total": 19860,
+    "extracted": 0,
+    "pending": 19860,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-35",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Hapur",
+    "total": 46162,
+    "extracted": 40,
+    "pending": 46122,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-36",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Hardoi",
+    "total": 60029,
+    "extracted": 10,
+    "pending": 60019,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-37",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Hathras",
+    "total": 36283,
+    "extracted": 57,
+    "pending": 36226,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-38",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Jalaun",
+    "total": 29898,
+    "extracted": 2,
+    "pending": 29896,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-39",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Jaunpur",
+    "total": 87558,
+    "extracted": 12,
+    "pending": 87546,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-40",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Jhansi",
+    "total": 65388,
+    "extracted": 151,
+    "pending": 65237,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-41",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Kannauj",
+    "total": 28639,
+    "extracted": 54,
+    "pending": 28585,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-42",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Kanpur Dehat",
+    "total": 32538,
+    "extracted": 37,
+    "pending": 32501,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-43",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Kanpur Nagar",
+    "total": 181331,
+    "extracted": 40,
+    "pending": 181291,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-44",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Kasganj",
+    "total": 23965,
+    "extracted": 123,
+    "pending": 23842,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-45",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Kaushambi",
+    "total": 23748,
+    "extracted": 18,
+    "pending": 23730,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-46",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Kushinagar",
+    "total": 54700,
+    "extracted": 83,
+    "pending": 54617,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-47",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Lakhimpur Kheri",
+    "total": 53425,
+    "extracted": 263,
+    "pending": 53162,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-48",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Lalitpur",
+    "total": 24357,
+    "extracted": 171,
+    "pending": 24186,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-49",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Lucknow",
+    "total": 262606,
+    "extracted": 159,
+    "pending": 262447,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-50",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Maharajganj",
+    "total": 44805,
+    "extracted": 34,
+    "pending": 44771,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-51",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Mahoba",
+    "total": 17200,
+    "extracted": 3,
+    "pending": 17197,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-52",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Mainpuri",
+    "total": 38462,
+    "extracted": 15,
+    "pending": 38447,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-53",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Mathura",
+    "total": 106848,
+    "extracted": 26,
+    "pending": 106822,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-54",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Mau",
+    "total": 58981,
+    "extracted": 8,
+    "pending": 58973,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-55",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Meerut",
+    "total": 158561,
+    "extracted": 34,
+    "pending": 158527,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-56",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Mirzapur",
+    "total": 49547,
+    "extracted": 132,
+    "pending": 49415,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-57",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Moradabad",
+    "total": 103863,
+    "extracted": 4,
+    "pending": 103859,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-58",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Muzaffarnagar",
+    "total": 89493,
+    "extracted": 3,
+    "pending": 89490,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-59",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Pilibhit",
+    "total": 43204,
+    "extracted": 3,
+    "pending": 43201,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-60",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Pratapgarh",
+    "total": 52923,
+    "extracted": 15,
+    "pending": 52908,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-61",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Prayagraj",
+    "total": 137866,
+    "extracted": 46,
+    "pending": 137820,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-62",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Rae Bareli",
+    "total": 58606,
+    "extracted": 80,
+    "pending": 58526,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-63",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Rampur",
+    "total": 56323,
+    "extracted": 55,
+    "pending": 56268,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-64",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Saharanpur",
+    "total": 122317,
+    "extracted": 43,
+    "pending": 122274,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-65",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Sambhal",
+    "total": 40175,
+    "extracted": 12,
+    "pending": 40163,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-66",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Sant Kabir Nagar",
+    "total": 30565,
+    "extracted": 8,
+    "pending": 30557,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-67",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Shahjahanpur",
+    "total": 53025,
+    "extracted": 18,
+    "pending": 53007,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-68",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Shamli",
+    "total": 38298,
+    "extracted": 71,
+    "pending": 38227,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-69",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Shravasti",
+    "total": 13977,
+    "extracted": 3,
+    "pending": 13974,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-70",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Siddharthnagar",
+    "total": 34956,
+    "extracted": 92,
+    "pending": 34864,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-71",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Sitapur",
+    "total": 56411,
+    "extracted": 4,
+    "pending": 56407,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-72",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Sonbhadra",
+    "total": 34541,
+    "extracted": 229,
+    "pending": 34312,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-73",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Sultanpur",
+    "total": 41986,
+    "extracted": 100,
+    "pending": 41886,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-74",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Unnao",
+    "total": 46577,
+    "extracted": 70,
+    "pending": 46507,
+    "status": "Pending"
+  },
+  {
+    "code": "UP-75",
+    "state_code": "UP",
+    "state_name": "Uttar Pradesh",
+    "district_name": "Varanasi",
+    "total": 177382,
+    "extracted": 20,
+    "pending": 177362,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-01",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Alipurduar",
+    "total": 32750,
+    "extracted": 35,
+    "pending": 32715,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-02",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Bankura",
+    "total": 53400,
+    "extracted": 28,
+    "pending": 53372,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-03",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Birbhum",
+    "total": 72519,
+    "extracted": 41,
+    "pending": 72478,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-04",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Coochbehar",
+    "total": 62295,
+    "extracted": 14,
+    "pending": 62281,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-05",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Dakshin Dinajpur",
+    "total": 30562,
+    "extracted": 50,
+    "pending": 30512,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-06",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Darjeeling",
+    "total": 62410,
+    "extracted": 40,
+    "pending": 62370,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-07",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "East Medinipur",
+    "total": 146244,
+    "extracted": 57,
+    "pending": 146187,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-08",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Hooghly",
+    "total": 121490,
+    "extracted": 43,
+    "pending": 121447,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-09",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Howrah",
+    "total": 129337,
+    "extracted": 10,
+    "pending": 129327,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-10",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Jalpaiguri",
+    "total": 60554,
+    "extracted": 19,
+    "pending": 60535,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-11",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Jhargram",
+    "total": 16376,
+    "extracted": 27,
+    "pending": 16349,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-12",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Kalimpong",
+    "total": 7712,
+    "extracted": 16,
+    "pending": 7696,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-13",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Kolkota",
+    "total": 195710,
+    "extracted": 0,
+    "pending": 195710,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-14",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Malda",
+    "total": 89426,
+    "extracted": 31,
+    "pending": 89395,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-15",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Murshidabad",
+    "total": 144628,
+    "extracted": 29,
+    "pending": 144599,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-16",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Nadia",
+    "total": 114341,
+    "extracted": 4,
+    "pending": 114337,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-17",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "North 24 Praganas",
+    "total": 260562,
+    "extracted": 21,
+    "pending": 260541,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-18",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Paschim Bardhaman",
+    "total": 75691,
+    "extracted": 5,
+    "pending": 75686,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-19",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Purba Bardhaman",
+    "total": 104816,
+    "extracted": 6,
+    "pending": 104810,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-20",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Purulia",
+    "total": 36521,
+    "extracted": 21,
+    "pending": 36500,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-21",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "South 24 Praganas",
+    "total": 181177,
+    "extracted": 68,
+    "pending": 181109,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-22",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "Uttar Dinajpur",
+    "total": 62930,
+    "extracted": 95,
+    "pending": 62835,
+    "status": "Pending"
+  },
+  {
+    "code": "WB-23",
+    "state_code": "WB",
+    "state_name": "West Bengal",
+    "district_name": "West Medinipur",
+    "total": 113844,
+    "extracted": 121,
+    "pending": 113723,
+    "status": "Pending"
+  }
+]

@@ -227,14 +227,23 @@ def run_headless_cli(args):
     from client.core.district_manager import (
         find_district_last_number,
         get_districts_for_state,
+        get_states_by_least_pending,
+        get_districts_by_least_pending,
         discover_stale_or_unstarted_districts
     )
 
-    # Prepare state queue if state argument provided
+    # Initialize priority queue: default to least pending records across India if no specific state given
     state_queue = []
-    if args.state:
+    preferred_state_arg = args.state
+    if args.state and args.state.strip().lower() != "least_pending":
         state_queue = get_districts_for_state(args.state)
-        logging.info(f"Target state queue initialized for {args.state.upper()} ({len(state_queue)} districts): {state_queue}")
+        logging.info(f"Target state queue initialized for {args.state.upper()} ({len(state_queue)} districts, ordered by least pending): {state_queue[:10]}...")
+    else:
+        # Nationwide least pending priority
+        least_pending_dists = get_districts_by_least_pending()
+        state_queue = [d["code"] for d in least_pending_dists]
+        preferred_state_arg = "least_pending"
+        logging.info(f"Priority queue initialized nationwide by MINIMUM PENDING RECORDS ({len(state_queue)} districts): {[d['code'] + ' (' + str(d['pending']) + ')' for d in least_pending_dists[:8]]}...")
 
     async def main_loop():
         nonlocal districts_completed_count, claim_attempts
@@ -247,8 +256,8 @@ def run_headless_cli(args):
                 logging.info(f"Target districts ({args.max_districts}) completed. Worker stopping gracefully.")
                 break
 
-            logging.info("Claiming next task from central coordinator...")
-            claim_res = await coordinator.claim_task(preferred_state=args.state, preferred_district=args.district)
+            logging.info("Claiming next task from central coordinator (least pending priority)...")
+            claim_res = await coordinator.claim_task(preferred_state=preferred_state_arg, preferred_district=args.district)
 
             dist_code = None
             start_num = 1
@@ -264,7 +273,9 @@ def run_headless_cli(args):
                 prev_extracted = int(claim_res.get("prev_extracted") or 0)
                 last_record = claim_res.get("last_record", "")
                 last_dor = claim_res.get("last_dor", "")
+                pending_count = claim_res.get("pending", "N/A")
                 claim_attempts = 0
+                logging.info(f"Coordinator Assigned Task: {dist_code} (Pending: {pending_count}, Resuming #{start_num})")
             else:
                 claim_attempts += 1
                 msg = claim_res.get("message", "No available districts matching criteria.")
@@ -272,7 +283,6 @@ def run_headless_cli(args):
 
                 if args.district:
                     # DIRECT DISTRICT OVERRIDE:
-                    # Proceed directly with requested district, resolving starting number from local archives / sheet
                     dist_code = args.district.upper().strip()
                     last_info = find_district_last_number(dist_code)
                     start_num = max(1, last_info.get("max_number", 0) + 1)
@@ -280,34 +290,33 @@ def run_headless_cli(args):
                     last_dor = last_info.get("last_dor", "")
                     prev_extracted = last_info.get("max_number", 0)
                     logging.info(f"Direct District Override: Proceeding with {dist_code} (Resuming from #{start_num}, Last DOR: {last_dor or 'None'}).")
-                elif args.state and state_queue:
-                    # STATE QUEUE SEQUENCE:
-                    # Advance through each district in the state
+                elif state_queue:
+                    # LOCAL LEAST-PENDING PRIORITY QUEUE:
+                    # Advance through districts ordered by least pending
                     dist_code = state_queue.pop(0)
                     last_info = find_district_last_number(dist_code)
                     start_num = max(1, last_info.get("max_number", 0) + 1)
                     last_record = last_info.get("last_record", "")
                     last_dor = last_info.get("last_dor", "")
                     prev_extracted = last_info.get("max_number", 0)
-                    logging.info(f"Autonomous State Sequence: Claiming {dist_code} ({len(state_queue)} remaining in state queue, Resuming from #{start_num}).")
+                    logging.info(f"Local Least-Pending Sequence: Claiming {dist_code} ({len(state_queue)} remaining in queue, Resuming from #{start_num}).")
                 else:
                     # FLEET AUTONOMOUS FALLBACK:
-                    # Coordinator rejected claim (e.g. all marked Completed in sheet).
-                    # Automatically select from unstarted/stale districts across India,
-                    # offset by machine identity to avoid collisions between workers!
-                    stale_list = discover_stale_or_unstarted_districts()
-                    if stale_list:
+                    # Pick from least pending districts across India
+                    uncompleted = [d for d in get_districts_by_least_pending() if d.get("status", "").lower() != "completed" and d.get("pending", 0) > 0]
+                    if uncompleted:
                         import hashlib
                         m_hash = int(hashlib.md5(machine.encode()).hexdigest(), 16)
-                        pick_idx = (m_hash + districts_completed_count * 7) % len(stale_list)
-                        cand = stale_list[pick_idx]
+                        pool_size = min(5, len(uncompleted))
+                        pick_idx = (m_hash + districts_completed_count) % pool_size
+                        cand = uncompleted[pick_idx]
                         dist_code = cand["code"]
                         last_info = find_district_last_number(dist_code)
                         start_num = max(1, last_info.get("max_number", 0) + 1)
                         last_record = last_info.get("last_record", "")
                         last_dor = last_info.get("last_dor", "")
                         prev_extracted = last_info.get("max_number", 0)
-                        logging.info(f"Fleet Autonomous Fallback: Claiming stale district {dist_code} ({cand['name']}, {cand['state']}) for worker '{machine}' (Resuming from #{start_num}).")
+                        logging.info(f"Fleet Autonomous Fallback: Claiming least-pending district {dist_code} ({cand['district_name']}, {cand['state_name']} - pending: {cand['pending']}) for worker '{machine}' (Resuming from #{start_num}).")
                     else:
                         logging.info("No tasks available from coordinator and no direct targets queued. Waiting 20s before retry...")
                         if not getattr(args, "no_auto_update", False):
