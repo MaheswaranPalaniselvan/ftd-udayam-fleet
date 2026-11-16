@@ -26,11 +26,15 @@ def compress_subfolders(
     target_dir: Path,
     dry_run: bool = False,
     delete_after: bool = False,
+    update_existing: bool = False,
+    exclude: list = None,
     mx: int = 9,
 ) -> None:
     if not target_dir.is_dir():
         print(f"Error: '{target_dir}' is not a valid directory.", file=sys.stderr)
         sys.exit(1)
+
+    exclude_set = set(e.upper() for e in (exclude or []))
 
     try:
         seven_zip_bin = get_7z_executable()
@@ -49,10 +53,15 @@ def compress_subfolders(
     skipped = 0
 
     for folder in sorted(subfolders):
+        if folder.name.upper() in exclude_set:
+            print(f"[EXCLUDE] Skipping active district folder: {folder.name}")
+            skipped += 1
+            continue
+
         archive_path = folder.with_suffix(".7z")
 
-        # Skip if the .7z archive already exists
-        if archive_path.exists():
+        # Skip if the .7z archive already exists and not updating
+        if archive_path.exists() and not update_existing:
             print(f"[SKIP] Archive already exists: {archive_path.name}")
             skipped += 1
             continue
@@ -121,6 +130,18 @@ def main():
         help="Delete the original subfolder after successful compression",
     )
     parser.add_argument(
+        "-u",
+        "--update",
+        action="store_true",
+        help="Update or append to existing .7z archives instead of skipping them",
+    )
+    parser.add_argument(
+        "--exclude",
+        nargs="*",
+        default=[],
+        help="District names/folders to exclude from compression (e.g. --exclude AP-03)",
+    )
+    parser.add_argument(
         "-mx",
         type=int,
         default=9,
@@ -136,6 +157,8 @@ def main():
         target_dir=target_path,
         dry_run=args.dry_run,
         delete_after=args.delete_source,
+        update_existing=args.update,
+        exclude=args.exclude,
         mx=args.mx,
     )
 
