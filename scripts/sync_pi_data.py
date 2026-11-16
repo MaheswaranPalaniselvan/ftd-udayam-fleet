@@ -577,6 +577,30 @@ def main():
         if upload_ok:
             sheet_ok = sync_district_to_sheet(args.url, stats)
 
+            # Delete folder and zipped file once successfully uploaded to Google Drive
+            folder_to_delete = folder if target["type"] == "folder" else (out_dir / prefix)
+            if folder_to_delete.is_dir():
+                try:
+                    shutil.rmtree(folder_to_delete)
+                    log(f"  🗑️ Deleted folder: {folder_to_delete}")
+                except Exception as e:
+                    log(f"  ⚠️ Could not delete folder {folder_to_delete}: {e}")
+
+            failed_target = failed_dir / prefix
+            if failed_target.is_dir():
+                try:
+                    shutil.rmtree(failed_target)
+                    log(f"  🗑️ Deleted failed folder: {failed_target}")
+                except Exception as e:
+                    pass
+
+            if archive_path.is_file():
+                try:
+                    archive_path.unlink()
+                    log(f"  🗑️ Deleted zipped archive after Drive upload: {archive_path.name}")
+                except Exception as e:
+                    log(f"  ⚠️ Could not delete archive {archive_path.name}: {e}")
+
         summary.append({
             "district": prefix,
             "extracted": stats["total_extracted"],

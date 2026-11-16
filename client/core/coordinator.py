@@ -130,24 +130,61 @@ class CentralCoordinator:
             return False
 
     async def upload_archive_to_drive(self, archive_path: Path, overwrite: bool = False) -> dict:
-        """Uploads a compressed .7z file directly to Google Drive via Apps Script."""
+        """Uploads a compressed .7z file directly to Google Drive via Apps Script (with smart chunking for > 22MB)."""
         if not self.web_app_url or not archive_path.exists():
             return {"success": False, "message": "Invalid URL or archive not found"}
 
+        size_bytes = archive_path.stat().st_size
+        max_chunk = 22 * 1024 * 1024  # 22 MB chunk threshold for Apps Script limits
+
+        if size_bytes <= max_chunk:
+            with open(archive_path, "rb") as f:
+                b64_data = base64.b64encode(f.read()).decode("utf-8")
+
+            payload = {
+                "action": "upload_archive",
+                "filename": archive_path.name,
+                "data": b64_data,
+                "overwrite": overwrite
+            }
+
+            try:
+                resp = await self.client.post(self.web_app_url, json=payload, timeout=120.0)
+                if resp.status_code == 200:
+                    return resp.json()
+                return {"success": False, "message": f"Upload failed ({resp.status_code}): {resp.text}"}
+            except Exception as e:
+                return {"success": False, "message": str(e)}
+
+        # Large archives (>22MB): upload in consecutive chunks
+        import math
+        num_parts = math.ceil(size_bytes / max_chunk)
+        logging.info(f"Archive {archive_path.name} is {size_bytes / (1024*1024):.1f} MB. Splitting into {num_parts} parts for Google Drive...")
+
+        last_resp = {"success": True}
         with open(archive_path, "rb") as f:
-            b64_data = base64.b64encode(f.read()).decode("utf-8")
+            for part_idx in range(1, num_parts + 1):
+                chunk_data = f.read(max_chunk)
+                part_name = f"{archive_path.stem}.part{part_idx:02d}{archive_path.suffix}"
+                b64_chunk = base64.b64encode(chunk_data).decode("utf-8")
 
-        payload = {
-            "action": "upload_archive",
-            "filename": archive_path.name,
-            "data": b64_data,
-            "overwrite": overwrite
-        }
+                payload = {
+                    "action": "upload_archive",
+                    "filename": part_name,
+                    "data": b64_chunk,
+                    "overwrite": overwrite
+                }
 
-        try:
-            resp = await self.client.post(self.web_app_url, json=payload, timeout=120.0)
-            if resp.status_code == 200:
-                return resp.json()
-            return {"success": False, "message": f"Upload failed ({resp.status_code}): {resp.text}"}
-        except Exception as e:
-            return {"success": False, "message": str(e)}
+                try:
+                    resp = await self.client.post(self.web_app_url, json=payload, timeout=120.0)
+                    if resp.status_code == 200:
+                        res_json = resp.json()
+                        if not res_json.get("success"):
+                            return {"success": False, "message": f"Part {part_idx}/{num_parts} error: {res_json.get('message')}"}
+                        last_resp = res_json
+                    else:
+                        return {"success": False, "message": f"Part {part_idx}/{num_parts} HTTP {resp.status_code}: {resp.text}"}
+                except Exception as e:
+                    return {"success": False, "message": f"Part {part_idx}/{num_parts} upload failed: {e}"}
+
+        return last_resp

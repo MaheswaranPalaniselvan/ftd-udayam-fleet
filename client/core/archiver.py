@@ -78,34 +78,66 @@ async def compress_and_upload_district(
     prefix: str,
     results_dir: Path = Path("results"),
     coordinator: CentralCoordinator = None,
-    delete_source_after: bool = False,
+    delete_source_after: bool = True,
+    delete_archive_after: bool = True,
     overwrite: bool = False
 ) -> bool:
     """
     Compresses a completed district and uploads it to Google Drive.
+    Once successfully uploaded, deletes both the uncompressed folder
+    and the zipped archive to reclaim local disk space.
     """
     folder_path = results_dir / prefix
-    if not folder_path.is_dir():
-        archive_candidate = results_dir / f"{prefix}.7z"
-        if archive_candidate.is_file():
-            archive_path = archive_candidate
-        else:
-            logging.warning(f"No results folder or archive found for {prefix}")
-            return False
+    archive_path = results_dir / f"{prefix}.7z"
+
+    if folder_path.is_dir():
+        # Compress first, but KEEP source folder until upload confirmation to prevent data loss
+        archive_path = await asyncio.to_thread(compress_district_folder, folder_path, False)
+    elif archive_path.is_file():
+        pass
     else:
-        archive_path = await asyncio.to_thread(compress_district_folder, folder_path, delete_source_after)
+        logging.warning(f"No results folder or archive found for {prefix}")
+        return False
 
     if not archive_path or not archive_path.is_file():
+        logging.error(f"Failed to find or create valid archive for {prefix}")
         return False
 
     if coordinator:
-        logging.info(f"Uploading {archive_path.name} ({archive_path.stat().st_size / (1024*1024):.1f} MB) to Google Drive (overwrite={overwrite})...")
+        size_mb = archive_path.stat().st_size / (1024 * 1024)
+        logging.info(f"Uploading {archive_path.name} ({size_mb:.1f} MB) to Google Drive (overwrite={overwrite})...")
         res = await coordinator.upload_archive_to_drive(archive_path, overwrite=overwrite)
         if res.get("success"):
-            logging.info(f"[SUCCESS] Archive uploaded to Google Drive: {res.get('url')}")
+            logging.info(f"[SUCCESS] Archive uploaded to Google Drive: {res.get('url') or res.get('file_id') or 'OK'}")
+
+            # 1. Delete source folder once uploaded
+            if delete_source_after and folder_path.is_dir():
+                try:
+                    shutil.rmtree(folder_path)
+                    logging.info(f"🗑️ [CLEANUP] Deleted uncompressed folder: {folder_path}")
+                except Exception as e:
+                    logging.warning(f"Could not remove source folder '{folder_path}': {e}")
+
+            # 2. Delete corresponding failed folder if exists
+            failed_folder = Path("failed") / prefix
+            if delete_source_after and failed_folder.is_dir():
+                try:
+                    shutil.rmtree(failed_folder)
+                    logging.info(f"🗑️ [CLEANUP] Deleted failed folder: {failed_folder}")
+                except Exception as e:
+                    pass
+
+            # 3. Delete zipped file (.7z) once uploaded to Google Drive
+            if delete_archive_after and archive_path.is_file():
+                try:
+                    archive_path.unlink()
+                    logging.info(f"🗑️ [CLEANUP] Deleted zipped archive after Drive upload: {archive_path.name}")
+                except Exception as e:
+                    logging.warning(f"Could not remove uploaded archive '{archive_path}': {e}")
+
             return True
         else:
-            logging.error(f"Google Drive upload failed: {res.get('message')}")
+            logging.error(f"Google Drive upload failed: {res.get('message')}. Local files preserved.")
             return False
 
     return True
