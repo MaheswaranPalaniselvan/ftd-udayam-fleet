@@ -219,12 +219,16 @@ async def process_udyam_number(page: Page, udyam_number: str, max_retries: int =
     for attempt in range(1, max_retries + 1):
         try:
             if "Udyam_Verify.aspx" not in page.url:
-                for nav_attempt in range(2):
-                    try:
-                        await page.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=8000)
-                        break
-                    except Exception:
-                        await asyncio.sleep(0.5)
+                try:
+                    await page.goto(HOME_URL, wait_until="domcontentloaded", timeout=10000)
+                    menu_btn = page.locator('a:has-text("Print/Verify")').first
+                    await menu_btn.hover()
+                    await asyncio.sleep(0.2)
+                    verify_link = page.locator('a:has-text("Verify Udyam Registration")').first
+                    await verify_link.click()
+                    await page.wait_for_load_state("domcontentloaded", timeout=8000)
+                except Exception:
+                    await page.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=8000)
 
             # Clean navbar to accelerate rendering
             try:
@@ -524,9 +528,18 @@ async def execute_district_extraction(
                 page = await session.context.new_page()
                 await page.route("**/*", abort_unnecessary_resources)
                 try:
-                    await page.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=4000)
+                    await page.goto(HOME_URL, wait_until="domcontentloaded", timeout=10000)
+                    menu_btn = page.locator('a:has-text("Print/Verify")').first
+                    await menu_btn.hover()
+                    await asyncio.sleep(0.2)
+                    verify_link = page.locator('a:has-text("Verify Udyam Registration")').first
+                    await verify_link.click()
+                    await page.wait_for_load_state("domcontentloaded", timeout=8000)
                 except Exception:
-                    pass
+                    try:
+                        await page.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=8000)
+                    except Exception:
+                        pass
                 records_processed = 0
 
             t0 = time.perf_counter()
@@ -641,9 +654,18 @@ async def execute_district_extraction(
             p = await session.context.new_page()
             await p.route("**/*", abort_unnecessary_resources)
             try:
-                await p.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=12000)
+                await p.goto(HOME_URL, wait_until="domcontentloaded", timeout=12000)
+                menu_btn = p.locator('a:has-text("Print/Verify")').first
+                await menu_btn.hover()
+                await asyncio.sleep(0.2)
+                verify_link = p.locator('a:has-text("Verify Udyam Registration")').first
+                await verify_link.click()
+                await p.wait_for_load_state("domcontentloaded", timeout=8000)
             except Exception:
-                pass
+                try:
+                    await p.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=8000)
+                except Exception:
+                    pass
             pages.append(p)
 
         logging.info(f"🚀 Initialized {num_workers} parallel extraction workers for district {clean_prefix}...")
