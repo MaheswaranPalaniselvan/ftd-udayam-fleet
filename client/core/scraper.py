@@ -202,7 +202,7 @@ async def detect_failure_reason(page: Page, default_reason: str = "") -> str:
     return default_reason or "Record Not Found / Unregistered Number"
 
 
-async def process_udyam_number(page: Page, udyam_number: str) -> tuple[str, str, str, str, str]:
+async def process_udyam_number(page: Page, udyam_number: str, max_retries: int = MAX_RETRIES) -> tuple[str, str, str, str, str]:
     """
     Submits a single Udyam registration number and extracts details if found.
     Returns: (status, enterprise_name, html_content, failure_reason, dor_text)
@@ -216,21 +216,15 @@ async def process_udyam_number(page: Page, udyam_number: str) -> tuple[str, str,
         page._dialog_attached = True
         page._last_dialog_message = ""
 
-    for attempt in range(1, MAX_RETRIES + 1):
+    for attempt in range(1, max_retries + 1):
         try:
             if "Udyam_Verify.aspx" not in page.url:
-                try:
-                    await page.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=12000)
-                except Exception:
-                    await page.goto(HOME_URL, wait_until="domcontentloaded", timeout=12000)
-                    await page.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=12000)
-
-            if "Default.aspx" in page.url:
-                menu_btn = page.locator('a:has-text("Print/Verify")').first
-                await menu_btn.hover()
-                await asyncio.sleep(0.2)
-                async with page.expect_navigation(wait_until="domcontentloaded", timeout=10000):
-                    await page.locator('a:has-text("Verify Udyam Registration")').first.click()
+                for nav_attempt in range(2):
+                    try:
+                        await page.goto(VERIFY_URL, wait_until="domcontentloaded", timeout=8000)
+                        break
+                    except Exception:
+                        await asyncio.sleep(0.5)
 
             # Clean navbar to accelerate rendering
             try:
@@ -541,6 +535,9 @@ async def execute_district_extraction(
             records_processed += 1
 
             should_flush = False
+            should_probe = False
+            probe_n = 0
+
             async with batch_lock:
                 if status.startswith("Success"):
                     total_success += 1
@@ -571,66 +568,14 @@ async def execute_district_extraction(
                     logging.info(f"[W-{worker_id}] [{udyam_number}] FAIL -> Reason: {reason} ({elapsed}s)")
 
                     # BOUNDARY DETECTION 1: Live Cutting Edge Exit
-                    # ONLY exit if we have verified records from TODAY or recent business days (last 4 days)
                     if is_at_cutting_edge and consecutive_not_found >= 10:
                         logging.info(f"*** District {clean_prefix} caught up with live portal! Latest DOR: {latest_dor_str} with {consecutive_not_found} consecutive tail misses. Finished live pass. ***")
                         stop_event_local.set()
 
-                    # BOUNDARY DETECTION 2: Historical Gap Leapfrog Probing
-                    # If date is historical (e.g. 2020-2025) or unstarted, a sequence gap does NOT mean the district is complete!
+                    # BOUNDARY DETECTION 2: Historical Gap Leapfrog Probing (Trigger outside batch_lock)
                     elif consecutive_not_found >= 10 and not stop_event_local.is_set():
-                        async with probe_lock:
-                            if consecutive_not_found >= 10 and not stop_event_local.is_set():
-                                logging.info(f"[W-{worker_id}] Encountered sequence gap at #{current_n} for {clean_prefix} (Last DOR: {latest_dor_str or 'None'}). Initiating wide lookahead probe...")
-                                found_probe_num = None
-                                prev_offset = 0
-                                
-                                # Exponential probe ladder up to district limit (from +25 up to +100,000)
-                                probe_ladder = [25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000]
-                                for offset in probe_ladder:
-                                    target_p = current_n + offset
-                                    if target_p > limit:
-                                        target_p = limit
-                                    probe_id = f"UDYAM-{clean_prefix}-{target_p:07d}"
-                                    p_status, p_name, _, _, p_dor = await process_udyam_number(page, probe_id)
-                                    if p_status.startswith("Success"):
-                                        logging.info(f"✨ Wide probe HIT at {probe_id} ({p_name} | DOR: {p_dor})! Pinpointing first valid record after gap...")
-                                        
-                                        # Binary search between (current_n + prev_offset) and target_p to find the first valid record
-                                        low = current_n + prev_offset + 1
-                                        high = target_p
-                                        first_valid = target_p
-                                        while low <= high:
-                                            mid = (low + high) // 2
-                                            mid_id = f"UDYAM-{clean_prefix}-{mid:07d}"
-                                            m_status, _, _, _, _ = await process_udyam_number(page, mid_id)
-                                            if m_status.startswith("Success"):
-                                                first_valid = mid
-                                                high = mid - 1
-                                            else:
-                                                low = mid + 1
-                                        
-                                        found_probe_num = first_valid
-                                        break
-                                    
-                                    if target_p >= limit:
-                                        break
-                                    prev_offset = offset
-
-                                if found_probe_num is not None:
-                                    logging.info(f"🚀 Leapfrogged sequence gap! Resuming {clean_prefix} from #{found_probe_num}...")
-                                    async with num_lock:
-                                        nonlocal next_num
-                                        if next_num < found_probe_num:
-                                            next_num = found_probe_num
-                                    consecutive_not_found = 0
-                                else:
-                                    # All probes up to limit / 100,000 were empty!
-                                    if is_at_cutting_edge:
-                                        logging.info(f"*** District {clean_prefix} completed: Reached cutting edge DOR and no further records exist. ***")
-                                    else:
-                                        logging.warning(f"*** District {clean_prefix} sequence end: All wide probes up to #{limit} empty. Last DOR: {latest_dor_str}. ***")
-                                    stop_event_local.set()
+                        should_probe = True
+                        probe_n = current_n
 
                 if len(results_batch) + len(failed_batch) >= BATCH_SIZE:
                     should_flush = True
@@ -650,10 +595,45 @@ async def execute_district_extraction(
                         district_code=clean_prefix,
                         current_record=last_record_id,
                         current_dor=latest_dor_str,
-                        total_extracted=total_success,
+                        total_extracted=initial_success_count + total_success,
                         total_failed=total_failures,
                         speed_rpm=speed_rpm
                     )
+
+            if should_probe and not stop_event_local.is_set():
+                async with probe_lock:
+                    if consecutive_not_found >= 10 and not stop_event_local.is_set():
+                        logging.info(f"[W-{worker_id}] Sequence gap at #{probe_n} for {clean_prefix} (Last DOR: {latest_dor_str or 'None'}). Probing wide lookahead ladder...")
+                        found_probe_num = None
+                        probe_ladder = [50, 250, 1000, 5000, 25000, 100000]
+                        for offset in probe_ladder:
+                            target_p = probe_n + offset
+                            if target_p > limit:
+                                target_p = limit
+                            probe_id = f"UDYAM-{clean_prefix}-{target_p:07d}"
+                            logging.info(f"[W-{worker_id}] Checking probe #{target_p} (+{offset})...")
+                            p_status, p_name, _, _, p_dor = await process_udyam_number(page, probe_id, max_retries=1)
+                            if p_status.startswith("Success"):
+                                logging.info(f"✨ Wide probe HIT at {probe_id} ({p_name} | DOR: {p_dor})! Resuming from #{target_p}...")
+                                found_probe_num = target_p
+                                break
+                            if target_p >= limit:
+                                break
+
+                        if found_probe_num is not None:
+                            logging.info(f"🚀 Leapfrogged sequence gap! Resuming {clean_prefix} from #{found_probe_num}...")
+                            async with num_lock:
+                                nonlocal next_num
+                                if next_num < found_probe_num:
+                                    next_num = found_probe_num
+                            async with batch_lock:
+                                consecutive_not_found = 0
+                        else:
+                            if is_at_cutting_edge:
+                                logging.info(f"*** District {clean_prefix} completed: Reached cutting edge DOR and no further records exist. ***")
+                            else:
+                                logging.warning(f"*** District {clean_prefix} sequence end: All wide probes up to #{limit} empty. Last DOR: {latest_dor_str}. ***")
+                            stop_event_local.set()
 
     async with AsyncStealthySession(**get_browser_session_kwargs(headless=True)) as session:
         pages = []
