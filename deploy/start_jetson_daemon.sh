@@ -19,7 +19,7 @@ sed -i 's/minimumMajorNodeVersion = 20/minimumMajorNodeVersion = 16/g' \
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] === Starting Jetson Nano Scraper Daemon ===" >> daemon.log
 
 while true; do
-    "$WORK_DIR/.venv/bin/python" client/app.py --cli --machine "Jetson-jetson-nano" --concurrency 1 --state AP --district AP-02 --no-auto-update >> daemon.log 2>&1
+    "$WORK_DIR/.venv/bin/python" client/app.py --cli --machine "Jetson-jetson-nano" --concurrency 1 --no-auto-update >> daemon.log 2>&1
     EXIT_CODE=$?
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Worker stopped with code $EXIT_CODE. Restarting in 5s..." >> daemon.log
     sleep 5
